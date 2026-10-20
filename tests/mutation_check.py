@@ -51,36 +51,62 @@ MUTANTS = [
     ('a changed lock is not verified', 'kit.py', '    if lock and lock != earlier:', '    if False:'),
     ('the later configuration names the records', 'kit.py',
      'project = json.loads(show(candidate, PROJECT_FILE)', 'project = json.loads(show(revision, PROJECT_FILE)'),
-    ('record folders as patterns', 'kit.py', "(folders.get('tasks') == parent and",
-     "(parent.startswith(folders.get('tasks', '\\0').rstrip('*')) and"),
+    ('records in subfolders count', 'kit.py', "if folders.get('tasks') == parent and leaf.endswith('.json'):",
+     "if parent.startswith(folders.get('tasks', '\\0')) and leaf.endswith('.json'):"),
+    ('task records of any suffix', 'kit.py', "if folders.get('tasks') == parent and leaf.endswith('.json'):",
+     "if folders.get('tasks') == parent:"),
+    ('handoffs of any suffix', 'kit.py', "elif folders.get('handoffs') == parent and leaf.endswith('.md'):",
+     "elif folders.get('handoffs') == parent:"),
     ('record folders may cover the kit', 'kit.py', 'if record_folder_ok(paths.get(kind))}',
      'if relative_path(paths.get(kind))}'),
-    ('the secret allowlist is a process file', 'kit.py', 'if is_record(name) or name in (PROJECT_FILE, LOCK_FILE):',
-     "if is_record(name) or name in (PROJECT_FILE, LOCK_FILE, '.engineering-kit/secret-allowlist.json'):"),
+    ('the secret allowlist is a process file', 'kit.py', '        if name in (PROJECT_FILE, LOCK_FILE):',
+     "        if name in (PROJECT_FILE, LOCK_FILE, '.engineering-kit/secret-allowlist.json'):"),
     ('the entry block digest is not checked', 'kit.py',
-     "if outside[0] == outside[1] and digest(block.encode()) == lock['blocks'][name]:", 'if outside[0] == outside[1]:'),
-    ('a second entry block is allowed', 'kit.py',
-     'if all(text.count(KIT_BEGIN) == 1 and text.count(KIT_END) == 1 for text in texts):', 'if True:'),
+     'if now_outside is None or expected is None or digest(block.encode()) != expected:',
+     'if now_outside is None or expected is None:'),
+    ('entry markers in any order', 'kit.py',
+     ' or text.index(KIT_BEGIN) > text.index(KIT_END):\n        return None, None', ':\n        return None, None'),
     ('a removed kit file is always accepted', 'kit.py',
      '            if (now is None and expected is None) or (now is not None and digest(now) == expected):',
      '            if now is None or digest(now) == expected:'),
-    ('record folders may hold anything', 'kit.py',
-     "            if not (path.is_file() and path.suffix == suffix) and path.name != '.gitkeep':", '            if False:'),
     ('the placeholder marker anywhere in a handoff', 'kit.py',
      "if any(line.lstrip('#-* ').startswith(TEMPLATE_MARKER) for line in source.splitlines()):",
      'if TEMPLATE_MARKER in source:'),
+    ('lock blocks not compared with the release', 'kit.py',
+     "if expected_files != lock.get('files') or expected_blocks != lock.get('blocks'):",
+     "if expected_files != lock.get('files'):"),
+    ('lock commit not compared', 'kit.py', "if problems or release.commit != lock.get('commit') or",
+     'if problems or'),
+    ('lock release digest not compared', 'kit.py',
+     " or release.manifest.get('digest') != lock.get('digest'):", ':'),
+    ('unknown integrations ignored', 'kit.py', "if problems or release.commit", 'if release.commit'),
+    ('excluded files not filtered', 'kit.py', 'for name, data in files.items() if name not in excluded}',
+     'for name, data in files.items()}'),
+    ('excluded blocks not filtered', 'kit.py', "if f'block:{name}' not in excluded}", '}'),
+    ('a changed kit source is trusted', 'kit.py', "elif lock.get('source') != earlier.get('source'):", 'elif False:'),
+    ('a kit adopted later is trusted', 'kit.py', '        if not earlier:', '        if False:'),
+    ('records recognised by folder alone', 'kit.py', 'return bool(present) and all(map(record, present))',
+     'return True'),
+    ('lock lists not type-checked', 'kit.py', "for k in ('excluded', 'integrations', 'created', 'adopted'))):",
+     "for k in ('excluded',))):"),
+    ('a new instruction file is a difference', 'kit.py', "return created and now_outside == ''", 'return False'),
+    ('a removed integration file is a difference', 'kit.py',
+     "        if now is None and name in earlier.get('files', {}) and before is not None and (",
+     '        if False and ('),
+    ('integrated keeps the line break after the begin marker', 'kit.py',
+     "(block[1:] if block.startswith('\\n') else block)", 'block'),
+    ('checking a lock leaves compiled files', 'kit.py',
+     '    sys.dont_write_bytecode = True  # leave no compiled files inside a project\'s kit folder\n    import kit_update',
+     '    import kit_update'),
 ]
 
 
-def survives(label: str, name: str, old: str, new: str) -> bool:
+def survives(snapshot: Path, name: str, old: str, new: str) -> bool:
     with tempfile.TemporaryDirectory(prefix='kit-mutant-') as directory:
         copy = Path(directory) / 'kit'
-        shutil.copytree(KIT, copy, ignore=shutil.ignore_patterns('.git', '__pycache__'))
+        shutil.copytree(snapshot, copy)
         target = copy / 'tools' / name
-        source = target.read_text(encoding='utf-8')
-        if source.count(old) != 1:
-            raise SystemExit(f'{label}: the original text is not in tools/{name} exactly once; update the mutant')
-        target.write_text(source.replace(old, new), encoding='utf-8')
+        target.write_text(target.read_text(encoding='utf-8').replace(old, new), encoding='utf-8')
         result = subprocess.run([sys.executable, '-B', '-m', 'unittest', 'discover', '-s', 'tests'], cwd=copy,
                                 capture_output=True, text=True, timeout=600)
         return result.returncode == 0
@@ -88,12 +114,21 @@ def survives(label: str, name: str, old: str, new: str) -> bool:
 
 def main(labels: list[str]) -> int:
     chosen = [m for m in MUTANTS if not labels or m[0] in labels]
-    survivors = []
-    for label, name, old, new in chosen:
-        alive = survives(label, name, old, new)
-        print(f'{"SURVIVES" if alive else "caught  "}  {label}', flush=True)
-        if alive:
-            survivors.append(label)
+    with tempfile.TemporaryDirectory(prefix='kit-snapshot-') as directory:
+        # One copy taken before any run, so edits made meanwhile do not mix into later mutants.
+        snapshot = Path(directory) / 'kit'
+        shutil.copytree(KIT, snapshot, ignore=shutil.ignore_patterns('.git', '__pycache__'))
+        stale = [label for label, name, old, _ in chosen
+                 if (snapshot / 'tools' / name).read_text(encoding='utf-8').count(old) != 1]
+        if stale:
+            raise SystemExit('The original text is not in its file exactly once; update these mutants: '
+                             + ', '.join(stale))
+        survivors = []
+        for label, name, old, new in chosen:
+            alive = survives(snapshot, name, old, new)
+            print(f'{"SURVIVES" if alive else "caught  "}  {label}', flush=True)
+            if alive:
+                survivors.append(label)
     print(f'{len(chosen) - len(survivors)} of {len(chosen)} mutants caught.')
     return 1 if survivors else 0
 

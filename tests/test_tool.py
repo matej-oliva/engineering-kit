@@ -95,7 +95,8 @@ class CommandLine(unittest.TestCase):
         git('add', '-A')
         git('commit', '-q', '-m', 'candidate')
         candidate = git('rev-parse', 'HEAD')
-        (root / '.engineering-kit' / 'tasks' / 'T-7.json').write_text('{"recorded": true}\n')
+        record = root / '.engineering-kit' / 'tasks' / 'T-7.json'
+        record.write_text(record.read_text().replace('"state": "candidate"', '"state": "reviewed"'))
         config = root / '.engineering-kit' / 'project.json'
         config.write_text(config.read_text().replace('"published": "The package', '"published": "Our package'))
         git('commit', '-qam', 'record the candidate and correct a boundary meaning')

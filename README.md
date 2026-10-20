@@ -6,7 +6,7 @@ verified delivery and maintenance, and what evidence each step leaves. Each
 project keeps its own language, framework, design system, agent client, Git
 host, deployment platform and permissions.
 
-Status: version 0.1.0, the pilot release, contract version 1. See
+Status: version 0.1.1, a pilot release, contract version 1. See
 `CHANGELOG.md`. MIT licence; see `LICENSE`.
 
 ## Contents
@@ -51,9 +51,9 @@ project's root. It installs the release it was cloned at, from the address
 it was cloned from:
 
 ```sh
-git clone --depth 1 --branch v0.1.0 KIT_ADDRESS ~/engineering-kit-0.1.0
-python3 ~/engineering-kit-0.1.0/tools/kit.py adopt --with copilot           # preview
-python3 ~/engineering-kit-0.1.0/tools/kit.py adopt --with copilot --apply   # write
+git clone --depth 1 --branch v0.1.1 KIT_ADDRESS ~/engineering-kit-0.1.1
+python3 ~/engineering-kit-0.1.1/tools/kit.py adopt --with copilot           # preview
+python3 ~/engineering-kit-0.1.1/tools/kit.py adopt --with copilot --apply   # write
 ```
 
 `--with` names the instruction files your agents read, beyond `AGENTS.md`:
@@ -79,7 +79,7 @@ its granted integrations name, and the marked entry block.
 
 Only the entry block is loaded into every agent session: about 0.4 kB. The
 contract is read when work is planned, reviewed or released: about 6.8 kB.
-A procedure is about 1.8 kB and is read only for its stage.
+A procedure is about 1.9 kB and is read only for its stage.
 
 ## Test the kit
 

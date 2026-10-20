@@ -543,12 +543,6 @@ def check_all(root: Path) -> list[Finding]:
     paths = project.get('paths') if isinstance(project, dict) else None
     if not isinstance(paths, dict) or not all(relative_path(paths.get(k)) for k in ('tasks', 'handoffs')):
         return found
-    for kind, suffix in (('tasks', '.json'), ('handoffs', '.md')):  # they are skipped when comparing revisions
-        folder = root / paths[kind]
-        for path in sorted(folder.iterdir()) if folder.is_dir() else []:
-            if not (path.is_file() and path.suffix == suffix) and path.name != '.gitkeep':
-                found.append(Finding(FORMAT, path.relative_to(root).as_posix(),
-                                     f'paths.{kind} holds only {suffix} records'))
     states = {}
     for path in sorted((root / paths['tasks']).glob('*.json')):
         where = path.relative_to(root).as_posix()
@@ -658,13 +652,25 @@ def record_folder_ok(value) -> bool:
                    for protected in (KIT_FOLDER, LOCK_FILE))
 
 
+def without_block(text: str):
+    """TEXT as it was before the kit added its entry block, undoing exactly what the kit writes:
+    one blank line before the block and one line break after it. None for damaged markers."""
+    if text.count(KIT_BEGIN) != 1 or text.count(KIT_END) != 1 or text.index(KIT_BEGIN) > text.index(KIT_END):
+        return None, None
+    before, rest = text.split(KIT_BEGIN, 1)
+    block, after = rest.split(KIT_END, 1)
+    if before.endswith('\n') and before[:-1].endswith('\n'):
+        before = before[:-1]
+    return before + (after[1:] if after.startswith('\n') else after), (block[1:] if block.startswith('\n') else block)
+
+
 def compare_integrated(root: Path, candidate: str, revision: str) -> list[Finding]:
     """Refuse every file where REVISION differs from CANDIDATE, except process files: task
     records and handoffs in the folders the candidate's own project.json names,
-    `.engineering-kit/project.json`, the lock, and kit files and one entry block per
-    instruction file that match exactly the release the lock records. When the lock itself
-    changed, it is checked against that published release; if that cannot be done, the
-    result is unknown, never a pass."""
+    `.engineering-kit/project.json`, the lock, and what the lock's release installs or
+    removes: kit files, integration files and one entry block per instruction file. A lock
+    that changed is checked against the published release the candidate's lock names; a
+    changed source, or a kit adopted after the candidate, leaves the result unknown."""
     found: list[Finding] = []
 
     def show(ref, name):
@@ -679,8 +685,11 @@ def compare_integrated(root: Path, candidate: str, revision: str) -> list[Findin
             lock = json.loads(show(ref, LOCK_FILE) or b'{}')
         except (json.JSONDecodeError, UnicodeDecodeError):
             lock = None
-        shapes = (('files', dict), ('blocks', dict), ('excluded', list), ('integrations', list))
-        if not isinstance(lock, dict) or not all(isinstance(lock.get(k, kind()), kind) for k, kind in shapes):
+        if not (isinstance(lock, dict)
+                and all(isinstance(lock.get(k, {}), dict) and all(map(text, lock.get(k, {}).values()))
+                        for k in ('files', 'blocks'))
+                and all(isinstance(lock.get(k, []), list) and all(isinstance(item, str) for item in lock.get(k, []))
+                        for k in ('excluded', 'integrations', 'created', 'adopted'))):
             found.append(Finding(FORMAT, LOCK_FILE, f'the lock at {ref} is not a kit lock'))
             return {}
         return lock
@@ -694,10 +703,43 @@ def compare_integrated(root: Path, candidate: str, revision: str) -> list[Findin
     folders = {kind: str(PurePosixPath(paths[kind])) for kind in ('tasks', 'handoffs')
                if record_folder_ok(paths.get(kind))}
 
-    def is_record(name):
+    def is_record(name, contents):
+        """A task record or handoff, by place and by content, in every version that exists."""
         parent, leaf = name.rsplit('/', 1) if '/' in name else ('', name)
-        return ((folders.get('tasks') == parent and leaf.endswith('.json'))
-                or (folders.get('handoffs') == parent and leaf.endswith('.md')))
+        if folders.get('tasks') == parent and leaf.endswith('.json'):
+            def record(data):
+                try:
+                    return json.loads(data).get('kit') == 'task/1'
+                except (json.JSONDecodeError, UnicodeDecodeError, AttributeError):
+                    return False
+        elif folders.get('handoffs') == parent and leaf.endswith('.md'):
+            def record(data):
+                return re.match(r'# .+ handoff\n', data.decode('utf-8', 'replace')) is not None
+        else:
+            return False
+        present = [data for data in contents if data is not None]
+        return bool(present) and all(map(record, present))
+
+    def block_change_only(name, before, now):
+        """True when NAME differs only by the kit adding, updating or removing its entry block."""
+        expected, created = lock.get('blocks', {}).get(name), name in lock.get('created', [])
+        if now is None:  # a file the kit created, removed with its block
+            return expected is None and name in earlier.get('created', []) and (
+                before is None or without_block(before.decode('utf-8', 'replace'))[0] == '')
+        now_text = now.decode('utf-8', 'replace')
+        if KIT_BEGIN in now_text or KIT_END in now_text:
+            now_outside, block = without_block(now_text)
+            if now_outside is None or expected is None or digest(block.encode()) != expected:
+                return False
+        elif expected is not None:
+            return False
+        else:
+            now_outside = now_text
+        if before is None:
+            return created and now_outside == ''
+        before_text = before.decode('utf-8', 'replace')
+        before_outside = without_block(before_text)[0] if KIT_BEGIN in before_text else before_text
+        return before_outside is not None and before_outside == now_outside
 
     result = subprocess.run(['git', '-C', str(root), 'diff', '--name-only', '-z', candidate, revision],
                             capture_output=True)
@@ -705,27 +747,31 @@ def compare_integrated(root: Path, candidate: str, revision: str) -> list[Findin
         return [Finding(FORMAT, 'git', result.stderr.decode(errors='replace').strip()[-300:])]
     lock, earlier = lock_at(revision), lock_at(candidate)
     if lock and lock != earlier:
-        found += lock_against_release(lock)
+        if not earlier:
+            found.append(Finding('UNKNOWN', LOCK_FILE, 'the kit was adopted after the candidate; review the adoption'))
+        elif lock.get('source') != earlier.get('source'):
+            found.append(Finding('UNKNOWN', LOCK_FILE, f'the kit source changed from {earlier.get("source")!r} '
+                                                       f'to {lock.get("source")!r}; review that change'))
+        else:
+            found += lock_against_release(lock)
     for name in filter(None, result.stdout.decode('utf-8', 'surrogateescape').split('\0')):
-        if is_record(name) or name in (PROJECT_FILE, LOCK_FILE):
+        if name in (PROJECT_FILE, LOCK_FILE):
             continue
-        now = show(revision, name)
+        now, before = show(revision, name), show(candidate, name)
+        if is_record(name, (before, now)):
+            continue
         if name in lock.get('files', {}) or name.startswith(KIT_FOLDER + '/'):
             expected = lock.get('files', {}).get(name)
             if (now is None and expected is None) or (now is not None and digest(now) == expected):
                 continue  # installed or removed by the release the lock records
             found.append(Finding('CANDIDATE', name, 'a kit file differs from the release the lock records'))
             continue
-        before = show(candidate, name)
-        if name in lock.get('blocks', {}) and now is not None and before is not None:
-            texts = [before.decode('utf-8', 'replace'), now.decode('utf-8', 'replace')]
-            if all(text.count(KIT_BEGIN) == 1 and text.count(KIT_END) == 1 for text in texts):
-                outside = [re.sub(re.escape(KIT_BEGIN) + r'.*?' + re.escape(KIT_END), '', text, flags=re.S)
-                           for text in texts]
-                block = texts[1].split(KIT_BEGIN, 1)[1].split(KIT_END, 1)[0]
-                block = block[1:] if block.startswith('\n') else block
-                if outside[0] == outside[1] and digest(block.encode()) == lock['blocks'][name]:
-                    continue  # only the entry block changed, to the recorded release's
+        if now is None and name in earlier.get('files', {}) and before is not None and (
+                digest(before) == earlier['files'][name]):
+            continue  # an unchanged integration file the kit removed
+        if (name in lock.get('blocks', {}) or name in earlier.get('blocks', {})) and block_change_only(
+                name, before, now):
+            continue
         found.append(Finding('CANDIDATE', name, f'differs between {candidate} and {revision}'))
     return found
 
@@ -734,6 +780,7 @@ def lock_against_release(lock: dict) -> list[Finding]:
     """Check a changed lock against the published release it names: same commit and digest,
     and exactly the files and blocks that release installs for the lock's integrations."""
     import tempfile
+    sys.dont_write_bytecode = True  # leave no compiled files inside a project's kit folder
     import kit_update  # the release check needs the distribution code and the git command line
     try:
         with tempfile.TemporaryDirectory(prefix='kit-verify-') as work:
