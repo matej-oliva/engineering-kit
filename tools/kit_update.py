@@ -671,7 +671,7 @@ def own_release() -> tuple[str, str]:
         top = Path(git('rev-parse', '--show-toplevel', cwd=kit_root).decode().strip()).resolve()
     except (KitError, OSError):
         top = None
-    if top != kit_root:
+    if top is None or not os.path.samefile(top, kit_root):  # same folder, whatever its spelling on Windows
         raise KitError('this tool is not running from a clone of the kit; give SOURCE and VERSION')
     tags = [tag for tag in git('tag', '--points-at', 'HEAD', cwd=kit_root).decode().split()
             if VERSION.fullmatch(tag) and tag.startswith('v')]
