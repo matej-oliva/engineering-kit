@@ -1,0 +1,3 @@
+# Kit files keep Unix line endings in every checkout, so a Windows checkout of an
+# installed kit does not look like local changes.
+* text=auto eol=lf

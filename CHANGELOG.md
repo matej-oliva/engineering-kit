@@ -8,6 +8,10 @@ and whether the contract changed. Newest first.
 Lessons from the first pilots. Contract version 1, unchanged; nothing to do
 when updating except filling any placeholder `check` now reports.
 
+- Windows checkouts: line endings that Git converts on checkout no longer
+  count as local changes, written files keep the line-ending style they
+  already use, and the kit's own files stay on Unix line endings through
+  `.gitattributes`. Tested by simulation on Linux, not yet on Windows.
 - `procedures/implement.md` says what to do when the environment cannot
   create a revision, such as a sandbox that keeps Git read-only.
   Contributed from the `eqradio` pilot; a proposal until more agents use it.

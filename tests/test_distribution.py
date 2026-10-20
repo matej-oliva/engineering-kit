@@ -639,6 +639,27 @@ class Distribution(unittest.TestCase):
             self.run_change(root, '0.1.0', with_integrations=['copilot'])
         self.assertEqual((root / ku.PROJECT).read_text(), '{"kit": "project/1"}\n')
 
+    def test_windows_line_endings_are_not_local_changes(self):
+        """Git for Windows usually checks text out with CRLF; that must not look like local edits."""
+        root = self.consumer(files={'AGENTS.md': '# Shop\n\nNever deploy on Fridays.\n'})
+        self.adopt(root)
+        self.assertTrue((root / '.engineering-kit' / 'kit' / '.gitattributes').is_file())
+        converted = [root / 'AGENTS.md', *(root / '.engineering-kit' / 'kit').rglob('*.md')]
+        for path in converted:
+            path.write_bytes(path.read_bytes().replace(b'\n', b'\r\n'))
+        self.assertIn('every kit-managed file matches', '\n'.join(ku.status(root)[1]))
+        self.second_release()
+        self.adopt(root, '0.2.0')  # no conflict: only the line endings differed
+        agents = (root / 'AGENTS.md').read_bytes()
+        self.assertTrue(agents.startswith(b'# Shop\r\n\r\nNever deploy on Fridays.\r\n'))
+        self.assertIn(b'before you start, plan', agents)
+        self.assertNotIn(b'\r\r', agents)
+        self.assertEqual(agents.count(b'\n'), agents.count(b'\r\n'), 'the file keeps one line-ending style')
+        review = (root / REVIEW).read_bytes()
+        self.assertIn(b'never the author', review)
+        self.assertEqual(review.count(b'\n'), review.count(b'\r\n'))
+        self.assertIn('every kit-managed file matches', '\n'.join(ku.status(root)[1]))
+
     def test_a_failed_fetch_names_the_git_command(self):
         root = self.consumer()
         with self.assertRaisesRegex(ku.KitError, '^git fetch failed'):

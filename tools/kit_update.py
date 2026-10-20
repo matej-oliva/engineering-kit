@@ -301,9 +301,24 @@ def three_way(path: str, base: bytes | None, ours: bytes | None, theirs: bytes |
     return Action(path, 'merge', merged) if clean else resolved('local and kit changes overlap')
 
 
-def read(root: Path, path: str) -> bytes | None:
+def read_raw(root: Path, path: str) -> bytes | None:
+    """The exact bytes on disk, for the recovery journal."""
     target = root / path
     return target.read_bytes() if target.is_file() else None
+
+
+def read(root: Path, path: str) -> bytes | None:
+    """Content for comparison. Windows line endings read as Unix ones, so a checkout that
+    converts them, as Git for Windows usually does, is not a local change."""
+    data = read_raw(root, path)
+    return data.replace(b'\r\n', b'\n') if data is not None else None
+
+
+def styled(content: bytes | None, current: bytes | None) -> bytes | None:
+    """CONTENT in the line-ending style the file on disk already uses."""
+    if content is not None and current is not None and b'\r\n' in current:
+        return content.replace(b'\r\n', b'\n').replace(b'\n', b'\r\n')
+    return content
 
 
 def obstruction(root: Path, path: str) -> str | None:
@@ -444,25 +459,27 @@ def apply(root: Path, writes: list[Action], *, fail_after: int | None = None) ->
     if journal.exists():
         raise KitError('an earlier apply was interrupted; run "kit.py recover" first')
     journal.mkdir(parents=True)
-    steps = []
+    steps, finals = [], []
     for number, action in enumerate(writes):
-        before = read(root, action.path)
+        before = read_raw(root, action.path)
+        final = styled(action.content, before)
+        finals.append(final)
         backup = None
         if before is not None:
             backup = f'{number}.orig'
             write_atomic(journal / backup, before)
         steps.append({'path': action.path, 'backup': backup, 'before': digest_or_none(before),
-                      'after': digest_or_none(action.content)})
+                      'after': digest_or_none(final)})
     write_atomic(journal / 'journal.json', json.dumps({'kit': 'journal/1', 'steps': steps}).encode())
-    for number, action in enumerate(writes):  # nothing is written before the journal is on disk
+    for number, (action, final) in enumerate(zip(writes, finals)):  # nothing is written before the journal
         if fail_after is not None and number == fail_after:
             raise KitError('simulated interruption')
         target = root / action.path
-        if action.content is None:
+        if final is None:
             target.unlink(missing_ok=True)
             flush(target.parent)
         else:
-            write_atomic(target, action.content)
+            write_atomic(target, final)
     shutil.rmtree(journal)
     flush(journal.parent)
 
@@ -495,7 +512,8 @@ def recover(root: Path, abandon: bool = False) -> int:
     applied, changed = [], []
     for step in steps:
         target = root / step['path']
-        now = 'not a file' if target.exists() and not target.is_file() else digest_or_none(read(root, step['path']))
+        now = 'not a file' if target.exists() and not target.is_file() else digest_or_none(
+            read_raw(root, step['path']))
         if now == step.get('after'):
             applied.append(step)
         elif now != step.get('before'):
