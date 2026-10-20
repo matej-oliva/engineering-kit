@@ -1,0 +1,14 @@
+{
+  "kit": "integration/1",
+  "name": "agents-md",
+  "summary": "Adds the entry block to AGENTS.md, which many agent clients load automatically.",
+  "contract": [1],
+  "capabilities": ["instructions"],
+  "runtime": "none",
+  "permissions": ["writes-instructions"],
+  "inputs": ["instructions.clients in project.json"],
+  "evidence": [],
+  "blocks": [{"source": "templates/entry-block.md", "target": "AGENTS.md"}],
+  "files": [],
+  "manual": "Paste templates/entry-block.md into the project's own instruction file."
+}

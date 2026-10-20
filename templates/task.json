@@ -1,0 +1,25 @@
+{
+  "kit": "task/1",
+  "id": "T-1",
+  "title": "replace with one demonstrable outcome",
+  "author": "replace with who implements it",
+  "state": "proposed",
+  "profile": "change",
+  "requirement": {
+    "revision": "1",
+    "problem": "replace with the problem, who has it and why it matters",
+    "decision_owner": "owner",
+    "excluded": [],
+    "acceptance": [
+      {"id": "A1", "example": "replace with an observable example: given, when, then"}
+    ],
+    "acceptance_boundary": "merged"
+  },
+  "plan": {"risks": [], "recovery": "", "increments": []},
+  "candidate": {},
+  "checks": [],
+  "not_applicable": [],
+  "reviews": [],
+  "effects": [],
+  "verification": []
+}

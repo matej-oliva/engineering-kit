@@ -1,0 +1,14 @@
+{
+  "kit": "integration/1",
+  "name": "claude-code",
+  "summary": "Adds the entry block to CLAUDE.md for projects whose CLAUDE.md does not already import AGENTS.md.",
+  "contract": [1],
+  "capabilities": ["instructions"],
+  "runtime": "none",
+  "permissions": ["writes-instructions"],
+  "inputs": ["instructions.clients in project.json"],
+  "evidence": [],
+  "blocks": [{"source": "templates/entry-block.md", "target": "CLAUDE.md"}],
+  "files": [],
+  "manual": "Paste templates/entry-block.md into CLAUDE.md, or import AGENTS.md from it and use agents-md instead."
+}

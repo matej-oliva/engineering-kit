@@ -1,0 +1,12 @@
+{
+  "kit": "task/1",
+  "id": "T-7",
+  "title": "Round half-cent totals up, as invoices require",
+  "author": "agent:session-a",
+  "state": "proposed",
+  "profile": "defect",
+  "requirement": {
+    "revision": "1",
+    "problem": "A customer reported that one line of 2.675 totals to 2.67. Invoices round half up, so the customer is undercharged by a cent."
+  }
+}

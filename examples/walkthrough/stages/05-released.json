@@ -1,0 +1,71 @@
+{
+  "kit": "task/1",
+  "id": "T-7",
+  "title": "Round half-cent totals up, as invoices require",
+  "author": "agent:session-a",
+  "state": "released",
+  "profile": "defect",
+  "requirement": {
+    "revision": "1",
+    "problem": "A customer reported that one line of 2.675 totals to 2.67. Invoices round half up, so the customer is undercharged by a cent.",
+    "decision_owner": "owner",
+    "excluded": ["Rounding of individual tax lines, which follows the tax authority's rule"],
+    "acceptance": [
+      {"id": "A1", "example": "Given one line of 2.675, the invoice total is 2.68"},
+      {"id": "A2", "example": "Given a credit line of -2.675, the total is -2.68"},
+      {"id": "A3", "example": "Totals that were already exact, such as 2.67, are unchanged"}
+    ],
+    "acceptance_boundary": "published"
+  },
+  "plan": {
+    "risks": ["Other totals change if the rounding mode is applied too widely"],
+    "recovery": "Yank 1.4.1 and keep 1.4.0 as the latest version",
+    "increments": ["Reproduce with a failing test", "Fix the rounding mode", "Release 1.4.1"]
+  },
+  "candidate": {"revision": "c2f9e41", "base": "b17a0d3"},
+  "checks": [
+    {"id": "unit", "revision": "a91c3e0", "result": "pass", "evidence": "CI run 211"},
+    {"id": "lint", "revision": "a91c3e0", "result": "pass", "evidence": "CI run 211"},
+    {"id": "unit", "revision": "c2f9e41", "result": "pass", "evidence": "CI run 214"},
+    {"id": "lint", "revision": "c2f9e41", "result": "pass", "evidence": "CI run 214"}
+  ],
+  "reproduction": {"check": "test_half_cent_rounds_up", "base": "b17a0d3", "base_result": "fail", "candidate_result": "pass"},
+  "reviews": [
+    {
+      "reviewer": "agent:session-b",
+      "revision": "a91c3e0",
+      "verdict": "changes",
+      "findings": [
+        {"id": "F1", "blocking": true, "status": "resolved", "summary": "Example A2, a negative total, had no test. Added in c2f9e41."}
+      ]
+    },
+    {
+      "reviewer": "agent:session-b",
+      "revision": "c2f9e41",
+      "verdict": "approve",
+      "findings": [
+        {"id": "F2", "blocking": false, "status": "open", "summary": "Name the rounding mode in the README. Recorded as task T-8."}
+      ]
+    }
+  ],
+  "effects": [
+    {
+      "kind": "publish-package",
+      "target": "invoice-total 1.4.1 on the package index",
+      "authorized_by": "owner",
+      "authorization": "The owner approved publishing 1.4.1 in the review thread on 2026-10-20",
+      "door": "two-way",
+      "rollback": "Yank 1.4.1; installs resolve to 1.4.0 again",
+      "status": "done"
+    }
+  ],
+  "release": {
+    "source": "c2f9e41",
+    "artifact": "invoice_total-1.4.1-py3-none-any.whl sha256:3b8f0c2e9d41a6f7c05e18b2d7a9c4e6f1d0b3a5c7e9f2a4b6d8c0e1f3a5b7c9",
+    "checks": ["unit", "lint"],
+    "rollback": "1.4.0"
+  },
+  "verification": [
+    {"boundary": "ci", "revision": "c2f9e41", "result": "pass", "evidence": "CI run 214 on the merged revision"}
+  ]
+}

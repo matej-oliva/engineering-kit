@@ -1,0 +1,45 @@
+{
+  "kit": "project/1",
+  "name": "invoice-total",
+  "scope": "A small library that totals invoice lines with tax and currency rounding. No user interface; it is published as a package.",
+  "commands": {
+    "test": "python -m unittest",
+    "lint": "python -m pyflakes src"
+  },
+  "checks": {
+    "unit": {"description": "Unit tests pass", "command": "python -m unittest"},
+    "lint": {"description": "Static checks report nothing", "command": "python -m pyflakes src"},
+    "install": {"description": "The published package installs in a clean environment and totals the README example"}
+  },
+  "profiles": {
+    "change": {"required_checks": ["unit", "lint"], "review": "required", "release": true},
+    "defect": {"required_checks": ["unit", "lint"], "review": "required", "release": true, "reproduction": true},
+    "docs": {"required_checks": [], "review": "none", "release": false}
+  },
+  "boundaries": ["local", "ci", "published"],
+  "boundary_meaning": {
+    "ci": "The continuous integration run on the merged revision passed",
+    "published": "The package installs from the public index in a clean environment and gives the expected totals"
+  },
+  "authority": {
+    "roles": {"owner": "the maintainer who owns the package name", "contributor": "anyone with a reviewed change"},
+    "effects": {
+      "publish-package": ["owner"],
+      "yank-package": ["owner"]
+    }
+  },
+  "instructions": {
+    "clients": {"any-agent": ["AGENT-INSTRUCTIONS.md"]},
+    "precedence": "stricter"
+  },
+  "rules": [
+    {"id": "money-decimal", "text": "Money is computed with decimal arithmetic, never binary floating point.", "enforced": "checked", "by": "tests/test_types.py"},
+    {"id": "changelog", "text": "Every release adds one line to CHANGELOG.md.", "enforced": "guidance"}
+  ],
+  "exceptions": [
+    {"rule": "REVIEW", "scope": "profile:docs", "reason": "Spelling and wording fixes are released with the next reviewed change.", "approved_by": "owner", "date": "2026-10-20"}
+  ],
+  "integrations": {},
+  "paths": {"tasks": ".engineering-kit/tasks", "handoffs": ".engineering-kit/handoffs"},
+  "data": {"sensitivity": "No personal data; invoice amounts in tests are invented.", "restricted": []}
+}

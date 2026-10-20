@@ -1,0 +1,130 @@
+"""The contract, its documents and the reference checker stay consistent and portable."""
+from __future__ import annotations
+
+from datetime import datetime, timezone
+import json
+from pathlib import Path
+import re
+import sys
+import unittest
+
+KIT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(KIT / 'tools'))
+import kit  # noqa: E402
+
+TOOL = (KIT / 'tools' / 'kit.py').read_text(encoding='utf-8')
+# Words that tie a file to one person's environment. No kit file may use them.
+ENVIRONMENT = re.compile(r'\b(T3|Terrain|Powerstation|Homebase|homelab|home-server|tailnet|workstation|'
+                         r'Autopilot|olivam|matej)\b|\bops/', re.I)
+# Products the core must not depend on; integrations may name them.
+VENDORS = re.compile(r'\b(GitHub|GitLab|Bitbucket|Claude|Codex|OpenAI|Anthropic|Cursor|Gemini|Vercel|'
+                     r'Netlify|AWS|Azure)\b')
+
+
+def contract_table() -> dict[str, tuple[str, bool]]:
+    rows = {}
+    for line in (KIT / 'CONTRACT.md').read_text(encoding='utf-8').splitlines():
+        if line.startswith('| `'):
+            cells = [cell.strip() for cell in line.strip('|').split('|')]
+            rows[cells[0].strip('`')] = (cells[2], cells[3] == 'fixed')
+    return rows
+
+
+def kit_files(*, core: bool):
+    for path in sorted(KIT.rglob('*')):
+        relative = path.relative_to(KIT)
+        if not path.is_file() or relative.parts[0] in ('tests', '__pycache__') or '__pycache__' in relative.parts:
+            continue
+        if core and (relative.parts[0] == 'integrations' or relative.name == 'THIRD_PARTY_NOTICES.md'):
+            continue
+        yield relative, path.read_text(encoding='utf-8')
+
+
+class ContractConsistency(unittest.TestCase):
+    def test_rule_table_and_checker_agree(self):
+        table = contract_table()
+        self.assertEqual(set(table), set(kit.RULES))
+        for rule, (_, fixed) in table.items():
+            self.assertEqual(kit.RULES[rule], fixed, f'{rule}: fixed differs between CONTRACT.md and kit.py')
+
+    def test_refusals_name_contract_rules(self):
+        """Every rule ID the tool can emit is a contract rule; test_conformance proves each checked one fires."""
+        named = set(re.findall(r"(?:refuse|Finding|stale)\('([A-Z]+)'", TOOL))
+        named |= {rule for pair in re.findall(r"'([A-Z]+)' if [^\n]* else '([A-Z]+)'", TOOL) for rule in pair}
+        self.assertLessEqual(named, set(kit.RULES) | {kit.FORMAT})
+        self.assertGreaterEqual(len(named), 10)
+
+    def test_enforcement_labels_are_known(self):
+        for rule, (enforced, _) in contract_table().items():
+            self.assertIn(enforced, kit.ENFORCED, rule)
+
+    def test_named_kit_paths_exist(self):
+        pattern = re.compile(r'`((?:procedures|templates|tools|integrations|conformance|examples|tests)/[^`\s]*'
+                             r'|[A-Z_]+\.md)`')
+        for relative, content in kit_files(core=False):
+            if relative.suffix != '.md':
+                continue
+            for name in pattern.findall(content):
+                with self.subTest(file=str(relative), path=name):
+                    self.assertTrue((KIT / name.rstrip('/')).exists(), f'{relative} names {name}')
+
+    def test_templates_pass_the_checker(self):
+        project = json.loads((KIT / 'templates' / 'project.json').read_text(encoding='utf-8'))
+        self.assertEqual(kit.check_project(project), [])
+        task = json.loads((KIT / 'templates' / 'task.json').read_text(encoding='utf-8'))
+        self.assertEqual(kit.check_task(task, project), [])
+        handoff = (KIT / 'templates' / 'handoff.md').read_text(encoding='utf-8')
+        self.assertEqual(kit.check_handoff(handoff, now=datetime(2026, 10, 20, tzinfo=timezone.utc)), [])
+
+    def test_example_carries_the_entry_block_verbatim(self):
+        block = (KIT / 'templates' / 'entry-block.md').read_text(encoding='utf-8').strip()
+        example = (KIT / 'examples' / 'walkthrough' / 'project' / 'AGENT-INSTRUCTIONS.md').read_text(encoding='utf-8')
+        inside = example.split('<!-- engineering-kit:begin -->\n', 1)[1].split('<!-- engineering-kit:end -->', 1)[0]
+        self.assertEqual(inside.strip(), block)
+
+    def test_integration_manifests_declare_what_they_need(self):
+        for manifest in sorted((KIT / 'integrations').glob('*/integration.json')):
+            with self.subTest(manifest.parent.name):
+                data = json.loads(manifest.read_text(encoding='utf-8'))
+                self.assertEqual(data['kit'], 'integration/1')
+                self.assertEqual(data['name'], manifest.parent.name)
+                self.assertIn(kit.CONTRACT_VERSION, data['contract'])
+                for field in ('summary', 'runtime', 'manual'):
+                    self.assertTrue(data[field].strip())
+                for field in ('capabilities', 'permissions', 'inputs', 'evidence', 'blocks', 'files'):
+                    self.assertIsInstance(data[field], list)
+                for entry in data['blocks'] + data['files']:
+                    self.assertTrue((KIT / entry['source']).is_file() or (manifest.parent / entry['source']).is_file())
+                    self.assertTrue(kit.relative_path(entry['target']))
+
+
+class Portability(unittest.TestCase):
+    def test_no_file_names_a_personal_environment(self):
+        for relative, content in kit_files(core=False):
+            with self.subTest(str(relative)):
+                self.assertIsNone(ENVIRONMENT.search(content), f'{relative} is tied to one environment')
+
+    def test_core_names_no_vendor(self):
+        for relative, content in kit_files(core=True):
+            with self.subTest(str(relative)):
+                match = VENDORS.search(content)
+                self.assertIsNone(match, f'{relative} names {match and match.group(0)}; move it to an integration')
+
+    def test_python_files_parse_with_the_declared_minimum_grammar(self):
+        """Python 3.11 is the declared minimum. This catches newer syntax, not newer library calls."""
+        import ast
+        for path in sorted(KIT.rglob('*.py')):
+            with self.subTest(str(path.relative_to(KIT))):
+                ast.parse(path.read_text(encoding='utf-8'), feature_version=(3, 11))
+
+    def test_readme_context_sizes_are_current(self):
+        readme = (KIT / 'README.md').read_text(encoding='utf-8')
+        block, contract, procedure = (float(n) for n in re.findall(r'about (\d+\.\d) kB', readme))
+        sizes = [len(p.read_bytes()) for p in (KIT / 'procedures').glob('*.md')]
+        self.assertEqual(block, round(len((KIT / 'templates' / 'entry-block.md').read_bytes()) / 1000, 1))
+        self.assertEqual(contract, round(len((KIT / 'CONTRACT.md').read_bytes()) / 1000, 1))
+        self.assertEqual(procedure, round(sum(sizes) / len(sizes) / 1000, 1))
+
+
+if __name__ == '__main__':
+    unittest.main()

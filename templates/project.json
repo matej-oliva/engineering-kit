@@ -1,0 +1,35 @@
+{
+  "kit": "project/1",
+  "name": "replace with the project's name",
+  "scope": "replace with what the project is, who uses it and what it does not cover",
+  "commands": {
+    "test": "replace with the command that runs the tests"
+  },
+  "checks": {
+    "tests": {"description": "The project's automated tests pass", "command": "replace with the test command"},
+    "review-notes": {"description": "The reviewer read the change against its acceptance examples"}
+  },
+  "profiles": {
+    "change": {"required_checks": ["tests"], "review": "required", "release": false},
+    "defect": {"required_checks": ["tests"], "review": "required", "release": false, "reproduction": true},
+    "docs": {"required_checks": [], "review": "required", "release": false}
+  },
+  "boundaries": ["local", "merged"],
+  "boundary_meaning": {
+    "local": "The change works in the author's working copy",
+    "merged": "replace with: merged into which branch, by whom"
+  },
+  "authority": {
+    "roles": {"owner": "replace with who decides for this project"},
+    "effects": {}
+  },
+  "instructions": {
+    "clients": {"any-agent": ["AGENTS.md"]},
+    "precedence": "stricter"
+  },
+  "rules": [],
+  "exceptions": [],
+  "integrations": {},
+  "paths": {"tasks": ".engineering-kit/tasks", "handoffs": ".engineering-kit/handoffs"},
+  "data": {"sensitivity": "replace with what data the project holds", "restricted": []}
+}
