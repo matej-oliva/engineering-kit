@@ -17,8 +17,9 @@ Use while changing the repository for an accepted task. Set `state` to
 5. **Fix the candidate**: record `candidate.revision` and `candidate.base`,
    the revision your work started from, and set `state` to `candidate`. Any
    later edit makes a new candidate, and checks and reviews then apply to the
-   new revision (rule `CANDIDATE`). Commits that change only the task and
-   handoff folders, such as the one recording the candidate, do not.
+   new revision (rule `CANDIDATE`). Commits that change only process files,
+   the `.engineering-kit/` folder and the task and handoff folders, such as
+   the one recording the candidate, do not.
    If your environment cannot create a revision, for example a sandbox that
    keeps Git read-only, set `state` to `blocked`, list each changed file with
    its SHA-256 in the handoff's evidence, and make committing them and
