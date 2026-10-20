@@ -30,6 +30,9 @@ updating, run `kit.py check`: it now refuses a few malformed records that
   names, matched literally; instruction files the kit created or removed,
   and integration files a release removed, are accepted when they match
   what the release does, and a kit removed after the candidate is unknown.
+- No task record or handoff may be named like an instruction file, such
+  as `CLAUDE.md` or `README.json`, compared without case; `check` refuses
+  it and `integrated` treats it as an ordinary file.
 - Tasks may list `contributors`, each a name, who may not approve the
   candidate.
 - Every review names its revision, and may record its `evidence`.

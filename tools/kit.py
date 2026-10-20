@@ -544,8 +544,11 @@ def check_all(root: Path) -> list[Finding]:
     if not isinstance(paths, dict) or not all(relative_path(paths.get(k)) for k in ('tasks', 'handoffs')):
         return found
     states = {}
+    reserved = reserved_stems(project)
     for path in sorted((root / paths['tasks']).glob('*.json')):
         where = path.relative_to(root).as_posix()
+        if path.stem.casefold() in reserved:
+            found.append(Finding(FORMAT, where, 'a record may not be named like an instruction file'))
         task, problems = load_json(path, where)
         found += problems
         if task is not None:
@@ -558,6 +561,8 @@ def check_all(root: Path) -> list[Finding]:
                 states[task['id']] = task.get('state')
     for path in sorted((root / paths['handoffs']).glob('*.md')):
         where = path.relative_to(root).as_posix()
+        if path.stem.casefold() in reserved:
+            found.append(Finding('HANDOFF', where, 'a handoff may not be named like an instruction file'))
         source = path.read_text(encoding='utf-8')
         found += check_handoff(source, states, where)
         named = re.search(r'^Task: *(.+?) *$', source, re.M)
@@ -652,6 +657,21 @@ def record_folder_ok(value) -> bool:
                    for protected in (KIT_FOLDER, LOCK_FILE))
 
 
+INSTRUCTION_STEMS = ('agents', 'claude', 'gemini', 'copilot-instructions', 'readme')
+
+
+def reserved_stems(project) -> set[str]:
+    """Names a record may not take, compared without case: files agent clients read as
+    instructions, in the kit's integrations or in the project's own configuration, and README."""
+    stems = set(INSTRUCTION_STEMS)
+    clients = (project.get('instructions') or {}).get('clients') if isinstance(project, dict) else None
+    for files in (clients or {}).values() if isinstance(clients, dict) else ():
+        for name in files if isinstance(files, list) else ():
+            if isinstance(name, str):
+                stems.add(PurePosixPath(name).stem.casefold())
+    return stems
+
+
 def without_block(text: str):
     """TEXT as it was before the kit added its entry block, undoing exactly what the kit writes:
     one blank line before the block and one line break after it. None for damaged markers."""
@@ -702,11 +722,14 @@ def compare_integrated(root: Path, candidate: str, revision: str) -> list[Findin
     paths = paths if isinstance(paths, dict) else {}
     folders = {kind: str(PurePosixPath(paths[kind])) for kind in ('tasks', 'handoffs')
                if record_folder_ok(paths.get(kind))}
+    reserved = reserved_stems(project)
 
     def is_record(name, contents):
         """A task record or handoff, by place, by content and by the name rule `check` enforces,
         in every version that exists."""
         parent, leaf = name.rsplit('/', 1) if '/' in name else ('', name)
+        if PurePosixPath(leaf).stem.casefold() in reserved:
+            return False  # named like an instruction file: never a record, whatever it contains
         if folders.get('tasks') == parent and leaf.endswith('.json'):
             def record(data):
                 try:
@@ -716,9 +739,10 @@ def compare_integrated(root: Path, candidate: str, revision: str) -> list[Findin
                     return False
         elif folders.get('handoffs') == parent and leaf.endswith('.md'):
             def record(data):
-                source = data.decode('utf-8', 'replace')
-                named = re.search(r'^Task: *(.+?) *$', source, re.M)
-                return (re.match(r'# .+ handoff[ \t]*\n', source) is not None
+                head = data.decode('utf-8', 'replace').partition('\n## ')[0]
+                lines = head.splitlines()
+                named = re.search(r'^Task: *(.+?) *$', head, re.M)
+                return (bool(lines) and re.fullmatch(r'# .+ handoff', lines[0].strip()) is not None
                         and named is not None and named.group(1) == leaf[:-len('.md')])
         else:
             return False
@@ -744,7 +768,7 @@ def compare_integrated(root: Path, candidate: str, revision: str) -> list[Findin
             return created and now_outside == ''
         before_text = before.decode('utf-8', 'replace')
         before_outside = without_block(before_text)[0] if KIT_BEGIN in before_text else before_text
-        if before_outside and not before_outside.endswith('\n') and KIT_BEGIN not in before_text:
+        if before_outside and before_outside.strip() and not before_outside.endswith('\n') and KIT_BEGIN not in before_text:
             before_outside += '\n'  # the kit ends an unterminated last line before adding its block
         return before_outside is not None and before_outside == now_outside
 

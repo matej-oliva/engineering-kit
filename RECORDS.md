@@ -40,7 +40,10 @@ Owned by the project. Kit updates never change it.
 ## Task record: one file per task in `paths.tasks`
 
 Name each file after its task, `<id>.json`, and give a new task the next
-unused ID. Task IDs are unique within the project.
+unused ID. Task IDs are unique within the project, and no record, task or
+handoff, is named like an instruction file (`AGENTS`, `CLAUDE`, `GEMINI`,
+`copilot-instructions`, `README`, or any file in `instructions.clients`),
+compared without case: agents read such files as rules.
 
 | Field | Meaning | Required from state |
 | --- | --- | --- |

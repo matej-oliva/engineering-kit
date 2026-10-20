@@ -64,6 +64,19 @@ class CommandLine(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn('FORMAT', result.stdout)
 
+    def test_records_named_like_instruction_files_are_refused(self):
+        root = self.copy_example()
+        records = root / '.engineering-kit'
+        (records / 'tasks' / 'claude.json').write_text('{"kit": "task/1", "id": "claude", "title": "x", "state": "proposed"}')
+        (records / 'handoffs' / 'README.md').write_text((records / 'handoffs' / 'T-7.md').read_text()
+                                                        .replace('Task: T-7', 'Task: README'))
+        report = json.loads(run('check', '--json', '--root', str(root)).stdout)
+        messages = {(f['rule'], f['where'], f['message']) for f in report['findings']}
+        self.assertIn(('FORMAT', '.engineering-kit/tasks/claude.json', 'a record may not be named like an instruction file'),
+                      messages)
+        self.assertIn(('HANDOFF', '.engineering-kit/handoffs/README.md', 'a handoff may not be named like an instruction file'),
+                      messages)
+
     def test_oversized_records_are_refused_not_crashed(self):
         root = self.copy_example()
         tasks = root / '.engineering-kit' / 'tasks'
