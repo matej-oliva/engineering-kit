@@ -33,7 +33,8 @@ def contract_table() -> dict[str, tuple[str, bool]]:
 def kit_files(*, core: bool):
     for path in sorted(KIT.rglob('*')):
         relative = path.relative_to(KIT)
-        if not path.is_file() or relative.parts[0] in ('tests', '__pycache__') or '__pycache__' in relative.parts:
+        if (not path.is_file() or relative.parts[0] in ('tests', '.git')
+                or '__pycache__' in relative.parts):  # .git exists once the kit is its own repository
             continue
         if core and (relative.parts[0] == 'integrations' or relative.name == 'THIRD_PARTY_NOTICES.md'):
             continue
@@ -65,6 +66,8 @@ class ContractConsistency(unittest.TestCase):
             if relative.suffix != '.md':
                 continue
             for name in pattern.findall(content):
+                if '<' in name or name in ('AGENTS.md', 'CLAUDE.md'):  # placeholders and a project's own files
+                    continue
                 with self.subTest(file=str(relative), path=name):
                     self.assertTrue((KIT / name.rstrip('/')).exists(), f'{relative} names {name}')
 
@@ -93,9 +96,14 @@ class ContractConsistency(unittest.TestCase):
                     self.assertTrue(data[field].strip())
                 for field in ('capabilities', 'permissions', 'inputs', 'evidence', 'blocks', 'files'):
                     self.assertIsInstance(data[field], list)
-                for entry in data['blocks'] + data['files']:
-                    self.assertTrue((KIT / entry['source']).is_file() or (manifest.parent / entry['source']).is_file())
+                for entry in data['files']:  # sources are relative to the integration's folder
+                    self.assertTrue((manifest.parent / entry['source']).is_file(), entry['source'])
+                    self.assertIn(entry['permission'], data['permissions'], entry['target'])
+                if data['blocks']:
+                    self.assertIn('writes-instructions', data['permissions'])
+                for entry in data['blocks'] + data['files']:  # blocks always carry the entry block
                     self.assertTrue(kit.relative_path(entry['target']))
+                    self.assertNotIn(Path(entry['target']).parts[0], ('.engineering-kit', '.git'))
 
 
 class Portability(unittest.TestCase):
@@ -114,6 +122,8 @@ class Portability(unittest.TestCase):
         """Python 3.11 is the declared minimum. This catches newer syntax, not newer library calls."""
         import ast
         for path in sorted(KIT.rglob('*.py')):
+            if '.git' in path.relative_to(KIT).parts:
+                continue
             with self.subTest(str(path.relative_to(KIT))):
                 ast.parse(path.read_text(encoding='utf-8'), feature_version=(3, 11))
 

@@ -71,9 +71,16 @@ class ConformanceCases(unittest.TestCase):
                 found = kit.check_handoff(source, states, case['name'], now=NOW)
                 self.assertEqual(rules(found), sorted(case['expect']), '\n'.join(map(str, found)))
 
+    def test_contribution_cases(self):
+        import kit_update
+        for case in CASES['contributions']:
+            with self.subTest(case['name']):
+                found = kit_update.check_contribution(patched(load(case['file']), case))
+                self.assertEqual(rules(found), sorted(case['expect']), '\n'.join(map(str, found)))
+
     def test_every_checked_rule_has_a_planted_failure(self):
         """A rule labelled checked must be shown refusing something, or the label is a claim."""
-        expected = {rule for group in ('tasks', 'projects', 'handoffs') for case in CASES[group]
+        expected = {rule for group in ('tasks', 'projects', 'handoffs', 'contributions') for case in CASES[group]
                     for rule in case['expect']}
         checked = {line.split('|')[1].strip().strip('`') for line in
                    (KIT / 'CONTRACT.md').read_text(encoding='utf-8').splitlines()

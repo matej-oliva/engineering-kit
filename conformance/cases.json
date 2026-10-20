@@ -114,6 +114,16 @@
     {"name": "instruction file that does not exist", "set": {"instructions.clients.any-agent": ["MISSING.md"]}, "expect": ["FORMAT"]},
     {"name": "a boundary meaning for an undefined boundary", "set": {"boundary_meaning": {"production": "the live site"}}, "expect": ["FORMAT"]}
   ],
+  "contributions": [
+    {"name": "a contribution with provenance and rights passes", "file": "examples/contribution.json", "expect": []},
+    {"name": "unknown rights stay out", "file": "examples/contribution.json", "set": {"rights": "unknown"}, "expect": ["LESSON"]},
+    {"name": "employer material without clearance", "file": "examples/contribution.json", "set": {"rights": "employer"}, "expect": ["LESSON"]},
+    {"name": "a lesson without evidence", "file": "examples/contribution.json", "set": {"evidence": ""}, "expect": ["LESSON"]},
+    {"name": "a lesson without its limits", "file": "examples/contribution.json", "remove": ["limits"], "expect": ["LESSON"]},
+    {"name": "a lesson without its source revision", "file": "examples/contribution.json", "remove": ["source_revision"], "expect": ["LESSON"]},
+    {"name": "a status that claims more than proposal or proven", "file": "examples/contribution.json", "set": {"status": "accepted"}, "expect": ["LESSON"]},
+    {"name": "a third-party licence named by its identifier", "file": "examples/contribution.json", "set": {"rights": "licensed:MIT"}, "expect": []}
+  ],
   "handoffs": [
     {"name": "the worked handoff passes", "file": "examples/walkthrough/project/.engineering-kit/handoffs/T-7.md", "expect": []},
     {"name": "no next action", "file": "examples/walkthrough/project/.engineering-kit/handoffs/T-7.md",

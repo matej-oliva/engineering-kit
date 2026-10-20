@@ -29,7 +29,7 @@
   },
   "rules": [],
   "exceptions": [],
-  "integrations": {},
+  "integrations": {"agents-md": {"grant": ["writes-instructions"]}},
   "paths": {"tasks": ".engineering-kit/tasks", "handoffs": ".engineering-kit/handoffs"},
   "data": {"sensitivity": "replace with what data the project holds", "restricted": []}
 }

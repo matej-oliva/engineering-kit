@@ -84,3 +84,57 @@ State: <task state>
 Name the file after its task, `<task ID>.md`. The five sections appear in
 this order. `Next action` holds exactly one list item. `Updated` is not in
 the future, and `State` equals the task record's state.
+
+## Integration manifest: `integrations/<name>/integration.json`
+
+| Field | Meaning |
+| --- | --- |
+| `kit`, `name` | `"integration/1"` and the folder's name. |
+| `summary`, `capabilities`, `runtime` | What it does, the capabilities it adds and what it needs to run. |
+| `contract` | The contract versions it supports. |
+| `permissions` | What installing it allows; the project grants each one in `project.json`. |
+| `inputs`, `evidence` | What it reads and the evidence it produces. |
+| `files` | `[{"source", "target", "permission"}]`: files it installs, with `source` relative to its folder and the declared permission that covers the file. Targets stay outside `.engineering-kit/` and any `.git` folder, compared without case. |
+| `blocks` | `[{"target"}]`: instruction files that receive the marked entry block; it needs the `writes-instructions` permission. |
+| `manual` | How to meet the same need by hand without it. |
+
+Permissions: `writes-instructions` adds the entry block to an instruction
+file; `review-template` adds a template to a hosting service's review form;
+`ci-workflow` adds automation that runs on the hosting service when code is
+pushed. An integration that declares a permission the project has not
+granted is not installed, and a release that adds a permission stops the
+update until the project grants it. Permissions are declarations shown in
+the preview, not a sandbox: review a release's files before granting.
+
+## Release manifest: `RELEASE.json` in each tagged release
+
+`{"kit": "release/1", "version", "contract", "digest", "files", "integrations", "notes"}`.
+`files` maps every installed file to its SHA-256; `digest` is the SHA-256 of
+the lines `<sha256>  <path>` sorted by path. `tests/`, `examples/` and
+`conformance/` stay in the kit's repository and are not installed. A release
+is the Git tag `v<version>` on the commit that holds this file.
+
+## Lock: `.engineering-kit/lock.json`
+
+Written by `tools/kit.py` and never edited by hand.
+`{"kit": "lock/1", "source", "version", "commit", "digest", "contract", "integrations", "files", "blocks", "excluded", "adopted", "created", "history"}`.
+`files` and `blocks` hold the SHA-256 of what the kit installed, so `status`
+can tell local changes apart. `excluded` lists files, and `block:FILE`
+entry blocks, that the project kept as its own when the kit offered one
+there; later updates leave them alone. `adopted` lists files the project
+already had in exactly the kit's form, which stay when the kit is removed.
+`created` lists instruction files the kit created for its block, the only
+ones removal may delete. `history` lists every release applied, newest last.
+A release whose tag no longer points at the commit and digest recorded for
+it, installed or earlier, is refused.
+
+## Contribution: `contribution.json` beside `change.patch`
+
+| Field | Meaning |
+| --- | --- |
+| `kit` | Always `"contribution/1"`. |
+| `project`, `source_revision`, `kit_version` | Where the lesson came from. |
+| `files` | The kit files the patch changes, relative to the kit's root. |
+| `need`, `evidence`, `limits`, `owner` | The failure or need, what shows the change helps, where it is unproven, and who maintains it. |
+| `rights` | `owner-authored`, `licensed:<SPDX identifier>` or `cleared:<reference>`. Anything else, such as unknown or employer material without clearance, stays out. |
+| `status` | `proposal` until evidence shows the lesson works, then `proven`. |

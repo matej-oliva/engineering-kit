@@ -1,0 +1,17 @@
+{
+  "kit": "integration/1",
+  "name": "gitlab",
+  "summary": "A merge request template that asks for the task record, and a CI job definition the project includes to run the reference checker.",
+  "contract": [1],
+  "capabilities": ["review-template", "ci-check"],
+  "runtime": "GitLab CI with an image that has Python 3.11 or later",
+  "permissions": ["review-template", "ci-workflow"],
+  "inputs": ["Task records and handoffs in the folders project.json names"],
+  "evidence": ["A pipeline job per merge request, refusing what tools/kit.py check refuses"],
+  "blocks": [],
+  "files": [
+    {"source": "merge_request_template.md", "target": ".gitlab/merge_request_templates/engineering-kit.md", "permission": "review-template"},
+    {"source": "ci.yml", "target": ".gitlab/engineering-kit-ci.yml", "permission": "ci-workflow"}
+  ],
+  "manual": "Add `include: [{local: .gitlab/engineering-kit-ci.yml}]` to the project's own .gitlab-ci.yml; the integration never edits that file."
+}

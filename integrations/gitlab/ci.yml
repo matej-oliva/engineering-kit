@@ -1,0 +1,7 @@
+# Included from the project's .gitlab-ci.yml; see integration.json.
+# Pin the image to a digest in your project; a tag can change underneath you.
+engineering-kit:
+  image: python:3.12-slim
+  timeout: 5 minutes
+  script:
+    - python3 .engineering-kit/kit/tools/kit.py check

@@ -1,0 +1,13 @@
+{
+  "kit": "contribution/1",
+  "project": "invoice-total",
+  "source_revision": "c2f9e41",
+  "kit_version": "0.1.0",
+  "files": ["procedures/review.md"],
+  "status": "proposal",
+  "need": "A review of requirement revision 1 looked current after the owner changed the acceptance examples, so a stale approval was nearly relied on.",
+  "evidence": "Task T-9 in invoice-total: the review named the candidate but not the requirement revision it judged.",
+  "limits": "Seen in one project; not yet shown to change reviewers' behaviour elsewhere.",
+  "rights": "owner-authored",
+  "owner": "the kit maintainer"
+}

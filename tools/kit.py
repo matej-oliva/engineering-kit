@@ -651,7 +651,45 @@ def main(argv: list[str] | None = None) -> int:
         if name == 'integrated':
             command.add_argument('candidate')
             command.add_argument('revision')
+    changes = {'adopt': 'adopt the kit from SOURCE at VERSION', 'update': 'move to another release',
+               'rollback': 'return to the previously installed release', 'remove': 'remove the kit'}
+    for name, summary in changes.items():
+        command = commands.add_parser(name, help=summary)
+        command.add_argument('--root', type=Path, default=Path.cwd())
+        if name == 'adopt':
+            command.add_argument('source')
+        if name in ('adopt', 'update'):
+            command.add_argument('version')
+        if name == 'update':
+            command.add_argument('--source', help='fetch from here instead of the recorded source')
+        if name in ('update', 'rollback'):
+            command.add_argument('--accept-contract', type=int, metavar='N')
+        command.add_argument('--apply', action='store_true', help='write the previewed changes')
+        command.add_argument('--plan', metavar='DIGEST', help='apply only if the plan is still this preview')
+        command.add_argument('--resolve', action='append', default=[], metavar='PATH=kit|local')
+        command.add_argument('--diff', action='store_true', help='show each change as a diff')
+    commands.add_parser('status').add_argument('--root', type=Path, default=Path.cwd())
+    command = commands.add_parser('recover', help='undo the writes of an interrupted apply')
+    command.add_argument('--root', type=Path, default=Path.cwd())
+    command.add_argument('--abandon', action='store_true', help='drop the journal and keep the files as they are')
+    command = commands.add_parser('release', help='write RELEASE.json in the kit source folder')
+    command.add_argument('version')
+    command.add_argument('--root', type=Path, default=Path.cwd())
+    command.add_argument('--check', action='store_true', help='refuse if RELEASE.json is not current')
+    command = commands.add_parser('contribute', help='offer locally changed kit files back')
+    command.add_argument('files', nargs='+')
+    command.add_argument('--root', type=Path, default=Path.cwd())
+    command.add_argument('--out', type=Path, required=True)
+    for field in ('need', 'evidence', 'limits', 'rights', 'owner'):
+        command.add_argument(f'--{field}', required=True)
+    command = commands.add_parser('check-contribution')
+    command.add_argument('file', type=Path)
+    command.add_argument('--json', action='store_true')
     args = parser.parse_args(argv)
+    if args.command not in ('check', 'check-task', 'check-handoff', 'scan-secrets', 'integrated'):
+        sys.dont_write_bytecode = True  # leave no compiled files inside the project's kit folder
+        import kit_update  # only distribution needs it, and it needs the git command line
+        return kit_update.cli(args)
     root = args.root.resolve()
     if args.command == 'check':
         return report(check_all(root), args.json, 'Project, tasks and handoffs pass the contract.')

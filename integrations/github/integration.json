@@ -1,0 +1,17 @@
+{
+  "kit": "integration/1",
+  "name": "github",
+  "summary": "A pull request template that asks for the task record, and a workflow that runs the reference checker on every pull request.",
+  "contract": [1],
+  "capabilities": ["review-template", "ci-check"],
+  "runtime": "GitHub Actions on an Ubuntu runner with Python 3.11 or later",
+  "permissions": ["review-template", "ci-workflow"],
+  "inputs": ["Task records and handoffs in the folders project.json names"],
+  "evidence": ["A workflow run per pull request, refusing what tools/kit.py check refuses"],
+  "blocks": [],
+  "files": [
+    {"source": "pull_request_template.md", "target": ".github/pull_request_template.md", "permission": "review-template"},
+    {"source": "workflow.yml", "target": ".github/workflows/engineering-kit.yml", "permission": "ci-workflow"}
+  ],
+  "manual": "Run tools/kit.py check before asking for review, and link the task record in the pull request description."
+}
