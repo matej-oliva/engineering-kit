@@ -560,8 +560,12 @@ def describe(actions: list[Action], problems: list[str], root: Path, show_diff: 
 def change(root: Path, source: str, version: str | None, *, adopting: bool = False, apply_now: bool = False,
            resolutions: dict[str, str] | None = None, expected_plan: str | None = None,
            accept_contract: int | None = None, show_diff: bool = False,
-           fail_after: int | None = None) -> tuple[int, list[str]]:
-    """Adopt, update, roll back or remove. Returns an exit status and report lines."""
+           fail_after: int | None = None, with_integrations: list[str] | None = None) -> tuple[int, list[str]]:
+    """Adopt, update, roll back or remove. Returns an exit status and report lines.
+
+    WITH_INTEGRATIONS, only when adopting into a project without project.json,
+    enables those integrations in the new file and grants exactly what each
+    declares; naming one is the grant, and the preview lists it."""
     root = root.resolve()
     resolutions = resolutions or {}
     if (root / JOURNAL).exists():
@@ -586,8 +590,22 @@ def change(root: Path, source: str, version: str | None, *, adopting: bool = Fal
                                f'(commit {target.commit[:12]}, recorded {entry["commit"][:12]}); refusing')
         project_bytes = read(root, PROJECT)
         writes_project = adopting and project_bytes is None
+        if with_integrations and not writes_project:
+            raise KitError('--with only shapes a new project.json; enable integrations in the existing '
+                           'project.json instead')
+        granted = []
         if writes_project:
             project_bytes = target.files['templates/project.json']
+            if with_integrations:
+                project = json.loads(project_bytes)
+                for name in with_integrations:
+                    manifest = target.files.get(f'integrations/{name}/integration.json')
+                    if manifest is None:
+                        raise KitError(f'release {target.version} has no integration {name!r}')
+                    permissions = json.loads(manifest)['permissions']
+                    project['integrations'][name] = {'grant': permissions}
+                    granted.append(f'  grant      {name}: {", ".join(permissions)}')
+                project_bytes = (json.dumps(project, indent=2) + '\n').encode()
         project = json.loads(project_bytes) if project_bytes else {}
         actions, problems = plan(root, base, target, project, lock, resolutions)
         if target and lock and target.manifest['contract'] != lock['contract'] \
@@ -600,7 +618,7 @@ def change(root: Path, source: str, version: str | None, *, adopting: bool = Fal
         heading = (f'{lock["version"] if lock else "not adopted"} -> '
                    f'{target.version if target else "removed"} from {source}')
         digest = plan_digest(actions, target.version if target else None)
-        lines = [heading, *describe(actions, problems, root, show_diff), f'plan {digest}']
+        lines = [heading, *granted, *describe(actions, problems, root, show_diff), f'plan {digest}']
         conflicts = [a for a in actions if a.kind == 'conflict']
         if conflicts:
             lines.append('Stopped: resolve each conflict by editing the local file, or rerun with '
@@ -621,6 +639,27 @@ def change(root: Path, source: str, version: str | None, *, adopting: bool = Fal
         lines.append(f'Applied {len(writes) - 1} changes and recorded the release in {LOCK}.'
                      if target else f'Removed the kit; {PROJECT}, tasks and handoffs stay.')
         return 0, lines
+
+
+def own_release() -> tuple[str, str]:
+    """The repository and release this tool was cloned at, so adopting needs neither typed."""
+    kit_root = Path(__file__).resolve().parents[1]
+    try:
+        top = Path(git('rev-parse', '--show-toplevel', cwd=kit_root).decode().strip()).resolve()
+    except (KitError, OSError):
+        top = None
+    if top != kit_root:
+        raise KitError('this tool is not running from a clone of the kit; give SOURCE and VERSION')
+    tags = [tag for tag in git('tag', '--points-at', 'HEAD', cwd=kit_root).decode().split()
+            if VERSION.fullmatch(tag) and tag.startswith('v')]
+    if len(tags) != 1:
+        raise KitError('the kit clone is not at exactly one release; clone with --branch vX.Y.Z, or give '
+                       'SOURCE and VERSION')
+    try:
+        source = git('remote', 'get-url', 'origin', cwd=kit_root).decode().strip()
+    except KitError:
+        source = str(kit_root)
+    return source, tags[0][1:]
 
 
 def previous_version(root: Path) -> str:
@@ -758,6 +797,11 @@ def cli(args) -> int:
             lock = load_lock(root)
             if args.command == 'adopt':
                 source, version = args.source, args.version
+                if (source is None) != (version is None):
+                    raise KitError('give both SOURCE and VERSION, or neither to install the release this '
+                                   'tool was cloned at')
+                if source is None:
+                    source, version = own_release()
             elif args.command == 'update':
                 source, version = args.source or (lock or {}).get('source', ''), args.version
             elif args.command == 'rollback':
@@ -766,7 +810,8 @@ def cli(args) -> int:
                 source, version = (lock or {}).get('source', ''), None
             code, lines = change(root, source, version, adopting=args.command == 'adopt', apply_now=args.apply,
                                  resolutions=resolutions, expected_plan=args.plan,
-                                 accept_contract=getattr(args, 'accept_contract', None), show_diff=args.diff)
+                                 accept_contract=getattr(args, 'accept_contract', None), show_diff=args.diff,
+                                 with_integrations=getattr(args, 'with_integrations', []))
     except (KitError, OSError, ValueError) as error:
         print(f'refused: {error}')
         return 1

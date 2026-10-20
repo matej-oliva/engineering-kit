@@ -657,8 +657,11 @@ def main(argv: list[str] | None = None) -> int:
         command = commands.add_parser(name, help=summary)
         command.add_argument('--root', type=Path, default=Path.cwd())
         if name == 'adopt':
-            command.add_argument('source')
-        if name in ('adopt', 'update'):
+            command.add_argument('source', nargs='?', help='default: the repository this tool was cloned from')
+            command.add_argument('version', nargs='?', help='default: the release this tool was cloned at')
+            command.add_argument('--with', dest='with_integrations', action='append', default=[], metavar='NAME',
+                                 help='enable an integration in the new project.json and grant what it declares')
+        if name == 'update':
             command.add_argument('version')
         if name == 'update':
             command.add_argument('--source', help='fetch from here instead of the recorded source')

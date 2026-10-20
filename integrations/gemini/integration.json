@@ -1,0 +1,14 @@
+{
+  "kit": "integration/1",
+  "name": "gemini",
+  "summary": "Adds the entry block to GEMINI.md, which the Gemini command line loads by default.",
+  "contract": [1],
+  "capabilities": ["instructions"],
+  "runtime": "none",
+  "permissions": ["writes-instructions"],
+  "inputs": ["instructions.clients in project.json"],
+  "evidence": [],
+  "blocks": [{"target": "GEMINI.md"}],
+  "files": [],
+  "manual": "Paste templates/entry-block.md into GEMINI.md, or configure the Gemini command line to read AGENTS.md and use agents-md instead."
+}

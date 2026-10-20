@@ -109,6 +109,8 @@ class ContractConsistency(unittest.TestCase):
 class Portability(unittest.TestCase):
     def test_no_file_names_a_personal_environment(self):
         for relative, content in kit_files(core=False):
+            if relative.name == 'LICENSE':  # names the copyright holder, as a licence must
+                continue
             with self.subTest(str(relative)):
                 self.assertIsNone(ENVIRONMENT.search(content), f'{relative} is tied to one environment')
 

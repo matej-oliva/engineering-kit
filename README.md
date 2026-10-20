@@ -6,7 +6,8 @@ verified delivery and maintenance, and what evidence each step leaves. Each
 project keeps its own language, framework, design system, agent client, Git
 host, deployment platform and permissions.
 
-Status: contract version 1, not yet released. See `CHANGELOG.md`.
+Status: version 0.1.0, the pilot release, contract version 1. See
+`CHANGELOG.md`. MIT licence; see `LICENSE`.
 
 ## Contents
 
@@ -44,14 +45,28 @@ hand against `RECORDS.md` and the rule table in `CONTRACT.md`.
 ## Adopt, update and contribute
 
 A release is a Git tag `vX.Y.Z` in the kit's repository, served by any Git
-host or a plain path. From a project's root:
+host or a plain path. To start a new project or bring an existing one in,
+clone the release anywhere outside the project, then run its tool from the
+project's root. It installs the release it was cloned at, from the address
+it was cloned from:
 
 ```sh
-python3 PATH/TO/KIT/tools/kit.py adopt SOURCE 0.1.0          # preview
-python3 PATH/TO/KIT/tools/kit.py adopt SOURCE 0.1.0 --apply  # write
+git clone --depth 1 --branch v0.1.0 KIT_ADDRESS ~/engineering-kit-0.1.0
+python3 ~/engineering-kit-0.1.0/tools/kit.py adopt --with copilot           # preview
+python3 ~/engineering-kit-0.1.0/tools/kit.py adopt --with copilot --apply   # write
+```
+
+`--with` names the instruction files your agents read, beyond `AGENTS.md`:
+`claude-code`, `copilot` or `gemini`; see `integrations/`. Later, from the
+project:
+
+```sh
 python3 .engineering-kit/kit/tools/kit.py update 0.2.0 --diff
 python3 .engineering-kit/kit/tools/kit.py rollback --apply
 ```
+
+On Windows, run `py` instead of `python3`. A private kit repository needs
+the machine to be signed in to an account that can read it.
 
 Updates merge the project's own changes to kit files with the release's and
 stop without writing when they overlap. `procedures/adopt-and-update.md` and

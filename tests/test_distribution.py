@@ -604,6 +604,35 @@ class Distribution(unittest.TestCase):
         self.assertIn('deleted locally', report)
         self.assertFalse((root / 'AGENTS.md').exists())
 
+    def test_installing_from_a_clone_needs_no_address_or_version(self):
+        clone = self.temp / 'kit-clone'
+        sh('clone', '-q', '--depth', '1', '--branch', 'v0.1.0', f'file://{self.source}', str(clone), cwd=self.temp)
+        root = self.consumer()
+        tool = [sys.executable, str(clone / 'tools' / 'kit.py'), 'adopt', '--root', str(root), '--with', 'copilot']
+        preview = subprocess.run(tool, capture_output=True, text=True)
+        self.assertEqual(preview.returncode, 0, preview.stdout + preview.stderr)
+        self.assertIn('grant      copilot: writes-instructions', preview.stdout)
+        self.assertEqual(subprocess.run([*tool, '--apply'], capture_output=True, text=True).returncode, 0)
+        lock = ku.load_lock(root)
+        self.assertEqual((lock['source'], lock['version']), (f'file://{self.source}', '0.1.0'))
+        self.assertIn(ku.BEGIN, (root / '.github' / 'copilot-instructions.md').read_text())
+        project = json.loads((root / ku.PROJECT).read_text())
+        self.assertEqual(project['integrations']['copilot'], {'grant': ['writes-instructions']})
+        self.assertEqual(kit.check_all(root), [])
+        sh('checkout', '-q', '--detach', 'HEAD~0', cwd=clone)
+        sh('tag', 'v9.9.9', cwd=clone)
+        other = self.consumer('other')
+        refused = subprocess.run([sys.executable, str(clone / 'tools' / 'kit.py'), 'adopt', '--root', str(other)],
+                                 capture_output=True, text=True)
+        self.assertEqual(refused.returncode, 1)
+        self.assertIn('exactly one release', refused.stdout)
+
+    def test_with_never_rewrites_an_existing_project_configuration(self):
+        root = self.consumer(files={'.engineering-kit/project.json': '{"kit": "project/1"}\n'})
+        with self.assertRaisesRegex(ku.KitError, 'existing project.json'):
+            self.run_change(root, '0.1.0', with_integrations=['copilot'])
+        self.assertEqual((root / ku.PROJECT).read_text(), '{"kit": "project/1"}\n')
+
     def test_command_line_preview_and_apply(self):
         root = self.consumer()
         tool = [sys.executable, str(self.source / 'tools' / 'kit.py')]

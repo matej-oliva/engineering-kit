@@ -1,0 +1,14 @@
+{
+  "kit": "integration/1",
+  "name": "copilot",
+  "summary": "Adds the entry block to .github/copilot-instructions.md, which GitHub Copilot loads in the editor and as a coding agent.",
+  "contract": [1],
+  "capabilities": ["instructions"],
+  "runtime": "none",
+  "permissions": ["writes-instructions"],
+  "inputs": ["instructions.clients in project.json"],
+  "evidence": [],
+  "blocks": [{"target": ".github/copilot-instructions.md"}],
+  "files": [],
+  "manual": "Paste templates/entry-block.md into .github/copilot-instructions.md."
+}
