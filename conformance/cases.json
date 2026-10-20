@@ -62,6 +62,10 @@
      "set": {"reviews.1.reviewer": "agent:session-a"}, "expect": ["REVIEW"]},
     {"name": "the author under a differently written name", "task": "examples/walkthrough/stages/04-reviewed.json",
      "set": {"reviews.1.reviewer": " Agent:Session-A"}, "expect": ["REVIEW"]},
+    {"name": "a session that recorded the candidate approved it", "task": "examples/walkthrough/stages/04-reviewed.json",
+     "set": {"contributors": ["agent:session-b"]}, "expect": ["REVIEW"]},
+    {"name": "contributors that are not a list", "task": "examples/walkthrough/stages/04-reviewed.json",
+     "set": {"contributors": "agent:session-c"}, "expect": ["FORMAT"]},
     {"name": "no approving review", "task": "examples/walkthrough/stages/04-reviewed.json",
      "set": {"reviews.1.verdict": "changes"}, "expect": ["REVIEW"]},
 

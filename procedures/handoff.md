@@ -11,7 +11,9 @@ working day.
    each revision, check, review and verification with where to read it. Open
    gates lists every failed, missing or unknown result and pending decision.
    Decisions and authority says what was decided, by whom, and what the work
-   may and may not do. Next action holds exactly one step with its done-when.
+   may and may not do. Next action holds exactly one step with its done-when,
+   one that a single session can do. When the next step needs someone else,
+   such as a fresh reviewer or the owner, that hand-over is the step.
 2. **Describe now, not the session.** Rewrite the handoff in place instead of
    appending history.
 3. **Match the task record.** The handoff's state equals the task's state.

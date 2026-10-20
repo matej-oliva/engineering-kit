@@ -96,7 +96,9 @@ class CommandLine(unittest.TestCase):
         git('commit', '-q', '-m', 'candidate')
         candidate = git('rev-parse', 'HEAD')
         (root / '.engineering-kit' / 'tasks' / 'T-7.json').write_text('{"recorded": true}\n')
-        git('commit', '-qam', 'record the candidate')
+        config = root / '.engineering-kit' / 'project.json'
+        config.write_text(config.read_text().replace('"published": "The package', '"published": "Our package'))
+        git('commit', '-qam', 'record the candidate and correct a boundary meaning')
         records_only = git('rev-parse', 'HEAD')
         (root / 'total.py').write_text('ROUNDING = "half-even"\n')
         git('commit', '-qam', 'change code after review')

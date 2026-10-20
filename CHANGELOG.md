@@ -3,6 +3,20 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
+## 0.1.1, 2026-10-20, pilot release
+
+Lessons from the first pilots. Contract version 1, unchanged; nothing to do
+when updating except filling any placeholder `check` now reports.
+
+- `procedures/implement.md` says what to do when the environment cannot
+  create a revision, such as a sandbox that keeps Git read-only.
+  Contributed from the `eqradio` pilot.
+- `kit.py check` refuses template placeholders ("replace with") left in
+  `project.json` or a task, and `adopt` names that step.
+- A failed Git command names the command, not its options.
+- `RECORDS.md` says that extra fields are ignored, so evidence goes in the
+  named fields.
+
 ## 0.1.0, 2026-10-20, pilot release
 
 First version, for the pilots; the first supported release follows them.

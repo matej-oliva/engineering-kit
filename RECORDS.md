@@ -46,11 +46,12 @@ unused ID. Task IDs are unique within the project.
 | `kit` | Always `"task/1"`. | always |
 | `id`, `title`, `state` | Stable ID, title and current state. | always |
 | `author` | Who implements the task. A proposed task may not have one yet. | `accepted` |
+| `contributors` | Optional: everyone else who changed the candidate or recorded its evidence, such as a session that committed the author's work. None of them may approve it. | |
 | `profile` | A profile name from `project.json`. | `accepted` |
 | `requirement` | `{"revision", "problem", "decision_owner", "excluded": [...], "acceptance": [{"id", "example"}], "acceptance_boundary"}`. Optional `assumptions`: choices made without the decision owner, such as examples added beyond the request. | `accepted` |
 | `questions` | Optional: `[{"id", "question", "recommended", "answer"}]` for the decision owner. | |
 | `plan` | Optional: `{"risks", "recovery", "increments", "evidence"}`; `evidence` maps acceptance examples to the checks and boundaries that will show them. | |
-| `candidate` | `{"revision", "base"}`: the exact state under review and the revision its work started from. Optional `integrated`: `[{"revision", "evidence"}]` for revisions, such as the merge that landed it, that equal the candidate outside the task and handoff folders; `tools/kit.py integrated` produces that evidence. | `candidate` |
+| `candidate` | `{"revision", "base"}`: the exact state under review and the revision its work started from. Optional `integrated`: `[{"revision", "evidence"}]` for revisions, such as the merge that landed it, that equal the candidate outside the process files: `.engineering-kit/` and the task and handoff folders. `tools/kit.py integrated` produces that evidence. | `candidate` |
 | `checks` | `[{"id", "revision", "result", "evidence"}]`. `result` is `pass`, `fail`, `skipped` or `unknown`. Each required check has a result for the candidate by `candidate` and passes by `reviewed`. | `candidate` |
 | `not_applicable` | `[{"check", "reason"}]` for required checks that do not apply. | |
 | `reproduction` | `{"check", "base", "base_result": "fail", "candidate_result": "pass", "evidence"}` when the profile requires it. `check` is the test or command that shows the defect; `base` equals `candidate.base`, run with the new test added and the code unchanged. | `reviewed` |

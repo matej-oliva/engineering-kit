@@ -6,7 +6,9 @@ Use when a candidate is ready. The reviewer is not the author.
    not write the change and starts from the task record rather than the
    author's conversation. Give them the requirement, the acceptance
    examples, the candidate revision and the evidence, and nothing that
-   argues for a verdict.
+   argues for a verdict. Anyone who changed the candidate or recorded its
+   evidence for the author is listed in `contributors` and does not review
+   it.
 2. **Review against the requirement.** For each acceptance example, does the
    candidate meet it, and is there evidence? Are the required checks
    meaningful, recorded for this revision and passing? Look for changes
@@ -23,10 +25,10 @@ Use when a candidate is ready. The reviewer is not the author.
 5. **Validate the integrated candidate**: when the candidate will be merged
    with other work, run the required checks on the merged result, because a
    change in the base can break a change that passed alone. If the merged
-   result differs from the candidate in more than the task and handoff
-   folders, it is a new candidate. Otherwise record it in
-   `candidate.integrated` with the output of
-   `tools/kit.py integrated CANDIDATE REVISION` as its evidence.
+   result differs from the candidate outside the process files (the
+   `.engineering-kit/` folder and the task and handoff folders), it is a new
+   candidate. Otherwise record it in `candidate.integrated` with the output
+   of `tools/kit.py integrated CANDIDATE REVISION` as its evidence.
 6. **Mark the task reviewed** once a review of this revision approves it and
    its required checks pass. Done when `tools/kit.py check-task FILE` passes
    in state `reviewed` (rules `REVIEW` and `CHECKS`).

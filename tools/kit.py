@@ -266,7 +266,7 @@ def check_task(task, project, where: str = 'task') -> list[Finding]:
     if reached('accepted') and not text(task.get('author')):
         refuse(FORMAT, 'an accepted task names its author, who implements it')
     task = dict(task)
-    for field in ('checks', 'not_applicable', 'reviews', 'effects', 'verification'):
+    for field in ('checks', 'not_applicable', 'reviews', 'effects', 'verification', 'contributors'):
         if not isinstance(task.setdefault(field, []), list):
             refuse('EFFECTS' if field == 'effects' else FORMAT, f'{field} must be a list')
             task[field] = []
@@ -309,15 +309,16 @@ def check_task(task, project, where: str = 'task') -> list[Finding]:
     revision = candidate.get('revision') if text(candidate.get('revision')) else None
     if reached('candidate') and (revision is None or not text(candidate.get('base'))):
         refuse('CANDIDATE', 'a candidate task names its candidate revision and the base it started from')
-    # Revisions that differ from the candidate only in the task and handoff
-    # folders, such as the merge that lands it. Releases and verification may
-    # name them; checks and reviews must name the candidate itself.
+    # Revisions that differ from the candidate only in process files (records,
+    # project configuration and kit files), such as the merge that lands it.
+    # Releases and verification may name them; checks and reviews must name
+    # the candidate itself.
     landed = {revision} if revision else set()
     integrated = candidate.get('integrated', [])
     for entry in integrated if isinstance(integrated, list) else [None]:
         if not (isinstance(entry, dict) and text(entry.get('revision')) and text(entry.get('evidence'))):
             refuse('CANDIDATE', 'each integrated revision names its revision and the evidence that it equals '
-                                'the candidate outside the task and handoff folders')
+                                'the candidate outside the process files')
         else:
             landed.add(entry['revision'])
 
@@ -377,8 +378,8 @@ def check_task(task, project, where: str = 'task') -> list[Finding]:
                 refuse('REVIEW', f'blocking finding {finding.get("id", "?")} from {review["reviewer"]} is open')
         if review['verdict'] != 'approve':
             continue
-        if same_identity(review['reviewer'], task.get('author')):
-            refuse('REVIEW', f'{review["reviewer"]} reviewed their own work')
+        if any(same_identity(review['reviewer'], name) for name in [task.get('author'), *task['contributors']]):
+            refuse('REVIEW', f'{review["reviewer"]} reviewed work they wrote or recorded')
         elif revision is not None and review.get('revision') == revision:
             approvals.append(review)
         else:
@@ -631,10 +632,13 @@ def scan_secrets(root: Path) -> list[Finding]:
 
 
 def compare_integrated(root: Path, candidate: str, revision: str) -> list[Finding]:
-    """Refuse every file, outside the task and handoff folders, where REVISION differs from CANDIDATE."""
+    """Refuse every file where REVISION differs from CANDIDATE, outside the process files: the
+    `.engineering-kit/` folder (records, project configuration and kit files) and the task and
+    handoff folders wherever the project keeps them."""
     project, found = load_json(root / '.engineering-kit' / 'project.json', '.engineering-kit/project.json')
     paths = project.get('paths', {}) if isinstance(project, dict) else {}
-    excludes = [f':(exclude){paths[k]}' for k in ('tasks', 'handoffs') if relative_path(paths.get(k))]
+    excludes = [':(exclude).engineering-kit'] + [
+        f':(exclude){paths[k]}' for k in ('tasks', 'handoffs') if relative_path(paths.get(k))]
     result = subprocess.run(['git', '-C', str(root), 'diff', '--name-only', '-z', candidate, revision, '--', '.',
                              *excludes], capture_output=True)
     if result.returncode:
@@ -718,8 +722,9 @@ def main(argv: list[str] | None = None) -> int:
         return report(scan_secrets(root), args.json, 'No unreviewed secrets in the tracked files.')
     if args.command == 'integrated':
         return report(compare_integrated(root, args.candidate, args.revision), args.json,
-                      f'{args.revision} equals {args.candidate} outside the task and handoff folders; '
-                      'record it in candidate.integrated with this command as its evidence.')
+                      f'{args.revision} equals {args.candidate} outside the process files. If it is '
+                      'the revision that lands the candidate, such as its merge, record it in '
+                      'candidate.integrated with this command as its evidence.')
     project, found = load_json(root / '.engineering-kit' / 'project.json', '.engineering-kit/project.json')
     project = project if isinstance(project, dict) else {}
     if args.command == 'check-task':
