@@ -68,6 +68,8 @@
      "set": {"contributors": "agent:session-c"}, "expect": ["FORMAT"]},
     {"name": "no approving review", "task": "examples/walkthrough/stages/04-reviewed.json",
      "set": {"reviews.1.verdict": "changes"}, "expect": ["REVIEW"]},
+    {"name": "a review that names no revision", "task": "examples/walkthrough/stages/03-candidate.json",
+     "set": {"reviews": [{"reviewer": "agent:session-b", "verdict": "approve", "findings": []}]}, "expect": ["FORMAT"]},
 
     {"name": "effect authorized by a role the policy does not allow", "task": "examples/walkthrough/stages/05-released.json",
      "set": {"effects.0.authorized_by": "contributor"}, "expect": ["EFFECTS"]},

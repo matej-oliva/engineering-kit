@@ -55,7 +55,7 @@ unused ID. Task IDs are unique within the project.
 | `checks` | `[{"id", "revision", "result", "evidence"}]`. `result` is `pass`, `fail`, `skipped` or `unknown`. Each required check has a result for the candidate by `candidate` and passes by `reviewed`. | `candidate` |
 | `not_applicable` | `[{"check", "reason"}]` for required checks that do not apply. | |
 | `reproduction` | `{"check", "base", "base_result": "fail", "candidate_result": "pass", "evidence"}` when the profile requires it. `check` is the test or command that shows the defect; `base` equals `candidate.base`, run with the new test added and the code unchanged. | `reviewed` |
-| `reviews` | `[{"reviewer", "revision", "verdict", "findings": [{"id", "blocking", "status", "summary"}]}]`. `verdict` is `approve` or `changes`; `status` is `open` or `resolved`. | `reviewed` |
+| `reviews` | `[{"reviewer", "revision", "verdict", "evidence", "findings": [{"id", "blocking", "status", "summary"}]}]`. `verdict` is `approve` or `changes`; `evidence` says what the reviewer examined and reran; `status` is `open` or `resolved`. | `reviewed` |
 | `effects` | `[{"kind", "target", "authorized_by", "authorization", "door", "rollback", "irreversible", "status"}]`. `door` is `two-way` or `one-way`; a one-way effect states in `irreversible` what cannot be undone. `status` is `planned`, `done`, `failed`, `uncertain` or `rolled_back`. | whenever present |
 | `release` | `{"source", "artifact", "checks": [...], "rollback"}`. `source` is the candidate or one of its integrated revisions. | `released` |
 | `verification` | `[{"boundary", "revision", "result", "evidence"}]`, on the candidate or an integrated revision. | `verified` |

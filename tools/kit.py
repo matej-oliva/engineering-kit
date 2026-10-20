@@ -363,8 +363,8 @@ def check_task(task, project, where: str = 'task') -> list[Finding]:
 
     approvals, stale_approvals = [], set()
     for review in task.get('reviews', []):
-        if not isinstance(review, dict) or not text(review.get('reviewer')) or review.get('verdict') not in (
-                'approve', 'changes'):
+        if (not isinstance(review, dict) or not text(review.get('reviewer')) or not text(review.get('revision'))
+                or review.get('verdict') not in ('approve', 'changes')):
             refuse(FORMAT, 'each review needs a reviewer, a revision and a verdict: approve or changes')
             continue
         findings = review.get('findings', [])
