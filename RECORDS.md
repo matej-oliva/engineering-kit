@@ -4,7 +4,10 @@ Contract version: 1
 
 The kit's records are JSON files, except handoffs, which are Markdown with
 fixed headings. `tools/kit.py check` is the reference reader; this page is
-the specification a person or another tool can follow without it. Templates
+the specification a person or another tool can follow without it. Records
+may carry other fields, which the checker ignores; put evidence the contract
+asks for in the fields named here, or it does not count. A value that still
+reads "replace with" is a template placeholder and is refused. Templates
 are in `templates/`. Times are ISO 8601 with a time zone. Revisions are
 whatever identifies an exact source state in the project's version control,
 such as a commit ID.

@@ -71,11 +71,21 @@ class ContractConsistency(unittest.TestCase):
                 with self.subTest(file=str(relative), path=name):
                     self.assertTrue((KIT / name.rstrip('/')).exists(), f'{relative} names {name}')
 
-    def test_templates_pass_the_checker(self):
+    def test_templates_are_refused_only_for_their_placeholders(self):
+        def filled(value):
+            if isinstance(value, dict):
+                return {key: filled(item) for key, item in value.items()}
+            if isinstance(value, list):
+                return [filled(item) for item in value]
+            return 'filled in' if isinstance(value, str) and 'replace with' in value else value
+
         project = json.loads((KIT / 'templates' / 'project.json').read_text(encoding='utf-8'))
-        self.assertEqual(kit.check_project(project), [])
         task = json.loads((KIT / 'templates' / 'task.json').read_text(encoding='utf-8'))
-        self.assertEqual(kit.check_task(task, project), [])
+        for found in (kit.check_project(project), kit.check_task(task, project)):
+            self.assertEqual([(f.rule, f.message.split(' in ')[0]) for f in found],
+                             [('FORMAT', 'replace the template placeholders')])
+        self.assertEqual(kit.check_project(filled(project)), [])
+        self.assertEqual(kit.check_task(filled(task), filled(project)), [])
         handoff = (KIT / 'templates' / 'handoff.md').read_text(encoding='utf-8')
         self.assertEqual(kit.check_handoff(handoff, now=datetime(2026, 10, 20, tzinfo=timezone.utc)), [])
 

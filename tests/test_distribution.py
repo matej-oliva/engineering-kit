@@ -93,6 +93,12 @@ class Distribution(unittest.TestCase):
         return {str(p.relative_to(root)): p.read_bytes() for p in sorted(root.rglob('*'))
                 if p.is_file() and '.git' not in p.relative_to(root).parts}
 
+    def assertOnlyPlaceholdersLeft(self, root):
+        """A fresh adoption passes the contract except for the values the project must fill in."""
+        found = kit.check_all(root)
+        self.assertEqual([(f.rule, f.where) for f in found], [('FORMAT', '.engineering-kit/project.json')])
+        self.assertIn('replace the template placeholders', found[0].message)
+
     def set_integrations(self, root, integrations):
         path = root / ku.PROJECT
         project = json.loads(path.read_text())
@@ -113,7 +119,7 @@ class Distribution(unittest.TestCase):
         lock = ku.load_lock(root)
         self.assertEqual((lock['version'], lock['integrations']), ('0.1.0', ['agents-md']))
         self.assertNotIn('.engineering-kit/kit/tests/test_distribution.py', lock['files'])
-        self.assertEqual(kit.check_all(root), [])
+        self.assertOnlyPlaceholdersLeft(root)
         self.assertIn('every kit-managed file matches', '\n'.join(ku.status(root)[1]))
 
     def test_existing_instructions_survive_adoption_byte_for_byte(self):
@@ -618,7 +624,7 @@ class Distribution(unittest.TestCase):
         self.assertIn(ku.BEGIN, (root / '.github' / 'copilot-instructions.md').read_text())
         project = json.loads((root / ku.PROJECT).read_text())
         self.assertEqual(project['integrations']['copilot'], {'grant': ['writes-instructions']})
-        self.assertEqual(kit.check_all(root), [])
+        self.assertOnlyPlaceholdersLeft(root)
         sh('checkout', '-q', '--detach', 'HEAD~0', cwd=clone)
         sh('tag', 'v9.9.9', cwd=clone)
         other = self.consumer('other')
@@ -632,6 +638,11 @@ class Distribution(unittest.TestCase):
         with self.assertRaisesRegex(ku.KitError, 'existing project.json'):
             self.run_change(root, '0.1.0', with_integrations=['copilot'])
         self.assertEqual((root / ku.PROJECT).read_text(), '{"kit": "project/1"}\n')
+
+    def test_a_failed_fetch_names_the_git_command(self):
+        root = self.consumer()
+        with self.assertRaisesRegex(ku.KitError, '^git fetch failed'):
+            self.run_change(root, '0.1.0', source=str(self.temp / 'no-such-kit'))
 
     def test_command_line_preview_and_apply(self):
         root = self.consumer()

@@ -53,7 +53,9 @@ def sha256(data: bytes) -> str:
 def git(*args, cwd=None, data=None) -> bytes:
     result = subprocess.run(['git', *NO_HOOKS, *args], cwd=cwd, input=data, capture_output=True)
     if result.returncode:
-        raise KitError(f'git {args[0]} failed: {result.stderr.decode(errors="replace").strip()[-400:]}')
+        name = next((arg for number, arg in enumerate(args)  # the subcommand, not a -c option or its value
+                     if not arg.startswith('-') and (number == 0 or args[number - 1] != '-c')), 'command')
+        raise KitError(f'git {name} failed: {result.stderr.decode(errors="replace").strip()[-400:]}')
     return result.stdout
 
 
@@ -638,6 +640,9 @@ def change(root: Path, source: str, version: str | None, *, adopting: bool = Fal
         apply(root, writes, fail_after=fail_after)
         lines.append(f'Applied {len(writes) - 1} changes and recorded the release in {LOCK}.'
                      if target else f'Removed the kit; {PROJECT}, tasks and handoffs stay.')
+        if writes_project:
+            lines.append(f'Next: replace every "replace with" value in {PROJECT} with this project\'s facts, '
+                         'then run kit.py check.')
         return 0, lines
 
 

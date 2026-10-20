@@ -99,6 +99,9 @@ def check_project(project, root: Path | None = None, where: str = 'project.json'
     if not isinstance(project, dict) or project.get('kit') != 'project/1':
         refuse(FORMAT, 'needs "kit": "project/1"')
         return found
+    left = placeholders(project)
+    if left:
+        refuse(FORMAT, 'replace the template placeholders in ' + ', '.join(left))
     for field in ('name', 'scope'):
         if not text(project.get(field)):
             refuse(FORMAT, f'needs a {field}')
@@ -211,6 +214,18 @@ def check_project(project, root: Path | None = None, where: str = 'project.json'
     return found
 
 
+PLACEHOLDER_TEXT = 'replace with'  # how every template marks a value the project must supply
+
+
+def placeholders(value, path: str = '') -> list[str]:
+    """Dotted paths of template placeholder values left in a record."""
+    if isinstance(value, dict):
+        return [p for key, item in value.items() for p in placeholders(item, f'{path}.{key}' if path else key)]
+    if isinstance(value, list):
+        return [p for number, item in enumerate(value) for p in placeholders(item, f'{path}.{number}')]
+    return [path] if isinstance(value, str) and PLACEHOLDER_TEXT in value.casefold() else []
+
+
 def scope_ok(scope) -> bool:
     return scope == 'project' or (text(scope) and re.fullmatch(r'(profile|task):\S+', scope) is not None)
 
@@ -233,6 +248,9 @@ def check_task(task, project, where: str = 'task') -> list[Finding]:
     if not isinstance(task, dict) or task.get('kit') != 'task/1':
         refuse(FORMAT, 'needs "kit": "task/1"')
         return found
+    left = placeholders(task)
+    if left:
+        refuse(FORMAT, 'replace the template placeholders in ' + ', '.join(left))
     for field in ('id', 'title'):
         if not text(task.get(field)):
             refuse(FORMAT, f'needs {field}')
