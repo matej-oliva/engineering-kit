@@ -530,8 +530,8 @@ def check_handoff(source: str, task_states: dict[str, str] | None = None, where:
 def load_json(path: Path, where: str) -> tuple[object, list[Finding]]:
     try:
         return json.loads(path.read_text(encoding='utf-8')), []
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
-        return None, [Finding(FORMAT, where, f'cannot read JSON: {error}')]
+    except (OSError, UnicodeDecodeError, ValueError, RecursionError) as error:  # JSON errors are ValueErrors
+        return None, [Finding(FORMAT, where, f'cannot read JSON: {str(error)[:200]}')]
 
 
 def check_all(root: Path) -> list[Finding]:
@@ -683,7 +683,7 @@ def compare_integrated(root: Path, candidate: str, revision: str) -> list[Findin
     def lock_at(ref):
         try:
             lock = json.loads(show(ref, LOCK_FILE) or b'{}')
-        except (json.JSONDecodeError, UnicodeDecodeError):
+        except (ValueError, RecursionError, UnicodeDecodeError):
             lock = None
         if not (isinstance(lock, dict)
                 and all(isinstance(lock.get(k, {}), dict) and all(map(text, lock.get(k, {}).values()))
@@ -691,12 +691,12 @@ def compare_integrated(root: Path, candidate: str, revision: str) -> list[Findin
                 and all(isinstance(lock.get(k, []), list) and all(isinstance(item, str) for item in lock.get(k, []))
                         for k in ('excluded', 'integrations', 'created', 'adopted'))):
             found.append(Finding(FORMAT, LOCK_FILE, f'the lock at {ref} is not a kit lock'))
-            return {}
+            return None
         return lock
 
     try:  # the reviewed candidate's configuration, so a later one cannot widen what counts as records
         project = json.loads(show(candidate, PROJECT_FILE) or b'{}')
-    except (json.JSONDecodeError, UnicodeDecodeError):
+    except (ValueError, RecursionError, UnicodeDecodeError):
         project = {}
     paths = project.get('paths') if isinstance(project, dict) else None
     paths = paths if isinstance(paths, dict) else {}
@@ -704,17 +704,22 @@ def compare_integrated(root: Path, candidate: str, revision: str) -> list[Findin
                if record_folder_ok(paths.get(kind))}
 
     def is_record(name, contents):
-        """A task record or handoff, by place and by content, in every version that exists."""
+        """A task record or handoff, by place, by content and by the name rule `check` enforces,
+        in every version that exists."""
         parent, leaf = name.rsplit('/', 1) if '/' in name else ('', name)
         if folders.get('tasks') == parent and leaf.endswith('.json'):
             def record(data):
                 try:
-                    return json.loads(data).get('kit') == 'task/1'
-                except (json.JSONDecodeError, UnicodeDecodeError, AttributeError):
+                    task = json.loads(data)
+                    return task.get('kit') == 'task/1' and task.get('id') == leaf[:-len('.json')]
+                except (ValueError, RecursionError, UnicodeDecodeError, AttributeError):
                     return False
         elif folders.get('handoffs') == parent and leaf.endswith('.md'):
             def record(data):
-                return re.match(r'# .+ handoff\n', data.decode('utf-8', 'replace')) is not None
+                source = data.decode('utf-8', 'replace')
+                named = re.search(r'^Task: *(.+?) *$', source, re.M)
+                return (re.match(r'# .+ handoff[ \t]*\n', source) is not None
+                        and named is not None and named.group(1) == leaf[:-len('.md')])
         else:
             return False
         present = [data for data in contents if data is not None]
@@ -739,16 +744,22 @@ def compare_integrated(root: Path, candidate: str, revision: str) -> list[Findin
             return created and now_outside == ''
         before_text = before.decode('utf-8', 'replace')
         before_outside = without_block(before_text)[0] if KIT_BEGIN in before_text else before_text
+        if before_outside and not before_outside.endswith('\n') and KIT_BEGIN not in before_text:
+            before_outside += '\n'  # the kit ends an unterminated last line before adding its block
         return before_outside is not None and before_outside == now_outside
 
-    result = subprocess.run(['git', '-C', str(root), 'diff', '--name-only', '-z', candidate, revision],
-                            capture_output=True)
+    result = subprocess.run(['git', '-C', str(root), 'diff', '--name-only', '-z', '--no-renames', candidate, revision],
+                            capture_output=True)  # --no-renames: a deleted file must be listed, not folded into a rename
     if result.returncode:
         return [Finding(FORMAT, 'git', result.stderr.decode(errors='replace').strip()[-300:])]
     lock, earlier = lock_at(revision), lock_at(candidate)
-    if lock and lock != earlier:
+    if lock is None or earlier is None:  # not a lock: every kit path is then a plain difference
+        lock, earlier = lock or {}, earlier or {}
+    elif lock != earlier:
         if not earlier:
             found.append(Finding('UNKNOWN', LOCK_FILE, 'the kit was adopted after the candidate; review the adoption'))
+        elif not lock:
+            found.append(Finding('UNKNOWN', LOCK_FILE, 'the kit was removed after the candidate; review the removal'))
         elif lock.get('source') != earlier.get('source'):
             found.append(Finding('UNKNOWN', LOCK_FILE, f'the kit source changed from {earlier.get("source")!r} '
                                                        f'to {lock.get("source")!r}; review that change'))

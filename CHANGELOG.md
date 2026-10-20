@@ -25,9 +25,11 @@ updating, run `kit.py check`: it now refuses a few malformed records that
   without it, after a change of source, or when the kit was adopted after
   the candidate, the result is unknown. A kit update or a configuration fix
   no longer makes a new candidate; a hand-edited kit file or lock still
-  does. Task records and handoffs are recognised by their content, directly
-  in the folders the candidate's own configuration names, matched
-  literally.
+  does. Task records and handoffs are recognised by their content and
+  their name, directly in the folders the candidate's own configuration
+  names, matched literally; instruction files the kit created or removed,
+  and integration files a release removed, are accepted when they match
+  what the release does, and a kit removed after the candidate is unknown.
 - Tasks may list `contributors`, each a name, who may not approve the
   candidate.
 - Every review names its revision, and may record its `evidence`.

@@ -52,7 +52,7 @@ unused ID. Task IDs are unique within the project.
 | `requirement` | `{"revision", "problem", "decision_owner", "excluded": [...], "acceptance": [{"id", "example"}], "acceptance_boundary"}`. Optional `assumptions`: choices made without the decision owner, such as examples added beyond the request. | `accepted` |
 | `questions` | Optional: `[{"id", "question", "recommended", "answer"}]` for the decision owner. | |
 | `plan` | Optional: `{"risks", "recovery", "increments", "evidence"}`; `evidence` maps acceptance examples to the checks and boundaries that will show them. | |
-| `candidate` | `{"revision", "base"}`: the exact state under review and the revision its work started from. Optional `integrated`: `[{"revision", "evidence"}]` for revisions, such as the merge that landed it, that equal the candidate except in process files: task records and handoffs, recognised by their content, directly in the folders the candidate's own `project.json` names; `.engineering-kit/project.json` and the lock; and what the lock's release installs or removes: kit files, integration files and one entry block per instruction file. A lock that changed is checked against the published release at the source the candidate's lock names; a changed source, a kit adopted after the candidate, or a release that cannot be fetched leaves the result `UNKNOWN`. `tools/kit.py integrated` produces that evidence. | `candidate` |
+| `candidate` | `{"revision", "base"}`: the exact state under review and the revision its work started from. Optional `integrated`: `[{"revision", "evidence"}]` for revisions, such as the merge that landed it, that equal the candidate except in process files: task records and handoffs, recognised by their content and named after their task, directly in the folders the candidate's own `project.json` names; `.engineering-kit/project.json` and the lock; and what the lock's release installs or removes: kit files, integration files and one entry block per instruction file. A lock that changed is checked against the published release at the source the candidate's lock names; a changed source, a kit adopted or removed after the candidate, or a release that cannot be fetched leaves the result `UNKNOWN`. `tools/kit.py integrated` produces that evidence. | `candidate` |
 | `checks` | `[{"id", "revision", "result", "evidence"}]`. `result` is `pass`, `fail`, `skipped` or `unknown`. Each required check has a result for the candidate by `candidate` and passes by `reviewed`. | `candidate` |
 | `not_applicable` | `[{"check", "reason"}]` for required checks that do not apply. | |
 | `reproduction` | `{"check", "base", "base_result": "fail", "candidate_result": "pass", "evidence"}` when the profile requires it. `check` is the test or command that shows the defect; `base` equals `candidate.base`, run with the new test added and the code unchanged. | `reviewed` |
@@ -86,8 +86,8 @@ State: <task state>
 - <exactly one action, with its done-when>
 ```
 
-Name the file after its task, `<task ID>.md`. The five sections appear in
-this order. `Next action` holds exactly one list item. `Updated` is not in
+Name the file after its task, `<task ID>.md`; every `.md` file in the
+folder is read as a handoff. The five sections appear in this order. `Next action` holds exactly one list item. `Updated` is not in
 the future, and `State` equals the task record's state.
 
 ## Integration manifest: `integrations/<name>/integration.json`

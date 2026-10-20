@@ -64,6 +64,22 @@ class CommandLine(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn('FORMAT', result.stdout)
 
+    def test_oversized_records_are_refused_not_crashed(self):
+        root = self.copy_example()
+        tasks = root / '.engineering-kit' / 'tasks'
+        (tasks / 'T-8.json').write_text('{"kit": "task/1", "id": "T-8", "n": ' + '9' * 5000 + '}')
+        (tasks / 'T-9.json').write_text('[' * 100000 + ']' * 100000)
+        result = run('check', '--json', '--root', str(root))
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertEqual({f['where'] for f in json.loads(result.stdout)['findings'] if f['rule'] == 'FORMAT'},
+                         {'.engineering-kit/tasks/T-8.json', '.engineering-kit/tasks/T-9.json'})
+
+    def test_mutation_check_refuses_an_unknown_label(self):
+        result = subprocess.run([sys.executable, str(KIT / 'tests' / 'mutation_check.py'), 'no such mutant'],
+                                capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('No such mutant', result.stderr)
+
     def test_check_task_and_handoff_commands(self):
         stage = KIT / 'examples' / 'walkthrough' / 'stages' / '07-closed.json'
         self.assertEqual(run('check-task', '--root', str(EXAMPLE), str(stage)).returncode, 0)

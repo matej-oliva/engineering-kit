@@ -90,6 +90,29 @@ MUTANTS = [
     ('lock lists not type-checked', 'kit.py', "for k in ('excluded', 'integrations', 'created', 'adopted'))):",
      "for k in ('excluded',))):"),
     ('a new instruction file is a difference', 'kit.py', "return created and now_outside == ''", 'return False'),
+    ('a new instruction file need not be created by the kit', 'kit.py',
+     "return created and now_outside == ''", "return now_outside == ''"),
+    ('a removed block with the lock unchanged', 'kit.py',
+     "        elif expected is not None:\n            return False\n", ''),
+    ('a deleted instruction file is accepted', 'kit.py',
+     "        if now is None:  # a file the kit created, removed with its block\n            return expected is None",
+     "        if now is None:  # a file the kit created, removed with its block\n            return True or expected is None"),
+    ('a removed integration file of any content', 'kit.py',
+     "                digest(before) == earlier['files'][name]):", '                True):'),
+    ('renames hide deletions', 'kit.py', "'--name-only', '-z', '--no-renames',", "'--name-only', '-z',"),
+    ('a record in one version is enough', 'kit.py', 'return bool(present) and all(map(record, present))',
+     'return bool(present) and any(map(record, present))'),
+    ('the handoff title anywhere', 'kit.py', "return (re.match(r'# .+ handoff[ \\t]*\\n', source) is not None",
+     "return (re.search(r'# .+ handoff[ \\t]*\\n', source) is not None"),
+    ('a handoff named after any task', 'kit.py',
+     "and named is not None and named.group(1) == leaf[:-len('.md')])", 'and named is not None)'),
+    ('a task record named after any task', 'kit.py',
+     "and task.get('id') == leaf[:-len('.json')]", ''),
+    ('any JSON in the tasks folder is a record', 'kit.py', "return task.get('kit') == 'task/1' and task",
+     'return task'),
+    ('a removed kit is trusted', 'kit.py', '        elif not lock:', '        elif False:'),
+    ('lock maps not type-checked', 'kit.py', 'isinstance(lock.get(k, {}), dict) and all(map(text, lock.get(k, {}).values()))',
+     'isinstance(lock.get(k, {}), dict)'),
     ('a removed integration file is a difference', 'kit.py',
      "        if now is None and name in earlier.get('files', {}) and before is not None and (",
      '        if False and ('),
@@ -114,6 +137,9 @@ def survives(snapshot: Path, name: str, old: str, new: str) -> bool:
 
 def main(labels: list[str]) -> int:
     chosen = [m for m in MUTANTS if not labels or m[0] in labels]
+    unknown = sorted(set(labels) - {m[0] for m in MUTANTS})
+    if unknown:
+        raise SystemExit('No such mutant: ' + ', '.join(unknown))
     with tempfile.TemporaryDirectory(prefix='kit-snapshot-') as directory:
         # One copy taken before any run, so edits made meanwhile do not mix into later mutants.
         snapshot = Path(directory) / 'kit'

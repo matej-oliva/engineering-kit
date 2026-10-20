@@ -28,7 +28,9 @@ Use when a candidate is ready. The reviewer is not the author.
    result differs from the candidate outside the process files that
    `RECORDS.md` lists under `candidate`, it is a new candidate. Otherwise
    record it in `candidate.integrated` with the output of
-   `tools/kit.py integrated CANDIDATE REVISION` as its evidence. When it
+   `tools/kit.py integrated CANDIDATE REVISION` as its evidence, run from
+   the candidate's checkout or a clone of the kit, never from the revision
+   under judgement. When it
    reports `UNKNOWN`, such as a kit adopted or moved to another source after
    the candidate, review that kit change before you rely on the result.
 6. **Mark the task reviewed** once a review of this revision approves it and
