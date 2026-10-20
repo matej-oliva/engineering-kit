@@ -9,7 +9,7 @@ a command that a project or a release supplies.
     kit.py check-task FILE [--root DIR]    one task record
     kit.py check-handoff FILE [--root DIR] one handoff
     kit.py scan-secrets [--root DIR]       credential shapes in staged files
-    kit.py integrated CANDIDATE REVISION   do they differ outside the records?
+    kit.py integrated CANDIDATE REVISION   differ outside the process files?
 
 Exit status: 0 when nothing is refused, 1 when something is, 2 for a usage
 error. Each refusal names the contract rule it enforces (CONTRACT.md).
@@ -543,6 +543,12 @@ def check_all(root: Path) -> list[Finding]:
     paths = project.get('paths') if isinstance(project, dict) else None
     if not isinstance(paths, dict) or not all(relative_path(paths.get(k)) for k in ('tasks', 'handoffs')):
         return found
+    for kind, suffix in (('tasks', '.json'), ('handoffs', '.md')):  # they are skipped when comparing revisions
+        folder = root / paths[kind]
+        for path in sorted(folder.iterdir()) if folder.is_dir() else []:
+            if not (path.is_file() and path.suffix == suffix) and path.name != '.gitkeep':
+                found.append(Finding(FORMAT, path.relative_to(root).as_posix(),
+                                     f'paths.{kind} holds only {suffix} records'))
     states = {}
     for path in sorted((root / paths['tasks']).glob('*.json')):
         where = path.relative_to(root).as_posix()
@@ -653,11 +659,13 @@ def record_folder_ok(value) -> bool:
 
 
 def compare_integrated(root: Path, candidate: str, revision: str) -> list[Finding]:
-    """Refuse every file where REVISION differs from CANDIDATE, except process files: the task
-    and handoff folders named by the candidate's own project.json, project.json, the lock and
-    the secret allowlist, and kit files or entry blocks that match exactly the release the lock
-    at REVISION records. A hand-edited kit file, or lock, is a difference."""
-    found = []
+    """Refuse every file where REVISION differs from CANDIDATE, except process files: task
+    records and handoffs in the folders the candidate's own project.json names,
+    `.engineering-kit/project.json`, the lock, and kit files and one entry block per
+    instruction file that match exactly the release the lock records. When the lock itself
+    changed, it is checked against that published release; if that cannot be done, the
+    result is unknown, never a pass."""
+    found: list[Finding] = []
 
     def show(ref, name):
         shown = subprocess.run(['git', '-C', str(root), 'show', f'{ref}:{name}'], capture_output=True)
@@ -671,58 +679,77 @@ def compare_integrated(root: Path, candidate: str, revision: str) -> list[Findin
             lock = json.loads(show(ref, LOCK_FILE) or b'{}')
         except (json.JSONDecodeError, UnicodeDecodeError):
             lock = None
-        if not isinstance(lock, dict) or not all(isinstance(lock.get(k, {}), dict) for k in ('files', 'blocks')):
+        shapes = (('files', dict), ('blocks', dict), ('excluded', list), ('integrations', list))
+        if not isinstance(lock, dict) or not all(isinstance(lock.get(k, kind()), kind) for k, kind in shapes):
             found.append(Finding(FORMAT, LOCK_FILE, f'the lock at {ref} is not a kit lock'))
             return {}
         return lock
 
-    # The record folders come from the reviewed candidate, so a later configuration cannot
-    # widen them, and they are matched literally rather than as patterns.
-    try:
+    try:  # the reviewed candidate's configuration, so a later one cannot widen what counts as records
         project = json.loads(show(candidate, PROJECT_FILE) or b'{}')
     except (json.JSONDecodeError, UnicodeDecodeError):
         project = {}
-    paths = project.get('paths', {}) if isinstance(project, dict) else {}
+    paths = project.get('paths') if isinstance(project, dict) else None
     paths = paths if isinstance(paths, dict) else {}
-    excludes = [f':(exclude,literal){paths[k]}' for k in ('tasks', 'handoffs') if record_folder_ok(paths.get(k))]
-    result = subprocess.run(['git', '-C', str(root), 'diff', '--name-only', '-z', candidate, revision, '--', '.',
-                             *excludes], capture_output=True)
+    folders = {kind: str(PurePosixPath(paths[kind])) for kind in ('tasks', 'handoffs')
+               if record_folder_ok(paths.get(kind))}
+
+    def is_record(name):
+        parent, leaf = name.rsplit('/', 1) if '/' in name else ('', name)
+        return ((folders.get('tasks') == parent and leaf.endswith('.json'))
+                or (folders.get('handoffs') == parent and leaf.endswith('.md')))
+
+    result = subprocess.run(['git', '-C', str(root), 'diff', '--name-only', '-z', candidate, revision],
+                            capture_output=True)
     if result.returncode:
         return [Finding(FORMAT, 'git', result.stderr.decode(errors='replace').strip()[-300:])]
     lock, earlier = lock_at(revision), lock_at(candidate)
-    same_release = all(lock.get(k) == earlier.get(k) for k in ('version', 'commit', 'digest'))
-    core = {name[len(KIT_FOLDER) + 1:]: value for name, value in lock.get('files', {}).items()
-            if name.startswith(KIT_FOLDER + '/')}
-    if lock.get('digest') and not any(str(k).startswith(KIT_FOLDER + '/') for k in lock.get('excluded', [])):
-        # The core digests must add up to the release digest that `update` checks against the
-        # published release, so a file and its digest cannot be edited together unnoticed.
-        if digest(''.join(f'{core[name]}  {name}\n' for name in sorted(core)).encode()) != lock['digest']:
-            found.append(Finding('CANDIDATE', LOCK_FILE, "the lock's file digests do not add up to its release"))
+    if lock and lock != earlier:
+        found += lock_against_release(lock)
     for name in filter(None, result.stdout.decode('utf-8', 'surrogateescape').split('\0')):
-        if name == LOCK_FILE:
-            if same_release and lock.get('version') and any(
-                    lock.get(k) != earlier.get(k) for k in ('files', 'blocks')):
-                found.append(Finding('CANDIDATE', name, 'the lock changed its digests without a new release'))
-            continue
-        if name in (PROJECT_FILE, SECRET_ALLOWLIST.as_posix()):
+        if is_record(name) or name in (PROJECT_FILE, LOCK_FILE):
             continue
         now = show(revision, name)
-        if name in lock.get('files', {}) or name.startswith('.engineering-kit/kit/'):
+        if name in lock.get('files', {}) or name.startswith(KIT_FOLDER + '/'):
             expected = lock.get('files', {}).get(name)
             if (now is None and expected is None) or (now is not None and digest(now) == expected):
                 continue  # installed or removed by the release the lock records
             found.append(Finding('CANDIDATE', name, 'a kit file differs from the release the lock records'))
             continue
-        if name in lock.get('blocks', {}) and now is not None:
-            before, after = show(candidate, name), now.decode('utf-8', 'replace')
-            if before is not None:
+        before = show(candidate, name)
+        if name in lock.get('blocks', {}) and now is not None and before is not None:
+            texts = [before.decode('utf-8', 'replace'), now.decode('utf-8', 'replace')]
+            if all(text.count(KIT_BEGIN) == 1 and text.count(KIT_END) == 1 for text in texts):
                 outside = [re.sub(re.escape(KIT_BEGIN) + r'.*?' + re.escape(KIT_END), '', text, flags=re.S)
-                           for text in (before.decode('utf-8', 'replace'), after)]
-                block = after.split(KIT_BEGIN, 1)[-1].split(KIT_END, 1)[0].lstrip('\n')
+                           for text in texts]
+                block = texts[1].split(KIT_BEGIN, 1)[1].split(KIT_END, 1)[0]
+                block = block[1:] if block.startswith('\n') else block
                 if outside[0] == outside[1] and digest(block.encode()) == lock['blocks'][name]:
                     continue  # only the entry block changed, to the recorded release's
         found.append(Finding('CANDIDATE', name, f'differs between {candidate} and {revision}'))
     return found
+
+
+def lock_against_release(lock: dict) -> list[Finding]:
+    """Check a changed lock against the published release it names: same commit and digest,
+    and exactly the files and blocks that release installs for the lock's integrations."""
+    import tempfile
+    import kit_update  # the release check needs the distribution code and the git command line
+    try:
+        with tempfile.TemporaryDirectory(prefix='kit-verify-') as work:
+            release = kit_update.fetch(str(lock.get('source', '')), str(lock.get('version', '')), Path(work))
+            files, blocks, problems = kit_update.desired(release, None, list(lock.get('integrations', [])))
+    except (kit_update.KitError, OSError, ValueError, KeyError) as error:
+        return [Finding('UNKNOWN', LOCK_FILE, f'the lock could not be checked against its release: {error}')]
+    if problems or release.commit != lock.get('commit') or release.manifest.get('digest') != lock.get('digest'):
+        return [Finding('CANDIDATE', LOCK_FILE, 'the lock does not name its published release exactly')]
+    excluded = set(lock.get('excluded', []))
+    expected_files = {name: hashlib.sha256(data).hexdigest() for name, data in files.items() if name not in excluded}
+    expected_blocks = {name: hashlib.sha256(text.encode()).hexdigest() for name, text in blocks.items()
+                       if f'block:{name}' not in excluded}
+    if expected_files != lock.get('files') or expected_blocks != lock.get('blocks'):
+        return [Finding('CANDIDATE', LOCK_FILE, "the lock's digests are not what its release installs")]
+    return []
 
 
 # -------------------------------------------------------------------- CLI

@@ -236,7 +236,15 @@ def split_block(text: str):
         raise KitError('the engineering-kit block markers are damaged')
     before, rest = text.split(BEGIN, 1)
     block, after = rest.split(END, 1)
-    return before, block.lstrip('\n'), after
+    return before, without_line_break(block), after
+
+
+def without_line_break(text: str) -> str:
+    """TEXT without the one line break the kit writes after a marker, in either style."""
+    for ending in ('\r\n', '\n'):
+        if text.startswith(ending):
+            return text[len(ending):]
+    return text
 
 
 def merge3(ours: bytes, base: bytes, theirs: bytes) -> tuple[bytes, bool]:
@@ -426,7 +434,7 @@ def block_actions(root: Path, path: str, base: str | None, theirs: str | None, r
             if before.endswith(ending) and before[:-len(ending)].endswith('\n'):
                 before = before[:-len(ending)]
                 break
-        new = before + after.lstrip('\r\n')
+        new = before + without_line_break(after)
         if not new.strip() and created:
             return [action('delete', None, 'remove the entry block and the file the kit created')]
         return [action('update', new, 'remove the entry block')]

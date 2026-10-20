@@ -88,4 +88,6 @@ python3 -m unittest discover -s tests
 ```
 
 The suite needs no network, no credentials, no Git hosting service and no
-running application.
+running application. Before a release, `python3 tests/mutation_check.py`
+breaks each guard on purpose and confirms a test notices; add a mutant when
+you add a guard.

@@ -141,6 +141,8 @@
   ],
   "handoffs": [
     {"name": "the worked handoff passes", "file": "examples/walkthrough/project/.engineering-kit/handoffs/T-7.md", "expect": []},
+    {"name": "evidence that quotes the placeholder marker", "file": "examples/walkthrough/project/.engineering-kit/handoffs/T-7.md",
+     "replace": [["- `unit` and `lint` pass", "- A search for kit-placeholder: found none.\n- `unit` and `lint` pass"]], "expect": []},
     {"name": "no next action", "file": "examples/walkthrough/project/.engineering-kit/handoffs/T-7.md",
      "replace": [["- Add a test for example A2", "Add a test for example A2"]], "expect": ["HANDOFF"]},
     {"name": "two next actions", "file": "examples/walkthrough/project/.engineering-kit/handoffs/T-7.md",

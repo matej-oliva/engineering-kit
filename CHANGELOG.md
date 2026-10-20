@@ -17,21 +17,27 @@ updating, run `kit.py check`: it now refuses a few malformed records that
 - `procedures/implement.md` says what to do when the environment cannot
   create a revision, such as a sandbox that keeps Git read-only.
   Contributed from the `eqradio` pilot; a proposal until more agents use it.
-- `kit.py integrated` now accepts, besides the task and handoff folders,
-  changes to `project.json`, the lock, the secret allowlist, and kit files
-  and entry blocks that match exactly the release the lock records. A kit
+- `kit.py integrated` now accepts, besides task records and handoffs,
+  changes to `project.json`, the lock, and kit files and one entry block per
+  instruction file that match exactly the release the lock records. A
+  changed lock is checked against its published release, so `integrated`
+  then needs Git access to the kit; without it the result is unknown. A kit
   update or a configuration fix no longer makes a new candidate; a
-  hand-edited kit file or lock still does. The task and handoff folders are
-  read from the candidate's own configuration and matched literally.
+  hand-edited kit file or lock still does. The record folders are read from
+  the candidate's own configuration, matched literally, and may hold only
+  records.
 - Tasks may list `contributors`, each a name, who may not approve the
   candidate.
 - Every review names its revision, and may record its `evidence`.
 - Templates mark values to fill in with `kit-placeholder:` at the start of a
   value. `kit.py check` refuses that marker in `project.json`, a task or a
-  handoff, and `adopt` names that step. Projects adopted at 0.1.0 marked
-  them "replace with"; search `project.json` for that once, by hand.
+  handoff, and `adopt` names that step. The 0.1.0 templates marked them
+  "replace with"; search `project.json`, tasks and handoffs for that once,
+  by hand.
 - `paths.tasks` and `paths.handoffs` must name a folder that covers neither
-  the kit's files nor the lock.
+  the kit's files nor the lock, and holds only its records.
+- `tests/mutation_check.py` breaks each guard on purpose before a release
+  and confirms a test notices.
 - A failed Git command names the command, not its options.
 - `RECORDS.md` says that extra fields are ignored, so evidence goes in the
   named fields. `scan-secrets` reads the staged copy of each file: stage

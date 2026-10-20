@@ -33,7 +33,7 @@ Owned by the project. Kit updates never change it.
 | `rules` | The project's own rules: `{"id", "text", "enforced", "by"}`. `enforced` is `guidance`, `partial`, `checked` or `integration`; `by` names the check or integration unless it is guidance. |
 | `exceptions` | `{"rule", "scope", "reason", "approved_by", "date"}`. `rule` is a contract rule that is not fixed; `approved_by` is a role. |
 | `integrations` | Map of integration name to `{"grant": [permissions]}`. An integration whose permissions are not all granted is not installed. |
-| `paths.tasks`, `paths.handoffs` | Where task records and handoffs live, relative to the project root. |
+| `paths.tasks`, `paths.handoffs` | Where task records and handoffs live, relative to the project root. Each folder holds only its records (`.json` or `.md`) and covers neither `.engineering-kit/kit` nor the lock. |
 | `design` | Optional: `{"system", "references"}`. The project's own design system, if any. |
 | `data` | Optional: `{"sensitivity", "restricted"}`. What must never leave the project. |
 
@@ -52,7 +52,7 @@ unused ID. Task IDs are unique within the project.
 | `requirement` | `{"revision", "problem", "decision_owner", "excluded": [...], "acceptance": [{"id", "example"}], "acceptance_boundary"}`. Optional `assumptions`: choices made without the decision owner, such as examples added beyond the request. | `accepted` |
 | `questions` | Optional: `[{"id", "question", "recommended", "answer"}]` for the decision owner. | |
 | `plan` | Optional: `{"risks", "recovery", "increments", "evidence"}`; `evidence` maps acceptance examples to the checks and boundaries that will show them. | |
-| `candidate` | `{"revision", "base"}`: the exact state under review and the revision its work started from. Optional `integrated`: `[{"revision", "evidence"}]` for revisions, such as the merge that landed it, that equal the candidate except in process files: the task and handoff folders named by the candidate's own `project.json`; `.engineering-kit/project.json`, the lock and the secret allowlist; and kit files and entry blocks that match exactly the release the lock at that revision records, whose digests add up to that release. `tools/kit.py integrated` produces that evidence. | `candidate` |
+| `candidate` | `{"revision", "base"}`: the exact state under review and the revision its work started from. Optional `integrated`: `[{"revision", "evidence"}]` for revisions, such as the merge that landed it, that equal the candidate except in process files: task records (`.json`) and handoffs (`.md`) directly in the folders the candidate's own `project.json` names; `.engineering-kit/project.json` and the lock; and kit files and one entry block per instruction file that match exactly the release the lock at that revision records. A lock that changed is checked against that published release; when it cannot be fetched, the result is `UNKNOWN`. `tools/kit.py integrated` produces that evidence. | `candidate` |
 | `checks` | `[{"id", "revision", "result", "evidence"}]`. `result` is `pass`, `fail`, `skipped` or `unknown`. Each required check has a result for the candidate by `candidate` and passes by `reviewed`. | `candidate` |
 | `not_applicable` | `[{"check", "reason"}]` for required checks that do not apply. | |
 | `reproduction` | `{"check", "base", "base_result": "fail", "candidate_result": "pass", "evidence"}` when the profile requires it. `check` is the test or command that shows the defect; `base` equals `candidate.base`, run with the new test added and the code unchanged. | `reviewed` |
