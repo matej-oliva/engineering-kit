@@ -660,6 +660,28 @@ class Distribution(unittest.TestCase):
         self.assertEqual(review.count(b'\n'), review.count(b'\r\n'))
         self.assertIn('every kit-managed file matches', '\n'.join(ku.status(root)[1]))
 
+    def test_integrated_accepts_a_kit_update_but_not_a_hand_edited_kit_file(self):
+        root = self.consumer(files={'AGENTS.md': '# Shop\n', 'app.py': 'TOTAL = 1\n'})
+        self.adopt(root)
+        sh('add', '-A', cwd=root)
+        sh('commit', '-q', '-m', 'candidate', cwd=root)
+        candidate = subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=root, capture_output=True, text=True).stdout.strip()
+        self.second_release()  # changes a procedure and the entry block
+        self.adopt(root, '0.2.0')
+        sh('add', '-A', cwd=root)
+        sh('commit', '-q', '-m', 'update the kit', cwd=root)
+        self.assertEqual(kit.compare_integrated(root, candidate, 'HEAD'), [])
+        tool = root / '.engineering-kit' / 'kit' / 'tools' / 'kit.py'
+        tool.write_text('import sys\nsys.exit(0)\n')
+        (root / 'AGENTS.md').write_text((root / 'AGENTS.md').read_text().replace('# Shop', '# Shop, renamed'))
+        sh('commit', '-qam', 'quietly change the checker', cwd=root)
+        found = kit.compare_integrated(root, candidate, 'HEAD')
+        self.assertEqual(sorted(f.where for f in found), ['.engineering-kit/kit/tools/kit.py', 'AGENTS.md'])
+
+    def test_adoption_names_the_next_step(self):
+        status, report = self.run_change(self.consumer(), '0.1.0', apply_now=True)
+        self.assertIn('Next: replace every "kit-placeholder:" value', report)
+
     def test_a_failed_fetch_names_the_git_command(self):
         root = self.consumer()
         with self.assertRaisesRegex(ku.KitError, '^git fetch failed'):

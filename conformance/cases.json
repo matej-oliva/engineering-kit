@@ -66,6 +66,10 @@
      "set": {"contributors": ["agent:session-b"]}, "expect": ["REVIEW"]},
     {"name": "contributors that are not a list", "task": "examples/walkthrough/stages/04-reviewed.json",
      "set": {"contributors": "agent:session-c"}, "expect": ["FORMAT"]},
+    {"name": "a contributor that is not a name", "task": "examples/walkthrough/stages/04-reviewed.json",
+     "set": {"contributors": [{"name": "agent:session-b"}]}, "expect": ["FORMAT"]},
+    {"name": "ordinary words in a closed task's finding", "task": "examples/walkthrough/stages/07-closed.json",
+     "set": {"reviews.1.findings.0.summary": "Name the rounding mode; replace with Decimal.quantize if it grows"}, "expect": []},
     {"name": "no approving review", "task": "examples/walkthrough/stages/04-reviewed.json",
      "set": {"reviews.1.verdict": "changes"}, "expect": ["REVIEW"]},
     {"name": "a review that names no revision", "task": "examples/walkthrough/stages/03-candidate.json",
@@ -119,7 +123,9 @@
     {"name": "effect kind allowed to an undefined role", "set": {"authority.effects.publish-package": ["maintainer"]}, "expect": ["EFFECTS"]},
     {"name": "instruction file that does not exist", "set": {"instructions.clients.any-agent": ["MISSING.md"]}, "expect": ["FORMAT"]},
     {"name": "a boundary meaning for an undefined boundary", "set": {"boundary_meaning": {"production": "the live site"}}, "expect": ["FORMAT"]},
-    {"name": "a template placeholder left in the configuration", "set": {"scope": "replace with what the project is"}, "expect": ["FORMAT"]}
+    {"name": "a template placeholder left in the configuration", "set": {"scope": "kit-placeholder: what the project is"}, "expect": ["FORMAT"]},
+    {"name": "ordinary words that sound like a placeholder", "set": {"scope": "Replace with care: totals feed the tax report"}, "expect": []},
+    {"name": "a task folder that would be the whole project", "set": {"paths.tasks": "."}, "expect": ["FORMAT"]}
   ],
   "contributions": [
     {"name": "a contribution with provenance and rights passes", "file": "examples/contribution.json", "expect": []},

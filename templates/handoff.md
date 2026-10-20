@@ -1,4 +1,4 @@
-# Replace with the task title handoff
+# kit-placeholder: the task title handoff
 
 Task: T-1
 Updated: 2026-01-01T00:00:00+00:00

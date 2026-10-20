@@ -5,8 +5,9 @@ and whether the contract changed. Newest first.
 
 ## 0.1.1, 2026-10-20, pilot release
 
-Lessons from the first pilots. Contract version 1, unchanged; nothing to do
-when updating except filling any placeholder `check` now reports.
+Lessons from the first pilots. Contract version 1, unchanged. After
+updating, run `kit.py check`: it now refuses a few malformed records that
+0.1.0 accepted, listed below.
 
 - Windows checkouts: line endings that Git converts on checkout no longer
   count as local changes, written files keep the line-ending style they
@@ -15,13 +16,18 @@ when updating except filling any placeholder `check` now reports.
 - `procedures/implement.md` says what to do when the environment cannot
   create a revision, such as a sandbox that keeps Git read-only.
   Contributed from the `eqradio` pilot; a proposal until more agents use it.
-- A candidate is now judged outside all process files: changes to
-  `.engineering-kit/`, such as a configuration fix or a kit update, no
-  longer make a new candidate.
-- Tasks may list `contributors`, who may not approve the candidate.
+- `kit.py integrated` now accepts, besides the task and handoff folders,
+  changes to `project.json`, the lock, and kit files and entry blocks that
+  match exactly the release the lock records. A kit update or a
+  configuration fix no longer makes a new candidate; a hand-edited kit file
+  still does.
+- Tasks may list `contributors`, each a name, who may not approve the
+  candidate.
 - Every review names its revision, and may record its `evidence`.
-- `kit.py check` refuses template placeholders ("replace with") left in
-  `project.json` or a task, and `adopt` names that step.
+- Templates mark values to fill in with `kit-placeholder:`. `kit.py check`
+  refuses that marker in `project.json`, a task or a handoff, and `adopt`
+  names that step. Ordinary text is never mistaken for it.
+- Folder settings such as `paths.tasks` must name a folder; `.` is refused.
 - A failed Git command names the command, not its options.
 - `RECORDS.md` says that extra fields are ignored, so evidence goes in the
   named fields; the contract says `scan-secrets` reads tracked and staged

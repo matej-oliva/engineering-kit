@@ -30,5 +30,6 @@ Use when a candidate is ready. The reviewer is not the author.
    candidate. Otherwise record it in `candidate.integrated` with the output
    of `tools/kit.py integrated CANDIDATE REVISION` as its evidence.
 6. **Mark the task reviewed** once a review of this revision approves it and
-   its required checks pass. Done when `tools/kit.py check-task FILE` passes
+   its required checks pass. Put what you examined and reran in the review's
+   `evidence`. Done when `tools/kit.py check-task FILE` passes
    in state `reviewed` (rules `REVIEW` and `CHECKS`).

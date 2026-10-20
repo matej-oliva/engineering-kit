@@ -84,7 +84,7 @@ outside the repository is prepared with `procedures/change-preflight.md`.
 | `DECIDE` | Ask the decision owner only for decisions that are theirs, batched, each with a recommended answer. Make routine engineering choices yourself and record the assumption. | guidance | |
 
 `SECRETS` is partial because `tools/kit.py scan-secrets` finds common
-credential shapes in files Git tracks or has staged, so stage new files
+credential shapes in the staged copy of each file, so stage every change
 before scanning; restricted material needs judgment.
 `HANDOFF` is partial because the checker refuses an incomplete or stale
 handoff but cannot know that a session stopped without writing one.

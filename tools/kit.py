@@ -84,8 +84,8 @@ def parse_date(value) -> bool:
 def relative_path(value) -> bool:
     if not text(value):
         return False
-    path = PurePosixPath(value)
-    return not path.is_absolute() and '..' not in path.parts and '\\' not in value
+    path = PurePosixPath(value)  # "." and "" have no parts: they would name the whole project
+    return bool(path.parts) and not path.is_absolute() and '..' not in path.parts and '\\' not in value
 
 
 # ---------------------------------------------------------------- project
@@ -214,7 +214,9 @@ def check_project(project, root: Path | None = None, where: str = 'project.json'
     return found
 
 
-PLACEHOLDER_TEXT = 'replace with'  # how every template marks a value the project must supply
+# How every template marks a value the project must supply. A marker ordinary
+# writing does not contain, so "replace with Decimal" in a finding is not one.
+TEMPLATE_MARKER = 'kit-placeholder:'
 
 
 def placeholders(value, path: str = '') -> list[str]:
@@ -223,7 +225,7 @@ def placeholders(value, path: str = '') -> list[str]:
         return [p for key, item in value.items() for p in placeholders(item, f'{path}.{key}' if path else key)]
     if isinstance(value, list):
         return [p for number, item in enumerate(value) for p in placeholders(item, f'{path}.{number}')]
-    return [path] if isinstance(value, str) and PLACEHOLDER_TEXT in value.casefold() else []
+    return [path] if isinstance(value, str) and TEMPLATE_MARKER in value else []
 
 
 def scope_ok(scope) -> bool:
@@ -270,6 +272,9 @@ def check_task(task, project, where: str = 'task') -> list[Finding]:
         if not isinstance(task.setdefault(field, []), list):
             refuse('EFFECTS' if field == 'effects' else FORMAT, f'{field} must be a list')
             task[field] = []
+    if not all(map(text, task['contributors'])):  # a malformed entry would let its owner approve
+        refuse(FORMAT, 'each contributor is a name')
+        task['contributors'] = [name for name in task['contributors'] if text(name)]
 
     profiles = project.get('profiles', {}) if isinstance(project, dict) else {}
     boundaries = project.get('boundaries', []) if isinstance(project, dict) else []
@@ -479,6 +484,8 @@ def check_handoff(source: str, task_states: dict[str, str] | None = None, where:
     def refuse(message):
         found.append(Finding('HANDOFF', where, message))
 
+    if TEMPLATE_MARKER in source:
+        found.append(Finding(FORMAT, where, f'replace the template placeholders ("{TEMPLATE_MARKER}")'))
     head, _, body = source.partition('\n## ')
     body = '## ' + body if body else ''
     lines = head.splitlines()
@@ -631,20 +638,52 @@ def scan_secrets(root: Path) -> list[Finding]:
             for path, number, kind, value in hits if (path, value) not in accepted]
 
 
+KIT_BEGIN, KIT_END = '<!-- engineering-kit:begin -->', '<!-- engineering-kit:end -->'
+
+
 def compare_integrated(root: Path, candidate: str, revision: str) -> list[Finding]:
-    """Refuse every file where REVISION differs from CANDIDATE, outside the process files: the
-    `.engineering-kit/` folder (records, project configuration and kit files) and the task and
-    handoff folders wherever the project keeps them."""
+    """Refuse every file where REVISION differs from CANDIDATE, except process files: the task
+    and handoff folders, project.json, the lock, and kit files or entry blocks that match
+    exactly the release the lock at REVISION records. A hand-edited kit file is a difference."""
     project, found = load_json(root / '.engineering-kit' / 'project.json', '.engineering-kit/project.json')
     paths = project.get('paths', {}) if isinstance(project, dict) else {}
-    excludes = [':(exclude).engineering-kit'] + [
-        f':(exclude){paths[k]}' for k in ('tasks', 'handoffs') if relative_path(paths.get(k))]
+    excludes = [f':(exclude){paths[k]}' for k in ('tasks', 'handoffs') if relative_path(paths.get(k))]
     result = subprocess.run(['git', '-C', str(root), 'diff', '--name-only', '-z', candidate, revision, '--', '.',
                              *excludes], capture_output=True)
     if result.returncode:
         return found + [Finding(FORMAT, 'git', result.stderr.decode(errors='replace').strip()[-300:])]
-    return found + [Finding('CANDIDATE', name, f'differs between {candidate} and {revision}')
-                    for name in result.stdout.decode('utf-8', 'surrogateescape').split('\0') if name]
+
+    def show(ref, name):
+        shown = subprocess.run(['git', '-C', str(root), 'show', f'{ref}:{name}'], capture_output=True)
+        return shown.stdout.replace(b'\r\n', b'\n') if shown.returncode == 0 else None
+
+    def digest(data):
+        return hashlib.sha256(data).hexdigest()
+
+    try:
+        lock = json.loads(show(revision, '.engineering-kit/lock.json') or b'{}')
+    except json.JSONDecodeError:
+        lock = {}
+    for name in filter(None, result.stdout.decode('utf-8', 'surrogateescape').split('\0')):
+        if name in ('.engineering-kit/project.json', '.engineering-kit/lock.json'):
+            continue
+        now = show(revision, name)
+        if name in lock.get('files', {}) or name.startswith('.engineering-kit/kit/'):
+            expected = lock.get('files', {}).get(name)
+            if (now is None and expected is None) or (now is not None and digest(now) == expected):
+                continue  # installed or removed by the release the lock records
+            found.append(Finding('CANDIDATE', name, 'a kit file differs from the release the lock records'))
+            continue
+        if name in lock.get('blocks', {}) and now is not None:
+            before, after = show(candidate, name), now.decode('utf-8', 'replace')
+            if before is not None:
+                outside = [re.sub(re.escape(KIT_BEGIN) + r'.*?' + re.escape(KIT_END), '', text, flags=re.S)
+                           for text in (before.decode('utf-8', 'replace'), after)]
+                block = after.split(KIT_BEGIN, 1)[-1].split(KIT_END, 1)[0].lstrip('\n')
+                if outside[0] == outside[1] and digest(block.encode()) == lock['blocks'][name]:
+                    continue  # only the entry block changed, to the recorded release's
+        found.append(Finding('CANDIDATE', name, f'differs between {candidate} and {revision}'))
+    return found
 
 
 # -------------------------------------------------------------------- CLI

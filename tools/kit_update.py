@@ -659,8 +659,8 @@ def change(root: Path, source: str, version: str | None, *, adopting: bool = Fal
         lines.append(f'Applied {len(writes) - 1} changes and recorded the release in {LOCK}.'
                      if target else f'Removed the kit; {PROJECT}, tasks and handoffs stay.')
         if writes_project:
-            lines.append(f'Next: replace every "replace with" value in {PROJECT} with this project\'s facts, '
-                         'then run kit.py check.')
+            lines.append(f'Next: replace every "{kit.TEMPLATE_MARKER}" value in {PROJECT} with this project\'s '
+                         'facts, then run kit.py check.')
         return 0, lines
 
 

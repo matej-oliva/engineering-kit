@@ -21,9 +21,11 @@ Use while changing the repository for an accepted task. Set `state` to
    the `.engineering-kit/` folder and the task and handoff folders, such as
    the one recording the candidate, do not.
    If your environment cannot create a revision, for example a sandbox that
-   keeps Git read-only, set `state` to `blocked`, list each changed file with
-   its SHA-256 in the handoff's evidence, and make committing them and
-   repeating the checks on that revision the next action.
+   keeps Git read-only, set `state` to `blocked` and list each changed file
+   with its SHA-256 in the handoff's evidence. The next action, for a session
+   that can commit, is to commit those files unchanged and repeat the checks
+   on that revision; that session adds itself to `contributors`. This step
+   is a proposal from one pilot.
 6. **Record each check** with the revision it ran on and its result. A
    skipped, unknown or failed check is recorded as such, never as a pass
    (rule `CHECKS`).

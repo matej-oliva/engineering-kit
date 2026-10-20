@@ -1,12 +1,12 @@
 {
   "kit": "project/1",
-  "name": "replace with the project's name",
-  "scope": "replace with what the project is, who uses it and what it does not cover",
+  "name": "kit-placeholder: the project's name",
+  "scope": "kit-placeholder: what the project is, who uses it and what it does not cover",
   "commands": {
-    "test": "replace with the command that runs the tests"
+    "test": "kit-placeholder: the command that runs the tests"
   },
   "checks": {
-    "tests": {"description": "The project's automated tests pass", "command": "replace with the test command"},
+    "tests": {"description": "The project's automated tests pass", "command": "kit-placeholder: the test command"},
     "review-notes": {"description": "The reviewer read the change against its acceptance examples"}
   },
   "profiles": {
@@ -17,10 +17,10 @@
   "boundaries": ["local", "merged"],
   "boundary_meaning": {
     "local": "The change works in the author's working copy",
-    "merged": "replace with: merged into which branch, by whom"
+    "merged": "kit-placeholder: merged into which branch, by whom"
   },
   "authority": {
-    "roles": {"owner": "replace with who decides for this project"},
+    "roles": {"owner": "kit-placeholder: who decides for this project"},
     "effects": {}
   },
   "instructions": {
@@ -31,5 +31,5 @@
   "exceptions": [],
   "integrations": {"agents-md": {"grant": ["writes-instructions"]}},
   "paths": {"tasks": ".engineering-kit/tasks", "handoffs": ".engineering-kit/handoffs"},
-  "data": {"sensitivity": "replace with what data the project holds", "restricted": []}
+  "data": {"sensitivity": "kit-placeholder: what data the project holds", "restricted": []}
 }

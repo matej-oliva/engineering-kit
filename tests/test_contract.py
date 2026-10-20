@@ -77,17 +77,18 @@ class ContractConsistency(unittest.TestCase):
                 return {key: filled(item) for key, item in value.items()}
             if isinstance(value, list):
                 return [filled(item) for item in value]
-            return 'filled in' if isinstance(value, str) and 'replace with' in value else value
+            return 'filled in' if isinstance(value, str) and kit.TEMPLATE_MARKER in value else value
 
         project = json.loads((KIT / 'templates' / 'project.json').read_text(encoding='utf-8'))
         task = json.loads((KIT / 'templates' / 'task.json').read_text(encoding='utf-8'))
-        for found in (kit.check_project(project), kit.check_task(task, project)):
-            self.assertEqual([(f.rule, f.message.split(' in ')[0]) for f in found],
+        handoff = (KIT / 'templates' / 'handoff.md').read_text(encoding='utf-8')
+        now = datetime(2026, 10, 20, tzinfo=timezone.utc)
+        for found in (kit.check_project(project), kit.check_task(task, project), kit.check_handoff(handoff, now=now)):
+            self.assertEqual([(f.rule, f.message.split(' in ')[0].split(' (')[0]) for f in found],
                              [('FORMAT', 'replace the template placeholders')])
         self.assertEqual(kit.check_project(filled(project)), [])
         self.assertEqual(kit.check_task(filled(task), filled(project)), [])
-        handoff = (KIT / 'templates' / 'handoff.md').read_text(encoding='utf-8')
-        self.assertEqual(kit.check_handoff(handoff, now=datetime(2026, 10, 20, tzinfo=timezone.utc)), [])
+        self.assertEqual(kit.check_handoff(handoff.replace(kit.TEMPLATE_MARKER, 'Filled in:'), now=now), [])
 
     def test_example_carries_the_entry_block_verbatim(self):
         block = (KIT / 'templates' / 'entry-block.md').read_text(encoding='utf-8').strip()
