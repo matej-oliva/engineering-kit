@@ -125,7 +125,9 @@
     {"name": "a boundary meaning for an undefined boundary", "set": {"boundary_meaning": {"production": "the live site"}}, "expect": ["FORMAT"]},
     {"name": "a template placeholder left in the configuration", "set": {"scope": "kit-placeholder: what the project is"}, "expect": ["FORMAT"]},
     {"name": "ordinary words that sound like a placeholder", "set": {"scope": "Replace with care: totals feed the tax report"}, "expect": []},
-    {"name": "a task folder that would be the whole project", "set": {"paths.tasks": "."}, "expect": ["FORMAT"]}
+    {"name": "the marker quoted inside evidence is not a placeholder", "set": {"scope": "grep -c 'kit-placeholder:' printed 0 after the setup"}, "expect": []},
+    {"name": "a task folder that would be the whole project", "set": {"paths.tasks": "."}, "expect": ["FORMAT"]},
+    {"name": "a task folder that covers the kit's files", "set": {"paths.handoffs": ".engineering-kit"}, "expect": ["FORMAT"]}
   ],
   "contributions": [
     {"name": "a contribution with provenance and rights passes", "file": "examples/contribution.json", "expect": []},

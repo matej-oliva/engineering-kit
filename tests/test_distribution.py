@@ -3,6 +3,7 @@ integration swaps and a contribution back. Releases come from a local Git reposi
 hosting service, network or credential is involved."""
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -671,16 +672,106 @@ class Distribution(unittest.TestCase):
         sh('add', '-A', cwd=root)
         sh('commit', '-q', '-m', 'update the kit', cwd=root)
         self.assertEqual(kit.compare_integrated(root, candidate, 'HEAD'), [])
+        good = subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=root, capture_output=True, text=True).stdout.strip()
         tool = root / '.engineering-kit' / 'kit' / 'tools' / 'kit.py'
-        tool.write_text('import sys\nsys.exit(0)\n')
-        (root / 'AGENTS.md').write_text((root / 'AGENTS.md').read_text().replace('# Shop', '# Shop, renamed'))
-        sh('commit', '-qam', 'quietly change the checker', cwd=root)
-        found = kit.compare_integrated(root, candidate, 'HEAD')
-        self.assertEqual(sorted(f.where for f in found), ['.engineering-kit/kit/tools/kit.py', 'AGENTS.md'])
+        lock_path = root / ku.LOCK
+
+        def tampered(change, expect):
+            """EXPECT: file names refused as CANDIDATE, or (rule, file) pairs."""
+            try:
+                change()
+                sh('add', '-A', cwd=root)
+                sh('commit', '-q', '-m', 'tamper', cwd=root)
+                found = kit.compare_integrated(root, candidate, 'HEAD')
+                self.assertEqual(sorted({(f.rule, f.where) for f in found}),
+                                 sorted(e if isinstance(e, tuple) else ('CANDIDATE', e) for e in expect))
+            finally:
+                sh('reset', '-q', '--hard', good, cwd=root)
+                sh('clean', '-qfd', cwd=root)
+
+        def edit_tool_and_lock():
+            tool.write_text('import sys\nsys.exit(0)\n')
+            lock = json.loads(lock_path.read_text())
+            lock['files']['.engineering-kit/kit/tools/kit.py'] = hashlib.sha256(tool.read_bytes()).hexdigest()
+            lock_path.write_text(json.dumps(lock))
+
+        def widen_records():
+            config = json.loads((root / ku.PROJECT).read_text())
+            config['paths']['tasks'] = '*'
+            (root / ku.PROJECT).write_text(json.dumps(config))
+            (root / 'app.py').write_text('TOTAL = 2\n')
+
+        with self.subTest('hand-edited checker and text outside the block'):
+            tampered(lambda: (tool.write_text('import sys\nsys.exit(0)\n'), (root / 'AGENTS.md').write_text(
+                (root / 'AGENTS.md').read_text().replace('# Shop', '# Shop, renamed'))),
+                ['.engineering-kit/kit/tools/kit.py', 'AGENTS.md'])
+        with self.subTest('edited inside the entry block'):
+            tampered(lambda: (root / 'AGENTS.md').write_text(
+                (root / 'AGENTS.md').read_text().replace('stricter one applies', 'author decides')), ['AGENTS.md'])
+        with self.subTest('extra file in the kit folder'):
+            tampered(lambda: (root / '.engineering-kit' / 'kit' / 'extra.md').write_text('x\n'),
+                     ['.engineering-kit/kit/extra.md'])
+        with self.subTest('deleted kit file'):
+            tampered(lambda: (root / REVIEW).unlink(), [REVIEW])
+        with self.subTest('kit file and its lock digest edited together'):
+            tampered(edit_tool_and_lock, [ku.LOCK])  # the digests no longer add up to the release
+        with self.subTest('lock that is not a lock'):  # nothing can be matched to a release
+            tampered(lambda: lock_path.write_text('[]'), [
+                ('FORMAT', ku.LOCK), REVIEW, '.engineering-kit/kit/templates/entry-block.md', 'AGENTS.md'])
+        with self.subTest('later configuration widening the record folders'):
+            tampered(widen_records, ['app.py'])
+        with self.subTest('an instruction file committed with Windows line endings'):
+            agents = root / 'AGENTS.md'  # kit files stay LF through the kit's .gitattributes
+            agents.write_bytes(agents.read_bytes().replace(b'\n', b'\r\n'))
+            sh('commit', '-qam', 'crlf', cwd=root)
+            self.assertIn(b'\r\n', subprocess.run(['git', 'show', 'HEAD:AGENTS.md'], cwd=root,
+                                                  capture_output=True).stdout)
+            self.assertEqual(kit.compare_integrated(root, candidate, 'HEAD'), [])
+
+    def test_integrated_accepts_a_release_that_removes_a_kit_file(self):
+        root = self.consumer(files={'app.py': 'TOTAL = 1\n'})
+        self.adopt(root)
+        sh('add', '-A', cwd=root)
+        sh('commit', '-q', '-m', 'candidate', cwd=root)
+        candidate = subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=root, capture_output=True, text=True).stdout.strip()
+        self.release('0.2.0', lambda source: (source / 'procedures' / 'write-instructions.md').unlink())
+        self.adopt(root, '0.2.0')
+        self.assertFalse((root / '.engineering-kit' / 'kit' / 'procedures' / 'write-instructions.md').exists())
+        sh('add', '-A', cwd=root)
+        sh('commit', '-q', '-m', 'update the kit', cwd=root)
+        self.assertEqual(kit.compare_integrated(root, candidate, 'HEAD'), [])
 
     def test_adoption_names_the_next_step(self):
         status, report = self.run_change(self.consumer(), '0.1.0', apply_now=True)
         self.assertIn('Next: replace every "kit-placeholder:" value', report)
+
+    def test_mixed_line_endings_outside_the_block_survive_byte_for_byte(self):
+        local = b'# Shop\nRule one.\r\nPasted rule.\r\n'
+        root = self.consumer()
+        (root / 'AGENTS.md').write_bytes(local)
+        self.adopt(root)
+        self.assertTrue((root / 'AGENTS.md').read_bytes().startswith(local))
+        self.second_release()
+        self.adopt(root, '0.2.0')
+        self.assertTrue((root / 'AGENTS.md').read_bytes().startswith(local))
+        self.adopt(root, None)
+        self.assertEqual((root / 'AGENTS.md').read_bytes(), local)
+
+    def test_an_interrupted_update_of_windows_files_recovers_exactly(self):
+        root = self.consumer(files={'AGENTS.md': '# Shop\n'})
+        self.adopt(root)
+        for path in [root / 'AGENTS.md', *(root / '.engineering-kit' / 'kit').rglob('*.md')]:
+            path.write_bytes(path.read_bytes().replace(b'\n', b'\r\n'))
+        self.second_release()
+        before = self.snapshot(root)
+        status, report = self.run_change(root, '0.2.0')
+        steps = len([line for line in report.splitlines() if line.startswith('  ') and 'plan' not in line]) + 1
+        for fail_after in range(steps):
+            with self.subTest(fail_after=fail_after):
+                with self.assertRaises(ku.KitError):
+                    self.run_change(root, '0.2.0', apply_now=True, fail_after=fail_after)
+                ku.recover(root)
+                self.assertEqual(self.snapshot(root), before)
 
     def test_a_failed_fetch_names_the_git_command(self):
         root = self.consumer()

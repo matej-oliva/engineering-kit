@@ -25,9 +25,8 @@ Use when a candidate is ready. The reviewer is not the author.
 5. **Validate the integrated candidate**: when the candidate will be merged
    with other work, run the required checks on the merged result, because a
    change in the base can break a change that passed alone. If the merged
-   result differs from the candidate outside the process files (the
-   `.engineering-kit/` folder and the task and handoff folders), it is a new
-   candidate. Otherwise record it in `candidate.integrated` with the output
+   result differs from the candidate outside the process files that
+   `RECORDS.md` lists under `candidate`, it is a new candidate. Otherwise record it in `candidate.integrated` with the output
    of `tools/kit.py integrated CANDIDATE REVISION` as its evidence.
 6. **Mark the task reviewed** once a review of this revision approves it and
    its required checks pass. Put what you examined and reran in the review's

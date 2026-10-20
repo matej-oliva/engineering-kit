@@ -261,6 +261,7 @@ class Action:
     reason: str = ''
     exclude: bool = False  # the project keeps its own file here; the kit stops managing the path
     block: bool = False  # the action concerns the entry block in PATH, not the whole file
+    raw: bool = False  # CONTENT is the exact bytes to write; do not adjust its line endings
 
     @property
     def key(self) -> str:
@@ -314,9 +315,13 @@ def read(root: Path, path: str) -> bytes | None:
     return data.replace(b'\r\n', b'\n') if data is not None else None
 
 
+def consistently_crlf(data: bytes | None) -> bool:
+    return bool(data) and b'\r\n' in data and data.count(b'\n') == data.count(b'\r\n')
+
+
 def styled(content: bytes | None, current: bytes | None) -> bytes | None:
-    """CONTENT in the line-ending style the file on disk already uses."""
-    if content is not None and current is not None and b'\r\n' in current:
+    """CONTENT with Windows line endings when the file on disk uses them throughout."""
+    if content is not None and consistently_crlf(current):
         return content.replace(b'\r\n', b'\n').replace(b'\n', b'\r\n')
     return content
 
@@ -385,35 +390,48 @@ def block_actions(root: Path, path: str, base: str | None, theirs: str | None, r
     blocked = obstruction(root, path)
     if blocked:
         return [Action(path, 'conflict', None, blocked, block=True)]
-    current = read(root, path)
+    # Work on the exact text so every byte outside the block, line endings included, stays
+    # as the project wrote it; compare block contents with Unix line endings.
+    current = read_raw(root, path)
     text = current.decode('utf-8') if current is not None else None
     parts = split_block(text) if text is not None else None
+
+    def action(kind, body, reason):
+        return Action(path, kind, body.encode() if body is not None else None, reason, block=True, raw=True)
+
     if parts is None:  # no file, or a file without the block
         if theirs is None:
             return []
         if base is not None:  # the block, or its whole file, was removed after the kit installed it
-            action = three_way(path, base.encode(), None, theirs.encode(), resolution)
-            action.block = True
-            if action.kind != 'update':
-                return [action]
-        prefix = text.rstrip('\n') + '\n\n' if text and text.strip() else (text or '')
-        return [Action(path, 'add' if text is None else 'update', f'{prefix}{BEGIN}\n{theirs}{END}\n'.encode(),
-                       'add the entry block', block=True)]
-    action = three_way(path, base.encode() if base else None, parts[1].encode(),
-                       theirs.encode() if theirs else None, resolution)
-    if action is None:
+            decided = three_way(path, base.encode(), None, theirs.encode(), resolution)
+            decided.block = True
+            if decided.kind != 'update':
+                return [decided]
+        eol = '\r\n' if text and consistently_crlf(current) else '\n'
+        prefix = text + ('' if text.endswith('\n') else eol) + eol if text and text.strip() else (text or '')
+        block = theirs.replace('\n', eol)
+        return [action('add' if text is None else 'update', f'{prefix}{BEGIN}{eol}{block}{END}{eol}',
+                       'add the entry block')]
+    before, ours, after = parts
+    eol = '\r\n' if '\r\n' in ours or (not ours.strip() and consistently_crlf(current)) else '\n'
+    decided = three_way(path, base.encode() if base else None, ours.replace('\r\n', '\n').encode(),
+                        theirs.encode() if theirs else None, resolution)
+    if decided is None:
         return []
-    action.block = True
-    if action.kind in ('conflict', 'keep-local', 'adopt'):
-        return [action]
-    before, _, after = parts
-    if action.content is None:  # remove the block and the blank line before it
-        new = before.rstrip('\n') + ('\n' if before.strip() else '') + after.lstrip('\n')
+    decided.block = True
+    if decided.kind in ('conflict', 'keep-local', 'adopt'):
+        return [decided]
+    if decided.content is None:  # remove the block and the one blank line added before it
+        for ending in ('\r\n', '\n'):
+            if before.endswith(ending) and before[:-len(ending)].endswith('\n'):
+                before = before[:-len(ending)]
+                break
+        new = before + after.lstrip('\r\n')
         if not new.strip() and created:
-            return [Action(path, 'delete', None, 'remove the entry block and the file the kit created', block=True)]
-        return [Action(path, 'update', new.encode(), 'remove the entry block', block=True)]
-    return [Action(path, action.kind, f'{before}{BEGIN}\n{action.content.decode()}{END}{after}'.encode(),
-                   'update the entry block', block=True)]
+            return [action('delete', None, 'remove the entry block and the file the kit created')]
+        return [action('update', new, 'remove the entry block')]
+    block = decided.content.decode().replace('\n', eol)
+    return [action(decided.kind, f'{before}{BEGIN}{eol}{block}{END}{after}', 'update the entry block')]
 
 
 def plan_digest(actions: list[Action], version: str | None) -> str:
@@ -462,7 +480,7 @@ def apply(root: Path, writes: list[Action], *, fail_after: int | None = None) ->
     steps, finals = [], []
     for number, action in enumerate(writes):
         before = read_raw(root, action.path)
-        final = styled(action.content, before)
+        final = action.content if action.raw else styled(action.content, before)
         finals.append(final)
         backup = None
         if before is not None:

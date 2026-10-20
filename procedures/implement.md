@@ -18,8 +18,8 @@ Use while changing the repository for an accepted task. Set `state` to
    the revision your work started from, and set `state` to `candidate`. Any
    later edit makes a new candidate, and checks and reviews then apply to the
    new revision (rule `CANDIDATE`). Commits that change only process files,
-   the `.engineering-kit/` folder and the task and handoff folders, such as
-   the one recording the candidate, do not.
+   such as the one recording the candidate, do not; `RECORDS.md` lists them
+   under `candidate`. A hand-edited kit file is not a process file.
    If your environment cannot create a revision, for example a sandbox that
    keeps Git read-only, set `state` to `blocked` and list each changed file
    with its SHA-256 in the handoff's evidence. The next action, for a session

@@ -8,7 +8,7 @@ a command that a project or a release supplies.
     kit.py check [--root DIR] [--json]     project, every task and handoff
     kit.py check-task FILE [--root DIR]    one task record
     kit.py check-handoff FILE [--root DIR] one handoff
-    kit.py scan-secrets [--root DIR]       credential shapes in tracked files
+    kit.py scan-secrets [--root DIR]       credential shapes in staged files
     kit.py integrated CANDIDATE REVISION   do they differ outside the records?
 
 Exit status: 0 when nothing is refused, 1 when something is, 2 for a usage
@@ -205,8 +205,9 @@ def check_project(project, root: Path | None = None, where: str = 'project.json'
         elif rule['enforced'] != 'guidance' and not text(rule.get('by')):
             refuse('ENFORCEMENT', f'project rule {rule["id"]} must name what enforces it in "by"')
     paths = project.get('paths')
-    if not isinstance(paths, dict) or not all(relative_path(paths.get(k)) for k in ('tasks', 'handoffs')):
-        refuse(FORMAT, 'paths.tasks and paths.handoffs must be relative paths inside the project')
+    if not isinstance(paths, dict) or not all(record_folder_ok(paths.get(k)) for k in ('tasks', 'handoffs')):
+        refuse(FORMAT, 'paths.tasks and paths.handoffs must name folders inside the project that cover '
+                       'neither .engineering-kit/kit nor the lock')
     integrations = project.get('integrations', {})
     if not isinstance(integrations, dict) or not all(
             isinstance(v, dict) and isinstance(v.get('grant', []), list) for v in integrations.values()):
@@ -225,7 +226,7 @@ def placeholders(value, path: str = '') -> list[str]:
         return [p for key, item in value.items() for p in placeholders(item, f'{path}.{key}' if path else key)]
     if isinstance(value, list):
         return [p for number, item in enumerate(value) for p in placeholders(item, f'{path}.{number}')]
-    return [path] if isinstance(value, str) and TEMPLATE_MARKER in value else []
+    return [path] if isinstance(value, str) and value.lstrip().startswith(TEMPLATE_MARKER) else []
 
 
 def scope_ok(scope) -> bool:
@@ -484,7 +485,7 @@ def check_handoff(source: str, task_states: dict[str, str] | None = None, where:
     def refuse(message):
         found.append(Finding('HANDOFF', where, message))
 
-    if TEMPLATE_MARKER in source:
+    if any(line.lstrip('#-* ').startswith(TEMPLATE_MARKER) for line in source.splitlines()):
         found.append(Finding(FORMAT, where, f'replace the template placeholders ("{TEMPLATE_MARKER}")'))
     head, _, body = source.partition('\n## ')
     body = '## ' + body if body else ''
@@ -639,19 +640,24 @@ def scan_secrets(root: Path) -> list[Finding]:
 
 
 KIT_BEGIN, KIT_END = '<!-- engineering-kit:begin -->', '<!-- engineering-kit:end -->'
+PROJECT_FILE, LOCK_FILE, KIT_FOLDER = '.engineering-kit/project.json', '.engineering-kit/lock.json', '.engineering-kit/kit'
+
+
+def record_folder_ok(value) -> bool:
+    """A task or handoff folder that names a folder and covers neither the kit's files nor the lock."""
+    if not relative_path(value):
+        return False
+    folder = str(PurePosixPath(value))
+    return not any(protected == folder or protected.startswith(folder + '/') or folder.startswith(protected + '/')
+                   for protected in (KIT_FOLDER, LOCK_FILE))
 
 
 def compare_integrated(root: Path, candidate: str, revision: str) -> list[Finding]:
     """Refuse every file where REVISION differs from CANDIDATE, except process files: the task
-    and handoff folders, project.json, the lock, and kit files or entry blocks that match
-    exactly the release the lock at REVISION records. A hand-edited kit file is a difference."""
-    project, found = load_json(root / '.engineering-kit' / 'project.json', '.engineering-kit/project.json')
-    paths = project.get('paths', {}) if isinstance(project, dict) else {}
-    excludes = [f':(exclude){paths[k]}' for k in ('tasks', 'handoffs') if relative_path(paths.get(k))]
-    result = subprocess.run(['git', '-C', str(root), 'diff', '--name-only', '-z', candidate, revision, '--', '.',
-                             *excludes], capture_output=True)
-    if result.returncode:
-        return found + [Finding(FORMAT, 'git', result.stderr.decode(errors='replace').strip()[-300:])]
+    and handoff folders named by the candidate's own project.json, project.json, the lock and
+    the secret allowlist, and kit files or entry blocks that match exactly the release the lock
+    at REVISION records. A hand-edited kit file, or lock, is a difference."""
+    found = []
 
     def show(ref, name):
         shown = subprocess.run(['git', '-C', str(root), 'show', f'{ref}:{name}'], capture_output=True)
@@ -660,12 +666,45 @@ def compare_integrated(root: Path, candidate: str, revision: str) -> list[Findin
     def digest(data):
         return hashlib.sha256(data).hexdigest()
 
+    def lock_at(ref):
+        try:
+            lock = json.loads(show(ref, LOCK_FILE) or b'{}')
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            lock = None
+        if not isinstance(lock, dict) or not all(isinstance(lock.get(k, {}), dict) for k in ('files', 'blocks')):
+            found.append(Finding(FORMAT, LOCK_FILE, f'the lock at {ref} is not a kit lock'))
+            return {}
+        return lock
+
+    # The record folders come from the reviewed candidate, so a later configuration cannot
+    # widen them, and they are matched literally rather than as patterns.
     try:
-        lock = json.loads(show(revision, '.engineering-kit/lock.json') or b'{}')
-    except json.JSONDecodeError:
-        lock = {}
+        project = json.loads(show(candidate, PROJECT_FILE) or b'{}')
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        project = {}
+    paths = project.get('paths', {}) if isinstance(project, dict) else {}
+    paths = paths if isinstance(paths, dict) else {}
+    excludes = [f':(exclude,literal){paths[k]}' for k in ('tasks', 'handoffs') if record_folder_ok(paths.get(k))]
+    result = subprocess.run(['git', '-C', str(root), 'diff', '--name-only', '-z', candidate, revision, '--', '.',
+                             *excludes], capture_output=True)
+    if result.returncode:
+        return [Finding(FORMAT, 'git', result.stderr.decode(errors='replace').strip()[-300:])]
+    lock, earlier = lock_at(revision), lock_at(candidate)
+    same_release = all(lock.get(k) == earlier.get(k) for k in ('version', 'commit', 'digest'))
+    core = {name[len(KIT_FOLDER) + 1:]: value for name, value in lock.get('files', {}).items()
+            if name.startswith(KIT_FOLDER + '/')}
+    if lock.get('digest') and not any(str(k).startswith(KIT_FOLDER + '/') for k in lock.get('excluded', [])):
+        # The core digests must add up to the release digest that `update` checks against the
+        # published release, so a file and its digest cannot be edited together unnoticed.
+        if digest(''.join(f'{core[name]}  {name}\n' for name in sorted(core)).encode()) != lock['digest']:
+            found.append(Finding('CANDIDATE', LOCK_FILE, "the lock's file digests do not add up to its release"))
     for name in filter(None, result.stdout.decode('utf-8', 'surrogateescape').split('\0')):
-        if name in ('.engineering-kit/project.json', '.engineering-kit/lock.json'):
+        if name == LOCK_FILE:
+            if same_release and lock.get('version') and any(
+                    lock.get(k) != earlier.get(k) for k in ('files', 'blocks')):
+                found.append(Finding('CANDIDATE', name, 'the lock changed its digests without a new release'))
+            continue
+        if name in (PROJECT_FILE, SECRET_ALLOWLIST.as_posix()):
             continue
         now = show(revision, name)
         if name in lock.get('files', {}) or name.startswith('.engineering-kit/kit/'):
@@ -758,7 +797,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == 'check':
         return report(check_all(root), args.json, 'Project, tasks and handoffs pass the contract.')
     if args.command == 'scan-secrets':
-        return report(scan_secrets(root), args.json, 'No unreviewed secrets in the tracked files.')
+        return report(scan_secrets(root), args.json, 'No unreviewed secrets in the staged files.')
     if args.command == 'integrated':
         return report(compare_integrated(root, args.candidate, args.revision), args.json,
                       f'{args.revision} equals {args.candidate} outside the process files. If it is '

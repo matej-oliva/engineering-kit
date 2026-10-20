@@ -89,6 +89,8 @@ class ContractConsistency(unittest.TestCase):
         self.assertEqual(kit.check_project(filled(project)), [])
         self.assertEqual(kit.check_task(filled(task), filled(project)), [])
         self.assertEqual(kit.check_handoff(handoff.replace(kit.TEMPLATE_MARKER, 'Filled in:'), now=now), [])
+        title_only = handoff.replace('# kit-placeholder: the task title', '# Rounding')
+        self.assertEqual([f.rule for f in kit.check_handoff(title_only, now=now)], ['FORMAT'])
 
     def test_example_carries_the_entry_block_verbatim(self):
         block = (KIT / 'templates' / 'entry-block.md').read_text(encoding='utf-8').strip()
