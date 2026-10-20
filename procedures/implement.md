@@ -19,6 +19,10 @@ Use while changing the repository for an accepted task. Set `state` to
    later edit makes a new candidate, and checks and reviews then apply to the
    new revision (rule `CANDIDATE`). Commits that change only the task and
    handoff folders, such as the one recording the candidate, do not.
+   If your environment cannot create a revision, for example a sandbox that
+   keeps Git read-only, set `state` to `blocked`, list each changed file with
+   its SHA-256 in the handoff's evidence, and make committing them and
+   repeating the checks on that revision the next action.
 6. **Record each check** with the revision it ran on and its result. A
    skipped, unknown or failed check is recorded as such, never as a pass
    (rule `CHECKS`).
