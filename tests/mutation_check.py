@@ -48,7 +48,7 @@ MUTANTS = [
     ('the block is always LF', 'kit_update.py',
      "eol = '\\r\\n' if '\\r\\n' in ours or (not ours.strip() and consistently_crlf(current)) else '\\n'",
      "eol = '\\n'"),
-    ('a changed lock is not verified', 'kit.py', '    if lock and lock != earlier:', '    if False:'),
+    ('a changed lock is not verified', 'kit.py', '    elif lock != earlier:', '    elif False:'),
     ('the later configuration names the records', 'kit.py',
      'project = json.loads(show(candidate, PROJECT_FILE)', 'project = json.loads(show(revision, PROJECT_FILE)'),
     ('records in subfolders count', 'kit.py', "if folders.get('tasks') == parent and leaf.endswith('.json'):",
