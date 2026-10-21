@@ -33,7 +33,7 @@ def contract_table() -> dict[str, tuple[str, bool]]:
 def kit_files(*, core: bool):
     for path in sorted(KIT.rglob('*')):
         relative = path.relative_to(KIT)
-        if (not path.is_file() or relative.parts[0] in ('tests', '.git')
+        if (not path.is_file() or relative.parts[0] in ('tests', '.git', '.github')
                 or '__pycache__' in relative.parts):  # .git exists once the kit is its own repository
             continue
         if core and (relative.parts[0] == 'integrations' or relative.name == 'THIRD_PARTY_NOTICES.md'):

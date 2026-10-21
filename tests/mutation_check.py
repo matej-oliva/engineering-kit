@@ -18,6 +18,8 @@ KIT = Path(__file__).resolve().parents[1]
 
 # (label, file under tools/, exact original text, replacement)
 MUTANTS = [
+    ('repository workflows become installed payload', 'kit_update.py',
+     "'conformance/', '.github/'", "'conformance/'"),
     ('a skipped check counts as a pass', 'kit.py',
      "elif reached('reviewed') and entry['result'] != 'pass':",
      "elif reached('reviewed') and entry['result'] not in ('pass', 'skipped'):"),

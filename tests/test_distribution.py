@@ -108,6 +108,15 @@ class Distribution(unittest.TestCase):
 
     # ------------------------------------------------------------ tests
 
+    def test_repository_workflows_are_not_release_payload(self):
+        workflow = self.source / '.github/workflows/native.yml'
+        workflow.parent.mkdir(parents=True, exist_ok=True)
+        workflow.write_text('name: Repository validation\n')
+        sh('add', '.github', cwd=self.source)
+        manifest = ku.build_release(self.source, '0.1.0')
+        self.assertNotIn('.github/workflows/native.yml', manifest['files'])
+        self.assertIn('integrations/github/workflow.yml', manifest['files'])
+
     def test_new_project_preview_writes_nothing_and_apply_installs_the_core(self):
         root = self.consumer()
         status, report = self.run_change(root, '0.1.0')

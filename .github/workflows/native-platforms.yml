@@ -1,0 +1,42 @@
+name: Native platform verification
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2025, macos-15]
+        python: ['3.11', '3.14']
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUTF8: '1'
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Suite
+        run: python -m unittest discover -s tests -v
+      - name: Published release lifecycle
+        if: ${{ !cancelled() }}
+        run: python tests/native_release.py --source . --report "${{ runner.temp }}/native-report.json"
+      - name: Retain platform evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: native-${{ matrix.os }}-python-${{ matrix.python }}
+          path: ${{ runner.temp }}/native-report.json
+          if-no-files-found: error
+          retention-days: 30

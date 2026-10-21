@@ -3,6 +3,13 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
+## Unreleased
+
+- Repository workflows stay out of installed release payloads. The manually
+  triggered native-platform workflow runs the suite and an offline published
+  0.1.1 to 1.0.0 adoption, update, rollback and removal exercise. Native
+  platform support remains unverified until the matrix passes.
+
 ## 1.0.0, 2026-10-21, first supported release
 
 The first release with a support promise; see `MAINTAINING.md`. Contract
