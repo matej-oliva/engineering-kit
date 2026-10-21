@@ -30,7 +30,7 @@ def sh(*args, cwd):
 
 
 def edit(path: Path, old: str, new: str):
-    text = path.read_text(encoding='utf-8', newline='')
+    text = path.read_bytes().decode('utf-8')
     assert text.count(old) == 1, (path, old)
     path.write_text(text.replace(old, new), encoding='utf-8', newline='')
 
