@@ -50,6 +50,11 @@ or belonging to an employer or client without clearance, stays out.
   move or delete a published tag.
 - An interrupted update in a project: `tools/kit.py recover`, as described in
   `procedures/adopt-and-update.md`.
-- A lost repository: any clone holds the full history and tags. Each
-  project's lock names the commit and digest of the release it installed, so
-  a restored repository can be checked against them before projects update.
+- A lost repository: keep a full mirror in an independently backed-up
+  location using `git clone --mirror KIT_ADDRESS BACKUP_PATH`. Refresh it
+  with `git -C BACKUP_PATH remote update` while the source is available.
+  The shallow adoption clone in the README is not a full recovery copy.
+  Restore the mirror's branches and tags to a reviewed replacement remote;
+  each project's lock names the commit and digest of its installed release,
+  which must match before projects update. Backup custody and a restore test
+  belong to the maintainer; no off-host recovery test is claimed here.

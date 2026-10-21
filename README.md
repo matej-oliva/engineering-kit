@@ -72,9 +72,12 @@ the machine to be signed in to an account that can read it.
 Updates merge the project's own changes to kit files with the release's and
 stop without writing when they overlap. `procedures/adopt-and-update.md` and
 `procedures/contribute.md` give the steps; `RECORDS.md` describes the lock,
-release and contribution files. The kit is never installed by running code
-from a release, and it writes only under `.engineering-kit/kit/`, the files
-its granted integrations name, and the marked entry block.
+release and contribution files. Initial adoption runs the installer from the
+release you cloned and reviewed. Updates use the installed tool to read the
+new release as data; they do not execute its hooks or installer. Writes stay
+under `.engineering-kit/kit/`, the files its granted integrations name, and
+the marked entry block, plus the project configuration and lock described
+in `procedures/adopt-and-update.md`.
 
 ## Supported environments
 
