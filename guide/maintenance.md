@@ -25,7 +25,10 @@ have installed. Edits you make to it are merged like edits to any kit file,
 but a project's own notes belong in `project.json` or its own
 documentation instead.
 
-## Moving to 1.2.0 from an earlier release
+## Moving to this release, 1.2.0
+
+Each release rewrites this section for itself; the changelog keeps what
+every earlier release asked.
 
 From 1.1.0, `python3 .engineering-kit/kit/tools/kit.py update --apply` is
 enough. From 1.0.1, 1.0.0 or a pilot release, name the version once:

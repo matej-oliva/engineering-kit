@@ -42,8 +42,10 @@ or `--with gemini` for the instruction files those agents read.
 Open `.engineering-kit/project.json`. Replace every value that starts with
 `kit-placeholder:` with your project's facts: its name and scope, the command
 that runs its tests, what `merged` means here and who decides. An agent can
-fill it in for you from the repository; review the result.
-[Customize your project](customize.md) explains each field.
+fill it in for you from the repository; review the result. Where a fact
+is not in the repository, such as who decides, ask whoever owns the project
+rather than guess. [Customize your project](customize.md) explains the
+fields, and [`RECORDS.md`](../RECORDS.md) defines every one.
 
 ```sh
 python3 kit check

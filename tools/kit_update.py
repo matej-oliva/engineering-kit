@@ -537,6 +537,10 @@ def apply(root: Path, writes: list[Action], *, fail_after: int | None = None) ->
         if final is None:
             target.unlink(missing_ok=True)
             flush(target.parent)
+            folder = target.parent  # drop the folders this leaves empty, never the project root itself
+            while folder != root and folder.is_dir() and not any(folder.iterdir()):
+                folder.rmdir()
+                folder = folder.parent
         else:
             write_atomic(target, final)
     shutil.rmtree(journal)

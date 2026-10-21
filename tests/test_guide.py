@@ -66,7 +66,7 @@ class Guide(unittest.TestCase):
         shown = {}
         for page in pages():
             for line in page.read_text(encoding='utf-8').replace('\\\n', ' ').splitlines():
-                for match in re.finditer(r'(?:python3|py) kit ([a-z-]+)((?: +[^ `|#]+)*)', line):
+                for match in re.finditer(r'(?:python3|py) (?:kit|\S*kit\.py) ([a-z-]+)((?: +[^ `|#]+)*)', line):
                     options = set(re.findall(r'(?<!\S)(--[a-z-]+)', match.group(2)))
                     shown.setdefault(match.group(1), set()).update(options)
         self.assertGreater(len(shown), 8)
@@ -82,7 +82,7 @@ class Guide(unittest.TestCase):
         text = (GUIDE / 'maintenance.md').read_text(encoding='utf-8')
         for value in re.findall(r'--rights (\S+)', text) + re.findall(r'`(licensed:\w+)`', text):
             with self.subTest(value):
-                self.assertRegex(value, ku.RIGHTS)
+                self.assertIsNotNone(ku.RIGHTS.fullmatch(value), 'contribute would refuse it')
 
     def test_diagrams_are_accessible_and_self_contained(self):
         for svg in sorted((GUIDE / 'images').glob('*.svg')):

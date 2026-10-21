@@ -18,6 +18,14 @@ kind of work needs, the acceptance boundaries from weakest to strongest, who
 decides and who may authorize each kind of effect, your own rules with how
 each is enforced, any exceptions, and where tasks and handoffs live.
 
+## What the project is
+
+`name` and `scope` say what the project is, who uses it and what it does
+not cover, in a sentence or two; reviewers and agents read them to judge
+whether a request belongs here. `data.sensitivity` says what data the
+project holds, and `data.restricted` lists what must never enter a record,
+a handoff or a contribution. Who decides goes in `authority.roles`, below.
+
 ## Integrations
 
 | Integration | Installs | Permission it needs |
@@ -66,9 +74,11 @@ where your instructions and the contract differ, the stricter one applies.
 ## Commands, checks and profiles
 
 `commands` records the commands people use, for reference. `checks` names
-what must pass, with the command if one exists. A check without a command
-is done by hand and recorded the same way. `profiles` groups checks by kind
-of work:
+what must pass, with the command if one exists, so a test command often
+appears in both. A check without a command is done by hand and recorded the
+same way. The kit never runs these commands, and `python3 kit check` does
+not show that they work: run each one yourself once. `profiles` groups
+checks by kind of work:
 
 ```json
 "commands": {"test": "make test", "serve": "make serve"},
@@ -118,7 +128,7 @@ scope, reason, approving role and date. The scope is `project`,
 "rules": [{"id": "API-COMPAT", "text": "Public APIs stay backward compatible within a major version",
            "enforced": "checked", "by": "the api-diff check"}],
 "exceptions": [{"rule": "REVIEW", "scope": "profile:docs", "reason": "Single maintainer for typo fixes",
-                "approved_by": "owner", "date": "2026-11-02"}]
+                "approved_by": "owner", "date": "2026-10-02"}]
 ```
 
 ## Contrasting projects

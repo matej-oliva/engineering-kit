@@ -31,7 +31,10 @@ each file it touches.
   it.
 - **Releases** are version tags in the kit's repository. Each holds a
   manifest of every file with its digest, so an install is checked against
-  exactly what was published. A published release never changes.
+  exactly what was published. A published release never changes. Update
+  and rollback read releases from the source recorded in `lock.json`, a Git
+  address or a folder on this machine, so that source must be reachable
+  when you run them.
 
 ## Who owns which file
 
@@ -50,7 +53,9 @@ outside the marked block; the kit never changes them. The **tool keeps**
 digest of every file it wrote, and, only while an apply runs, a journal in
 `.engineering-kit/journal/` that lets `recover` undo an interrupted write.
 Commit `lock.json` with the kit files; never commit a journal, and do not
-edit either by hand.
+edit either by hand. The lock's `history` lists each release installed, in
+the order you moved between them; `rollback` returns to the entry before
+the current one.
 
 Keep project notes in `project.json` rules or in your instruction files
 outside the block. A changed kit file still works, but it must be merged at

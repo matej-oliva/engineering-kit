@@ -85,11 +85,12 @@ python3 kit remove
 python3 kit remove --apply
 ```
 
-Removal deletes the kit files, the integration files and the marked block in
-each instruction file, and restores those files' other text byte for byte.
-`project.json`, tasks and handoffs stay, so you can adopt again later. A
-kit file you changed stops the removal like an update overlap; settle it the
-same way.
+Removal deletes the kit files, the integration files, `lock.json`, the
+folders that leaves empty, and the marked block in each instruction file,
+restoring those files' other text byte for byte. `project.json`, tasks and
+handoffs stay, so you can adopt again later. A kit file you changed stops
+the removal until you settle it: `--resolve PATH=local` keeps it as your own
+file, `--resolve PATH=kit` deletes it.
 
 ## Check a merge
 

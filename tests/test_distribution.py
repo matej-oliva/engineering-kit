@@ -598,7 +598,9 @@ class Distribution(unittest.TestCase):
         self.assertEqual(ku.status(root)[0], 0)
         status, report = self.run_change(root, None, apply_now=True)
         self.assertEqual(status, 0, report)
-        self.assertEqual([p for p in (root / '.agents').rglob('*') if p.is_file()], [])
+        self.assertFalse((root / '.agents').exists(), 'folders the removal emptied are gone')
+        self.assertFalse((root / '.engineering-kit' / 'kit').exists())
+        self.assertTrue((root / '.engineering-kit' / 'project.json').is_file())
         self.assertEqual([p.relative_to(root).as_posix() for p in (root / '.claude' / 'skills').rglob('*.md')], [own])
 
     def grant_github(self, root):

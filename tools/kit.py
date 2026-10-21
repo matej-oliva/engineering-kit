@@ -869,7 +869,7 @@ COMMANDS = {
     'scan-secrets': ('look for credentials in the staged copy of each file', 'git add -A\n  {kit} scan-secrets'),
     'integrated': ('compare a merged revision with its reviewed candidate', '{kit} integrated abc1234 main'),
     'adopt': ('install the kit into this project; previews unless --apply',
-              'python3 PATH/TO/KIT-CLONE/tools/kit.py adopt --with agent-skills --with launcher --apply'),
+              '{python} PATH/TO/KIT-CLONE/tools/kit.py adopt --with agent-skills --with launcher --apply'),
     'update': ('move to the newest release, or the one named; previews unless --apply',
                '{kit} update --diff\n  {kit} update --apply'),
     'rollback': ('return to the previously installed release', '{kit} rollback --apply'),
@@ -928,7 +928,8 @@ def main(argv: list[str] | None = None) -> int:
     def add(name):
         summary, example = COMMANDS[name]
         return commands.add_parser(name, help=summary, description=summary[0].upper() + summary[1:] + '.',
-                                   epilog='Example:\n  ' + example.format(kit=invocation()),
+                                   epilog='Example:\n  ' + example.format(
+                                       kit=invocation(), python='py' if os.name == 'nt' else 'python3'),
                                    formatter_class=argparse.RawDescriptionHelpFormatter)
     for name in ('check', 'check-task', 'check-handoff', 'scan-secrets', 'integrated'):
         command = add(name)

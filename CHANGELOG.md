@@ -32,6 +32,8 @@ points at the guide; your text outside it is unchanged.
   type it. A release that lacks an integration you granted names the entry
   to remove from `project.json`. The launcher refuses to run from a
   subfolder instead of reading the wrong project.
+- Removing a kit file also removes the folders that leaves empty, so
+  `remove` no longer leaves empty skill and kit folders behind.
 - `procedures/understand.md` names the author and a first delivery profile
   before accepting a task, as `check-task` requires; `design.md` confirms
   or changes that profile.
