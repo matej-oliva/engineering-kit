@@ -32,6 +32,8 @@ MUTANTS = [
     ('an update without a version can move back', 'kit_update.py',
      "if version_key(version) <= version_key(lock['version']):",
      "if version_key(version) == version_key(lock['version']):"),
+    ('a relative source path is read from the temporary repository', 'kit_update.py',
+     '        return str(Path(source).resolve())', '        return source'),
     ('repository workflows become installed payload', 'kit_update.py',
      "'conformance/', '.github/'", "'conformance/'"),
     ('a skipped check counts as a pass', 'kit.py',

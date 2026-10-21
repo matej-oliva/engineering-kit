@@ -714,6 +714,13 @@ def change(root: Path, source: str, version: str | None, *, adopting: bool = Fal
         return 0, lines
 
 
+def local_source(source: str | None) -> str | None:
+    """A source naming a folder here, made absolute: Git reads it from a temporary repository."""
+    if source and not source.lstrip().startswith('-') and Path(source).is_dir():
+        return str(Path(source).resolve())
+    return source
+
+
 def version_key(version: str) -> tuple[int, int, int]:
     return tuple(int(part) for part in VERSION.fullmatch(version).groups())
 
@@ -885,13 +892,13 @@ def cli(args) -> int:
                 resolutions[path] = choice
             lock = load_lock(root)
             if args.command == 'adopt':
-                source, version = args.source, args.version
+                source, version = local_source(args.source), args.version
                 if source is None:
                     source, version = own_release()
                 elif version is None:
                     version = newest_release(source)
             elif args.command == 'update':
-                source, version = args.source or (lock or {}).get('source', ''), args.version
+                source, version = local_source(args.source) or (lock or {}).get('source', ''), args.version
                 if version is None and lock:
                     version = newest_release(source)
                     if version_key(version) <= version_key(lock['version']):

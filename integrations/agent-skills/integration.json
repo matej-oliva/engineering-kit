@@ -139,6 +139,6 @@
       "permission": "writes-skills"
     }
   ],
-  "tested": "none: the files are installed, updated and removed by the tests, but no agent session has used them.",
+  "tested": "Claude Code 2.1.306 listed all twelve skills from .claude/skills in a disposable project and chose kit-diagnose-defect for a reported wrong total, 21 October 2026. The .agents/skills copies have not been used by another client yet.",
   "manual": "Read the procedure for each stage from the table in CONTRACT.md, as the entry block asks."
 }

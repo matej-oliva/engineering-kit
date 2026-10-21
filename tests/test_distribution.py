@@ -1295,6 +1295,19 @@ class Distribution(unittest.TestCase):
         self.assertIn('already at the newest release', result.stdout)
         self.assertEqual(ku.load_lock(root)['version'], '0.2.0')
 
+    def test_a_relative_source_path_is_read_from_where_the_command_runs(self):
+        root = self.consumer()
+        tool = [sys.executable, str(self.source / 'tools' / 'kit.py')]
+        relative = os.path.relpath(self.source, root)
+        result = subprocess.run([*tool, 'adopt', relative, '0.1.0', '--apply'], cwd=root,
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(Path(ku.load_lock(root)['source']), self.source.resolve(),
+                         'the lock records a path that still works from another folder')
+        update = subprocess.run([sys.executable, str(root / '.engineering-kit' / 'kit' / 'tools' / 'kit.py'),
+                                 'update', '--root', str(root)], cwd=self.temp, capture_output=True, text=True)
+        self.assertEqual(update.returncode, 0, update.stdout + update.stderr)
+
     def test_adopting_from_a_source_alone_installs_its_newest_release(self):
         self.second_release()
         root = self.consumer()

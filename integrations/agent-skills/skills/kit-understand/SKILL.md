@@ -1,6 +1,6 @@
 ---
 name: kit-understand
-description: Start a task the engineering kit way: state the problem in its owner's words, who is affected, acceptance examples and open questions before choosing tools or writing code. Use at the start of every new task, feature request or reported problem.
+description: Start a task the engineering kit way: state the problem in its owner's words, who is affected, acceptance examples and open questions before choosing tools or writing code. Use at the start of every new task or feature request; a reported defect starts with kit-diagnose-defect instead.
 ---
 
 Follow `.engineering-kit/kit/procedures/understand.md` step by step. It is the single source
