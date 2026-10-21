@@ -37,8 +37,8 @@ Contract version 1, unchanged. Nothing to do after updating.
 - `release` builds the manifest from the files committed at `HEAD`, the
   tree a tag will hold, so a release made from a working copy whose editor
   saved CRLF no longer fails verification on install. It refuses kit files
-  that are staged, edited, untracked or in conflict, and links or
-  submodules, which every install would refuse. `contribute` writes `change.patch` byte for byte, so on Windows
+  that are staged, edited, untracked or in conflict, and kit files that are
+  links or submodules, which every install would refuse. `contribute` writes `change.patch` byte for byte, so on Windows
   it still applies with `git apply`. Neither changes the contract.
 - The test suite runs on Windows and macOS: fixtures write exact bytes,
   compare POSIX paths, clean up read-only Git objects and no longer depend
