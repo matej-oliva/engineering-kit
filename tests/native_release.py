@@ -162,7 +162,7 @@ def lifecycle(origin, clones, result, older, newer, project, run):
         command(launcher, 'check')
         guide = project / '.engineering-kit/kit/guide/README.md'
         assert guide.is_file() and (guide.parent / 'images/lifecycle.svg').is_file()
-        assert 'guide/README.md' in command(launcher, 'guide')
+        assert 'guide/README.md' in command(launcher, 'guide').replace('\\', '/')  # Windows prints its own paths
         result['steps'].append(f'grant launcher; run status, check and guide through it; the guide is installed')
     change(installed, 'remove')
     assert not any(path.exists() for path in skills)

@@ -71,6 +71,22 @@ def tag_for(version: str) -> str:
     return 'v' + '.'.join(match.groups())
 
 
+def read_blobs(ids: list[str], cwd: Path) -> list[bytes]:
+    """The contents of blobs IDS, in order, from one git process: on Windows a process per file is slow."""
+    if not ids:
+        return []
+    out, position, contents = git('cat-file', '--batch', cwd=cwd, data=('\n'.join(ids) + '\n').encode()), 0, []
+    for expected in ids:
+        end = out.index(b'\n', position)
+        header = out[position:end].split()
+        if len(header) != 3 or header[0].decode() != expected or header[1] != b'blob':
+            raise KitError(f'git cat-file did not return blob {expected}')
+        start = end + 1
+        contents.append(out[start:start + int(header[2])])
+        position = start + int(header[2]) + 1
+    return contents
+
+
 def digest_of(files: dict[str, str]) -> str:
     return sha256(''.join(f'{files[path]}  {path}\n' for path in sorted(files)).encode())
 
@@ -110,7 +126,7 @@ def build_release(root: Path, version: str) -> dict:
         elif not name.startswith(EARLIER_SOURCE_ONLY) and name not in SOURCE_ONLY_FILES:
             raise KitError(f'{name} would look like a missing kit file to the updater of an earlier release; '
                            'make the release commit without it (MAINTAINING.md)')
-    contents = {name: git('cat-file', 'blob', blob, cwd=root) for name, blob in blobs.items()}
+    contents = dict(zip(blobs, read_blobs(list(blobs.values()), root)))
     files = {name: sha256(data) for name, data in contents.items()}
     integrations = {}
     for name, data in contents.items():
@@ -168,11 +184,11 @@ def fetch(source: str, version: str, work: Path) -> Release:
     if set(listed) != present:
         raise KitError(f'release {tag} manifest does not match its files: '
                        f'{sorted(set(listed) ^ present)[:5]}')
-    files = {}
-    for path, expected in listed.items():
+    for path in listed:
         if not kit.relative_path(path):
             raise KitError(f'release {tag} names an unsafe path {path!r}')
-        files[path] = blob(path)
+    files = dict(zip(listed, read_blobs([tree[path] for path in listed], repository)))
+    for path, expected in listed.items():
         if sha256(files[path]) != expected:
             raise KitError(f'release {tag}: {path} does not match its manifest digest')
     if digest_of(listed) != manifest.get('digest'):

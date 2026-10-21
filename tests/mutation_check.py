@@ -19,8 +19,10 @@ KIT = Path(__file__).resolve().parents[1]
 # (label, file under tools/, exact original text, replacement)
 MUTANTS = [
     ('a release hashes the working copy, not what Git stores', 'kit_update.py',
-     "{name: git('cat-file', 'blob', blob, cwd=root) for name, blob in blobs.items()}",
-     "{name: (root / name).read_bytes() for name in blobs}"),
+     "contents = dict(zip(blobs, read_blobs(list(blobs.values()), root)))",
+     "contents = {name: (root / name).read_bytes() for name in blobs}"),
+    ('a batch read takes the wrong length for a file', 'kit_update.py',
+     "contents.append(out[start:start + int(header[2])])", "contents.append(out[start:start + int(header[2]) - 1])"),
     ('a release ignores uncommitted kit files', 'kit_update.py',
      "            if payload(name):\n                raise KitError(f'{name} differs from the last commit",
      "            if False:\n                raise KitError(f'{name} differs from the last commit"),

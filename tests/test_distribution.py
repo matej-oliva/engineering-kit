@@ -525,7 +525,7 @@ class Distribution(unittest.TestCase):
         self.second_release()
         moved = self.temp / 'kit-after-move'
         sh('clone', '-q', str(self.source), str(moved), cwd=self.temp)
-        shutil.rmtree(original)
+        remove_tree(original)
         installed = [sys.executable, str(root / '.engineering-kit' / 'kit' / 'tools' / 'kit.py')]
 
         def kit(*args):
@@ -535,13 +535,13 @@ class Distribution(unittest.TestCase):
         self.assertIn('git fetch failed', refused.stdout)
         updated = kit('update', '0.2.0', '--apply', '--source', str(moved))
         self.assertEqual(updated.returncode, 0, updated.stdout + updated.stderr)
-        self.assertEqual(Path(ku.load_lock(root)['source']), moved)
-        shutil.rmtree(moved)
+        self.assertEqual(Path(ku.load_lock(root)['source']), moved.resolve())  # /var is /private/var on macOS
+        remove_tree(moved)
         again = self.temp / 'kit-moved-again'
         sh('clone', '-q', str(self.source), str(again), cwd=self.temp)
         rolled = kit('rollback', '--apply', '--source', str(again))
         self.assertEqual(rolled.returncode, 0, rolled.stdout + rolled.stderr)
-        shutil.rmtree(again)
+        remove_tree(again)
         last = self.temp / 'kit-last'
         sh('clone', '-q', str(self.source), str(last), cwd=self.temp)
         removed = kit('remove', '--apply', '--source', str(last))

@@ -3,7 +3,7 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
-## 1.2.0, 2026-10-21
+## 1.2.0, 2026-10-22
 
 Contract version 1, unchanged. To update from 1.1.0 run
 `python3 .engineering-kit/kit/tools/kit.py update --apply`; from 1.0.1,
@@ -32,6 +32,8 @@ points at the guide; your text outside it is unchanged.
   type it. A release that lacks an integration you granted names the entry
   to remove from `project.json`. The launcher refuses to run from a
   subfolder instead of reading the wrong project.
+- Reading a release starts one Git process instead of one per file, so
+  updates, rollbacks and releases are faster, most of all on Windows.
 - Removing a kit file also removes the folders that leaves empty, so
   `remove` no longer leaves empty skill and kit folders behind.
 - `rollback` and `remove` accept `--source`, like `update`, and all three
