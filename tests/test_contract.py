@@ -119,6 +119,31 @@ class ContractConsistency(unittest.TestCase):
                     self.assertNotIn(Path(entry['target']).parts[0], ('.engineering-kit', '.git'))
 
 
+    def test_each_procedure_has_one_skill_that_points_at_it(self):
+        """Skills are pointers: a procedure's steps live only in the procedure."""
+        folder = KIT / 'integrations' / 'agent-skills'
+        procedures = sorted(p.stem for p in (KIT / 'procedures').glob('*.md'))
+        skills = sorted(p.name for p in (folder / 'skills').iterdir())
+        self.assertEqual(skills, [f'kit-{stem}' for stem in procedures])
+        for stem in procedures:
+            name = f'kit-{stem}'
+            with self.subTest(name):
+                text = (folder / 'skills' / name / 'SKILL.md').read_text(encoding='utf-8')
+                front, body = re.fullmatch(r'---\n(.*?)\n---\n(.*)', text, re.S).groups()
+                fields = dict(line.split(': ', 1) for line in front.splitlines())
+                self.assertEqual(set(fields), {'name', 'description'})
+                self.assertEqual(fields['name'], name)
+                self.assertRegex(name, r'^[a-z0-9]+(-[a-z0-9]+)*$')
+                self.assertLessEqual(len(name), 64)
+                self.assertIn('Use ', fields['description'])  # says when it applies, which is how it is chosen
+                self.assertLessEqual(len(fields['description']), 1024)
+                self.assertIn(f'`.engineering-kit/kit/procedures/{stem}.md`', body)
+                self.assertLess(len(body), 600, 'a skill points at its procedure instead of copying it')
+        targets = {entry['target'] for entry in json.loads((folder / 'integration.json').read_text())['files']}
+        self.assertEqual(targets, {f'{root}/{skill}/SKILL.md' for skill in skills
+                                   for root in ('.agents/skills', '.claude/skills')})
+
+
 class Portability(unittest.TestCase):
     def test_no_file_names_a_personal_environment(self):
         for relative, content in kit_files(core=False):

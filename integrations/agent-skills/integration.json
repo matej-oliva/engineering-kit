@@ -1,0 +1,144 @@
+{
+  "kit": "integration/1",
+  "name": "agent-skills",
+  "summary": "One skill per kit procedure, so agents that support Agent Skills load the right procedure for the work in hand. Each skill points at the installed procedure, which stays the only copy of its steps.",
+  "contract": [
+    1
+  ],
+  "capabilities": [
+    "skills"
+  ],
+  "runtime": "none",
+  "permissions": [
+    "writes-skills"
+  ],
+  "inputs": [
+    "The installed procedures in .engineering-kit/kit/procedures/"
+  ],
+  "evidence": [],
+  "blocks": [],
+  "files": [
+    {
+      "source": "skills/kit-adopt-and-update/SKILL.md",
+      "target": ".agents/skills/kit-adopt-and-update/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-adopt-and-update/SKILL.md",
+      "target": ".claude/skills/kit-adopt-and-update/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-change-preflight/SKILL.md",
+      "target": ".agents/skills/kit-change-preflight/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-change-preflight/SKILL.md",
+      "target": ".claude/skills/kit-change-preflight/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-contribute/SKILL.md",
+      "target": ".agents/skills/kit-contribute/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-contribute/SKILL.md",
+      "target": ".claude/skills/kit-contribute/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-design/SKILL.md",
+      "target": ".agents/skills/kit-design/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-design/SKILL.md",
+      "target": ".claude/skills/kit-design/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-diagnose-defect/SKILL.md",
+      "target": ".agents/skills/kit-diagnose-defect/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-diagnose-defect/SKILL.md",
+      "target": ".claude/skills/kit-diagnose-defect/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-handoff/SKILL.md",
+      "target": ".agents/skills/kit-handoff/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-handoff/SKILL.md",
+      "target": ".claude/skills/kit-handoff/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-implement/SKILL.md",
+      "target": ".agents/skills/kit-implement/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-implement/SKILL.md",
+      "target": ".claude/skills/kit-implement/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-maintain/SKILL.md",
+      "target": ".agents/skills/kit-maintain/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-maintain/SKILL.md",
+      "target": ".claude/skills/kit-maintain/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-release/SKILL.md",
+      "target": ".agents/skills/kit-release/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-release/SKILL.md",
+      "target": ".claude/skills/kit-release/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-review/SKILL.md",
+      "target": ".agents/skills/kit-review/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-review/SKILL.md",
+      "target": ".claude/skills/kit-review/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-understand/SKILL.md",
+      "target": ".agents/skills/kit-understand/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-understand/SKILL.md",
+      "target": ".claude/skills/kit-understand/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-write-instructions/SKILL.md",
+      "target": ".agents/skills/kit-write-instructions/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-write-instructions/SKILL.md",
+      "target": ".claude/skills/kit-write-instructions/SKILL.md",
+      "permission": "writes-skills"
+    }
+  ],
+  "tested": "Claude Code 2.1.306 listed all twelve skills from .claude/skills in a disposable project and chose kit-diagnose-defect for a reported wrong total, 21 October 2026. The .agents/skills copies have not been used by another client yet.",
+  "manual": "Read the procedure for each stage from the table in CONTRACT.md, as the entry block asks."
+}

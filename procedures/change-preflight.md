@@ -22,6 +22,14 @@ see `THIRD_PARTY_NOTICES.md`.
 6. **Name the one fact the change is safe because of**, and how far it is
    proven: stated, cited at a file and line, shown on a copy, or observed on
    the target. Say "unproven" rather than presenting it as settled.
-7. **Record the effect** in the task as `planned` with its kind, target,
+7. **Prepare what a person runs.** When someone else must apply the effect,
+   for example with privileges you lack, give them one reviewed, committed
+   script per action with its exact command, where to run it and the
+   expected result, never commands to paste or code to run as an
+   administrator. The script records its outcome where you can read it, so
+   you verify from that record instead of asking for pasted output; when it
+   fails, fix the script rather than sending variants. Ask every decision
+   that is theirs in one batch, each with a recommended answer.
+8. **Record the effect** in the task as `planned` with its kind, target,
    authorizing role, authorization, door, and rollback or what is
    irreversible. Done when `tools/kit.py check-task FILE` passes.

@@ -378,6 +378,15 @@ class Distribution(unittest.TestCase):
         sh('commit', '-q', '-m', 'Add a link', cwd=self.source)
         with self.assertRaisesRegex(ku.KitError, 'link or submodule'):
             ku.build_release(self.source, '0.2.0')
+        # Installs refuse a link anywhere in the tagged tree, so a release refuses one outside the payload too.
+        sh('mv', 'procedures/link.md', 'tests/link.md', cwd=self.source)
+        sh('commit', '-q', '-m', 'Move the link out of the payload', cwd=self.source)
+        with self.assertRaisesRegex(ku.KitError, 'tests/link.md is a link or submodule'):
+            ku.build_release(self.source, '0.2.0')
+        sh('rm', '-q', 'tests/link.md', cwd=self.source)
+        link.symlink_to(target)
+        sh('add', '-A', cwd=self.source)
+        sh('commit', '-q', '-m', 'Restore the link', cwd=self.source)
         # A tag whose manifest was built before the link was added is refused on install.
         sh('rm', '-q', str(link), cwd=self.source)
         self.release('0.2.0')
@@ -484,6 +493,23 @@ class Distribution(unittest.TestCase):
                 self.assertEqual({f.rule for f in ku.check_contribution({**record, field: value})}, {'LESSON'})
 
     # ---------------------------- findings of the fresh review, 2026-10-20
+
+    def test_agent_skills_install_beside_the_project_skills_and_leave_on_removal(self):
+        own = '.claude/skills/deploy/SKILL.md'
+        root = self.consumer(files={own: '---\nname: deploy\ndescription: Ours.\n---\n'})
+        status, report = self.run_change(root, '0.1.0', apply_now=True, with_integrations=['agent-skills'])
+        self.assertEqual(status, 0, report)
+        procedures = sorted(p.stem for p in (root / '.engineering-kit' / 'kit' / 'procedures').glob('*.md'))
+        for folder in ('.agents/skills', '.claude/skills'):
+            for stem in procedures:
+                skill = (root / folder / f'kit-{stem}' / 'SKILL.md').read_text(encoding='utf-8')
+                self.assertIn(f'name: kit-{stem}\n', skill)
+                self.assertTrue((root / '.engineering-kit' / 'kit' / 'procedures' / f'{stem}.md').is_file())
+        self.assertEqual(ku.status(root)[0], 0)
+        status, report = self.run_change(root, None, apply_now=True)
+        self.assertEqual(status, 0, report)
+        self.assertEqual([p for p in (root / '.agents').rglob('*') if p.is_file()], [])
+        self.assertEqual([p.relative_to(root).as_posix() for p in (root / '.claude' / 'skills').rglob('*.md')], [own])
 
     def grant_github(self, root):
         self.set_integrations(root, {'agents-md': {'grant': ['writes-instructions']},
@@ -1228,6 +1254,68 @@ class Distribution(unittest.TestCase):
         self.assertIn('Kit 0.1.0', result.stdout)
         refused = subprocess.run([*installed, 'update', '9.9.9', '--root', str(root)], capture_output=True, text=True)
         self.assertEqual(refused.returncode, 1)
+
+    def test_update_without_a_version_moves_to_the_newest_release(self):
+        root = self.consumer()
+        self.adopt(root)
+        self.second_release()                       # 0.2.0
+        self.release('0.10.0', lambda source: edit(source / 'procedures' / 'review.md', 'is never the author.',
+                                                   'is never the author (0.10.0).'))
+        self.release('0.9.0')                       # tagged last, but older than 0.10.0
+        sh('tag', 'not-a-release', cwd=self.source)
+        installed = [sys.executable, str(root / '.engineering-kit' / 'kit' / 'tools' / 'kit.py')]
+
+        def kit(*args):
+            return subprocess.run([*installed, *args, '--root', str(root)], capture_output=True, text=True)
+        preview = kit('update')
+        self.assertEqual(preview.returncode, 0, preview.stdout + preview.stderr)
+        self.assertIn('0.10.0', preview.stdout)
+        self.assertEqual(ku.load_lock(root)['version'], '0.1.0', 'a preview writes nothing')
+        self.release('0.11.0')                      # appears between the preview and the apply
+        stale = kit('update', '--apply', '--plan', preview.stdout.rsplit('plan ', 1)[1].split()[0])
+        self.assertEqual(stale.returncode, 1, stale.stdout)
+        self.assertIn('preview again', stale.stdout)
+        self.assertEqual(ku.load_lock(root)['version'], '0.1.0')
+        sh('tag', '-d', 'v0.11.0', cwd=self.source)
+        applied = kit('update', '--apply')
+        self.assertEqual(applied.returncode, 0, applied.stdout + applied.stderr)
+        self.assertEqual(ku.load_lock(root)['version'], '0.10.0')
+        again = kit('update')
+        self.assertEqual(again.returncode, 0, again.stdout + again.stderr)
+        self.assertIn('already at the newest release, 0.10.0', again.stdout)
+
+    def test_update_without_a_version_never_moves_back(self):
+        root = self.consumer()
+        self.second_release()
+        self.adopt(root, '0.2.0')
+        sh('tag', '-d', 'v0.2.0', cwd=self.source)  # the newest remaining release is older than this one
+        installed = [sys.executable, str(root / '.engineering-kit' / 'kit' / 'tools' / 'kit.py')]
+        result = subprocess.run([*installed, 'update', '--apply', '--root', str(root)], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn('already at the newest release', result.stdout)
+        self.assertEqual(ku.load_lock(root)['version'], '0.2.0')
+
+    def test_a_relative_source_path_is_read_from_where_the_command_runs(self):
+        root = self.consumer()
+        tool = [sys.executable, str(self.source / 'tools' / 'kit.py')]
+        relative = os.path.relpath(self.source, root)
+        result = subprocess.run([*tool, 'adopt', relative, '0.1.0', '--apply'], cwd=root,
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(Path(ku.load_lock(root)['source']), self.source.resolve(),
+                         'the lock records a path that still works from another folder')
+        update = subprocess.run([sys.executable, str(root / '.engineering-kit' / 'kit' / 'tools' / 'kit.py'),
+                                 'update', '--root', str(root)], cwd=self.temp, capture_output=True, text=True)
+        self.assertEqual(update.returncode, 0, update.stdout + update.stderr)
+
+    def test_adopting_from_a_source_alone_installs_its_newest_release(self):
+        self.second_release()
+        root = self.consumer()
+        tool = [sys.executable, str(self.source / 'tools' / 'kit.py')]
+        result = subprocess.run([*tool, 'adopt', str(self.source), '--root', str(root), '--apply'],
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(ku.load_lock(root)['version'], '0.2.0')
 
 
 if __name__ == '__main__':
