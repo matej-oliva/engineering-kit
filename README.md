@@ -111,7 +111,7 @@ in `procedures/adopt-and-update.md`.
 
 Only the entry block is loaded into every agent session: about 0.4 kB. The
 contract is read when work is planned, reviewed or released: about 6.8 kB.
-A procedure is about 1.9 kB and is read only for its stage.
+A procedure is about 2.0 kB and is read only for its stage.
 
 ## Test the kit
 
