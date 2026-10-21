@@ -94,7 +94,7 @@ in `procedures/adopt-and-update.md`.
 | --- | --- |
 | Linux on ARM64, Python 3.14, Git 2.53 | Tested: the suite, the mutation check, both pilots and a fresh install |
 | Python 3.11 to 3.13 | The declared minimum is 3.11; the suite passes natively on 3.11 (Windows, macOS) and on 3.12 (Linux) |
-| Windows Server 2025 x64, Python 3.11 and 3.14, Git 2.56 | Tested on hosted runners: the full suite, and installing each of the two previous releases with its own tool, updating, rolling back, updating again and removing. Making a release or a contribution from a Windows checkout needs 1.0.1 or later |
+| Windows Server 2025 x64, Python 3.11 and 3.14, Git 2.56 | Tested on hosted runners before each release is tagged: the full suite, and installing each of the two previous releases with its own tool, updating to the candidate, rolling back, updating again, adding the skills with an update that names no version, and removing. Making a release or a contribution from a Windows checkout needs 1.0.1 or later |
 | macOS 15 on Apple silicon, Python 3.11 and 3.14, Git 2.55 | Tested on hosted runners: the same lifecycle and the full suite |
 | Agent clients, Git hosts | Each integration's `tested` field says what has used it in a real project; some have only been installed by the tests |
 

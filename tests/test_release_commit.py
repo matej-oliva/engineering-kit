@@ -51,6 +51,27 @@ class ReleaseCommit(unittest.TestCase):
         self.assertTrue((self.root / '.github' / 'workflows' / 'native.yml').is_file())
         self.assertIn('git push origin v2.0.0', done.stdout)
 
+    def test_a_failed_release_leaves_no_branch_and_returns_to_the_start(self):
+        (self.root / 'procedures' / 'link.md').symlink_to(self.root / 'README.md')
+        self.git('add', '-A')
+        self.git('commit', '-q', '-m', 'A link the release refuses')
+        done = self.make('2.0.0')
+        self.assertNotEqual(done.returncode, 0)
+        self.assertIn('link or submodule', done.stderr)
+        self.assertEqual(self.git('rev-parse', '--abbrev-ref', 'HEAD').strip(), 'main')
+        self.assertEqual(self.git('branch', '--list', 'release/*').strip(), '')
+        self.assertEqual(self.git('tag', '--list').strip(), '')
+
+    def test_a_detached_head_or_an_existing_tag_is_refused(self):
+        self.git('tag', '-a', 'v2.0.0', '-m', 'already published')
+        done = self.make('2.0.0')
+        self.assertNotEqual(done.returncode, 0)
+        self.assertIn('tag v2.0.0 already exists', done.stderr)
+        self.git('switch', '-q', '--detach', 'HEAD')
+        done = self.make('2.0.1')
+        self.assertNotEqual(done.returncode, 0)
+        self.assertIn('detached', done.stderr)
+
     def test_a_dirty_checkout_is_refused_without_a_tag(self):
         (self.root / 'procedures' / 'review.md').write_bytes(b'changed\n')
         done = self.make('2.0.0')

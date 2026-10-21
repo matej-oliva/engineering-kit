@@ -1268,7 +1268,8 @@ class Distribution(unittest.TestCase):
         self.release('0.10.0', lambda source: edit(source / 'procedures' / 'review.md', 'is never the author.',
                                                    'is never the author (0.10.0).'))
         self.release('0.9.0')                       # tagged last, but older than 0.10.0
-        sh('tag', 'not-a-release', cwd=self.source)
+        for name in ('not-a-release', 'vendor/1.2.3', 'v1/v9.9.9', 'v01.1.0', 'v1.2', 'v1.3.0-rc1'):
+            sh('tag', name, cwd=self.source)  # none of these is a release, however it compares
         installed = [sys.executable, str(root / '.engineering-kit' / 'kit' / 'tools' / 'kit.py')]
 
         def kit(*args):
@@ -1288,7 +1289,32 @@ class Distribution(unittest.TestCase):
         self.assertEqual(ku.load_lock(root)['version'], '0.10.0')
         again = kit('update')
         self.assertEqual(again.returncode, 0, again.stdout + again.stderr)
-        self.assertIn('already at the newest release, 0.10.0', again.stdout)
+        self.assertIn('The newest release at the source is 0.10.0.', again.stdout)
+        self.assertIn('nothing to change', again.stdout)
+
+    def test_update_without_a_version_installs_newly_granted_integrations(self):
+        root = self.consumer()
+        self.adopt(root)
+        project = json.loads((root / ku.PROJECT).read_text())
+        project['integrations']['agent-skills'] = {'grant': ['writes-skills']}
+        (root / ku.PROJECT).write_text(json.dumps(project, indent=2))
+        installed = [sys.executable, str(root / '.engineering-kit' / 'kit' / 'tools' / 'kit.py')]
+        result = subprocess.run([*installed, 'update', '--apply', '--root', str(root)], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn('Nothing to update', result.stdout)
+        self.assertTrue((root / '.claude' / 'skills' / 'kit-review' / 'SKILL.md').is_file())
+        self.assertEqual(ku.load_lock(root)['version'], '0.1.0')
+
+    def test_update_without_a_version_reports_an_interrupted_apply(self):
+        root = self.consumer()
+        self.adopt(root)
+        self.grant_github(root)
+        with self.assertRaises(ku.KitError):
+            self.run_change(root, '0.1.0', apply_now=True, fail_after=0)
+        installed = [sys.executable, str(root / '.engineering-kit' / 'kit' / 'tools' / 'kit.py')]
+        result = subprocess.run([*installed, 'update', '--root', str(root)], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn('recover', result.stdout)
 
     def test_update_without_a_version_never_moves_back(self):
         root = self.consumer()
@@ -1298,7 +1324,7 @@ class Distribution(unittest.TestCase):
         installed = [sys.executable, str(root / '.engineering-kit' / 'kit' / 'tools' / 'kit.py')]
         result = subprocess.run([*installed, 'update', '--apply', '--root', str(root)], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn('already at the newest release', result.stdout)
+        self.assertIn('newer than the newest release at the source, 0.1.0', result.stdout)
         self.assertEqual(ku.load_lock(root)['version'], '0.2.0')
 
     def test_a_relative_source_path_is_read_from_where_the_command_runs(self):

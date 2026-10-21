@@ -35,6 +35,8 @@ LOCK = f'{STATE}/lock.json'
 PROJECT = f'{STATE}/project.json'
 JOURNAL = f'{STATE}/journal'
 VERSION = re.compile(r'v?(\d+)\.(\d+)\.(\d+)')
+# A release tag exactly, without leading zeros: v1.2.3, never vendor/1.2.3, v1/v1.2.3 or v01.2.3.
+RELEASE_REF = re.compile(r'refs/tags/v((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*))')
 SOURCE_ONLY = ('tests/', 'examples/', 'conformance/', '.github/')  # stay in the kit's repository
 # All that the updaters of 0.1.0 to 1.0.0 leave out. A release tree may hold nothing else outside
 # the payload: those updaters would count it as a kit file the manifest lacks and refuse the release.
@@ -736,8 +738,8 @@ def newest_release(source: str) -> str:
     if not kit.text(source) or source.lstrip().startswith('-'):
         raise KitError(f'refusing the source {source!r}: it must be a repository address or path')
     listed = git('-c', 'protocol.ext.allow=never', 'ls-remote', '--tags', '--refs', '--', source).decode()
-    versions = [ref.rsplit('/', 1)[1][1:] for ref in (line.split('\t')[-1] for line in listed.splitlines())
-                if ref.startswith('refs/tags/v') and VERSION.fullmatch(ref.rsplit('/', 1)[1])]
+    versions = [match.group(1) for match in (RELEASE_REF.fullmatch(line.split('\t')[-1])
+                                             for line in listed.splitlines()) if match]
     if not versions:
         raise KitError(f'{source} has no release tags vMAJOR.MINOR.PATCH')
     return max(versions, key=version_key)
@@ -907,11 +909,13 @@ def cli(args) -> int:
                 source, version = local_source(args.source) or (lock or {}).get('source', ''), args.version
                 if version is None and lock:
                     version = newest_release(source)
-                    if version_key(version) <= version_key(lock['version']):
-                        newer = '' if version == lock['version'] else f'; the newest at the source is {version}'
-                        print(f'Nothing to update: this project is already at the newest release, '
-                              f'{lock["version"]}{newer}.')
+                    if version_key(version) < version_key(lock['version']):  # never move back
+                        print(f'Nothing to update: this project is on {lock["version"]}, newer than the '
+                              f'newest release at the source, {version}.')
                         return 0
+                    # At the newest release, still plan: a newly granted integration or an
+                    # interrupted apply is handled as for an update to the same version.
+                    print(f'The newest release at the source is {version}.')
             elif args.command == 'rollback':
                 source, version = (lock or {}).get('source', ''), previous_version(root)
             else:

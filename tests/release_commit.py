@@ -30,7 +30,14 @@ def make(root: Path, version: str, python: str = sys.executable) -> str:
     if git('status', '--porcelain', '--untracked-files=all', root=root).strip():
         raise SystemExit('the checkout has uncommitted changes; commit or discard them first')
     start = git('rev-parse', '--abbrev-ref', 'HEAD', root=root).strip()
-    git('switch', '-q', '-c', f'release/{version}', root=root)
+    if start == 'HEAD':
+        raise SystemExit('HEAD is detached; switch to the branch the release is made from')
+    branch, tag = f'release/{version}', f'v{version}'
+    for ref, kind in ((f'refs/heads/{branch}', 'branch'), (f'refs/tags/{tag}', 'tag')):
+        if subprocess.run(['git', 'rev-parse', '--verify', '-q', ref], cwd=root, capture_output=True).returncode == 0:
+            raise SystemExit(f'the {kind} {ref.split("/", 2)[2]} already exists; a published tag never moves')
+    git('switch', '-q', '-c', branch, root=root)
+    made = False
     try:
         present = [path for path in HOST_ONLY if (root / path).exists()]
         if present:
@@ -43,13 +50,16 @@ def make(root: Path, version: str, python: str = sys.executable) -> str:
                 raise SystemExit(f'kit.py {" ".join(args)} failed: {done.stdout}{done.stderr}')
         git('add', 'RELEASE.json', root=root)
         git('commit', '-q', '-m', f'Release {version}', root=root)
-        git('tag', '-a', f'v{version}', '-m', f'Engineering kit {version}', root=root)
+        git('tag', '-a', tag, '-m', f'Engineering kit {version}', root=root)
+        made = True
         return git('rev-parse', 'HEAD', root=root).strip()
     finally:
         git('switch', '-q', start, root=root)
+        if not made:  # leave nothing half made behind, so a rerun starts clean
+            git('branch', '-q', '-D', branch, root=root)
 
 
 if __name__ == '__main__':
     commit = make(KIT, sys.argv[1])
-    print(f'Tagged v{sys.argv[1]} at {commit} on branch release/{sys.argv[1]}. '
+    print(f'Tagged v{sys.argv[1]} at commit {commit} on branch release/{sys.argv[1]}. '
           f'Push the tag only: git push origin v{sys.argv[1]}')

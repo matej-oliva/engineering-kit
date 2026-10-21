@@ -140,7 +140,19 @@ def lifecycle(origin, clones, result, older, newer, project, run):
         assert (project / 'AGENTS.md').read_bytes().startswith(instructions)
         command(installed, 'check')
         result['steps'].append(f'{operation} {version} with the installed tool and check')
+    skills = [root / 'kit-review' / 'SKILL.md' for root in (project / '.agents/skills', project / '.claude/skills')]
+    if (clones[newer] / 'integrations' / 'agent-skills').is_dir():
+        config['integrations']['agent-skills'] = {'grant': ['writes-skills']}
+        config_bytes = (json.dumps(config, indent=2) + '\n').encode()
+        config_path.write_bytes(config_bytes)
+        change(installed, 'update')  # no version: the newest release, here NEWER, with the new grant
+        lock = json.loads((project / '.engineering-kit/lock.json').read_text(encoding='utf-8'))
+        assert lock['version'] == newer
+        assert all(path.is_file() for path in skills)
+        command(installed, 'check')
+        result['steps'].append(f'grant agent-skills, update without a version and check: {newer} with skills')
     change(installed, 'remove')
+    assert not any(path.exists() for path in skills)
     assert (project / 'AGENTS.md').read_bytes() == instructions
     assert config_path.read_bytes() == config_bytes
     assert task.read_bytes() == task_bytes
