@@ -77,16 +77,32 @@ def payload(path: str) -> bool:
 # ------------------------------------------------------------- releases
 
 def build_release(root: Path, version: str) -> dict:
-    """Manifest for the tracked files under ROOT, the kit's source folder, as Git stores them.
+    """Manifest for the kit files committed at HEAD in ROOT, the kit's source folder.
 
-    Hashing the staged blobs rather than the working copy keeps the manifest valid when an
-    editor saved CRLF that .gitattributes normalizes to LF on commit."""
-    blobs = {}
-    for record in git('ls-files', '-s', '-z', cwd=root).decode().split('\0'):
-        if record:
-            meta, name = record.split('\t', 1)
+    It reads exactly the tree a tag on HEAD would hold, as fetch() verifies it. Working-copy
+    bytes can differ from it: an editor may save CRLF that .gitattributes stores as LF."""
+    entries = iter(git('status', '--porcelain=v1', '-z', '--untracked-files=all', cwd=root).decode().split('\0'))
+    for entry in entries:
+        if not entry:
+            continue
+        status, names = entry[:2], [entry[3:]]
+        if 'R' in status or 'C' in status:  # a rename or copy is followed by its source path
+            names.append(next(entries, ''))
+        for name in names:
             if payload(name):
-                blobs[name] = meta.split()[1]
+                raise KitError(f'{name} differs from the last commit; commit or discard it before making '
+                               'a release')
+    blobs = {}
+    for record in git('ls-tree', '-r', '-z', '--full-tree', 'HEAD', cwd=root).decode().split('\0'):
+        if not record:
+            continue
+        meta, name = record.split('\t', 1)
+        mode, kind, blob = meta.split()
+        if not payload(name):
+            continue
+        if mode in ('120000', '160000') or kind != 'blob':
+            raise KitError(f'{name} is a link or submodule; a release cannot contain one')
+        blobs[name] = blob
     contents = {name: git('cat-file', 'blob', blob, cwd=root) for name, blob in blobs.items()}
     files = {name: sha256(data) for name, data in contents.items()}
     integrations = {}

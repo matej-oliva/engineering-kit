@@ -57,6 +57,7 @@ class Distribution(unittest.TestCase):
         if change:
             change(self.source)
         sh('add', '-A', cwd=self.source)
+        sh('commit', '-q', '--allow-empty', '-m', f'Changes for {version}', cwd=self.source)
         manifest = ku.build_release(self.source, version)
         (self.source / 'RELEASE.json').write_text(json.dumps(manifest, indent=2) + '\n')
         sh('add', '-A', cwd=self.source)
@@ -114,6 +115,7 @@ class Distribution(unittest.TestCase):
         workflow.parent.mkdir(parents=True, exist_ok=True)
         workflow.write_text('name: Repository validation\n')
         sh('add', '.github', cwd=self.source)
+        sh('commit', '-q', '-m', 'Add a repository workflow', cwd=self.source)
         manifest = ku.build_release(self.source, '0.1.0')
         self.assertNotIn('.github/workflows/native.yml', manifest['files'])
         self.assertIn('integrations/github/workflow.yml', manifest['files'])
@@ -370,11 +372,42 @@ class Distribution(unittest.TestCase):
     def test_a_release_containing_a_link_is_refused(self):
         target = self.temp / 'external.md'
         target.write_text('Outside the release.\n', encoding='utf-8')
-        (self.source / 'procedures' / 'link.md').symlink_to(target)
+        link = self.source / 'procedures' / 'link.md'
+        link.symlink_to(target)
+        sh('add', '-A', cwd=self.source)
+        sh('commit', '-q', '-m', 'Add a link', cwd=self.source)
+        with self.assertRaisesRegex(ku.KitError, 'link or submodule'):
+            ku.build_release(self.source, '0.2.0')
+        # A tag whose manifest was built before the link was added is refused on install.
+        sh('rm', '-q', str(link), cwd=self.source)
         self.release('0.2.0')
+        sh('tag', '-d', 'v0.2.0', cwd=self.source)
+        link.symlink_to(target)
+        sh('add', '-A', cwd=self.source)
+        sh('commit', '-q', '-m', 'Add the link after the manifest', cwd=self.source)
+        sh('tag', 'v0.2.0', cwd=self.source)
         root = self.consumer()
         with self.assertRaisesRegex(ku.KitError, 'link or submodule'):
             self.run_change(root, '0.2.0')
+
+    def test_a_release_is_built_only_from_committed_kit_files(self):
+        """The manifest describes the commit a tag will point at, never work that is not in it."""
+        review = self.source / 'procedures' / 'review.md'
+        edit(review, REVIEW_STEP, 'Use when a candidate is ready. Staged, not committed.')
+        sh('add', '-A', cwd=self.source)
+        with self.assertRaisesRegex(ku.KitError, 'procedures/review.md.*commit'):
+            ku.build_release(self.source, '0.2.0')
+        sh('commit', '-q', '-m', 'Commit the review step', cwd=self.source)
+        edit(review, 'Staged, not committed.', 'Edited after the commit.')
+        with self.assertRaisesRegex(ku.KitError, 'procedures/review.md.*commit'):
+            ku.build_release(self.source, '0.2.0')
+        sh('checkout', '-q', '--', 'procedures/review.md', cwd=self.source)
+        (self.source / 'procedures' / 'new.md').write_text('# New\n', newline='')
+        with self.assertRaisesRegex(ku.KitError, 'procedures/new.md.*commit'):
+            ku.build_release(self.source, '0.2.0')
+        (self.source / 'procedures' / 'new.md').unlink()
+        (self.source / 'RELEASE.json').write_text('{}\n')  # the manifest itself is not payload
+        self.assertIn('procedures/review.md', ku.build_release(self.source, '0.2.0')['files'])
 
     def test_a_release_saved_with_windows_line_endings_installs(self):
         """Git stores kit files with LF; a maintainer's editor saving CRLF must still give a valid release."""

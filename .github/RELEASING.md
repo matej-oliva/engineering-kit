@@ -19,5 +19,9 @@ python3 tests/release_notes.py X.Y.Z > NOTES.md
 gh release create vX.Y.Z --verify-tag --title X.Y.Z --notes-file NOTES.md
 ```
 
+Then run the native platform workflow again on `main`. Its lifecycle step
+exercises the two newest tags, so only this run covers the new release:
+it installs the previous release and updates to the new one.
+
 A release page never replaces the tag: projects install and verify the tag
 and its `RELEASE.json`, so deleting a page changes nothing they installed.

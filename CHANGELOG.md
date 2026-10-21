@@ -3,18 +3,20 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
-## Unreleased
+## 1.0.1, 2026-10-21
 
 Contract version 1, unchanged. Nothing to do after updating.
 
 - Tested on Windows Server 2025 and macOS 15, each with Python 3.11 and
   3.14, as well as Linux. The manually started native-platform workflow runs
-  the suite and an offline published 0.1.1 to 1.0.0 adoption, update,
-  rollback and removal exercise. Repository workflows stay out of installed
-  release payloads.
-- `release` hashes files as Git stores them, so a release made from a
-  working copy whose editor saved CRLF no longer fails verification on
-  install. `contribute` writes `change.patch` byte for byte, so on Windows
+  the suite and an offline adoption, update, rollback and removal exercise
+  between the two newest published releases. Repository workflows stay out
+  of installed release payloads.
+- `release` builds the manifest from the files committed at `HEAD`, the
+  tree a tag will hold, so a release made from a working copy whose editor
+  saved CRLF no longer fails verification on install. It refuses kit files
+  that are staged, edited, untracked or in conflict, and links or
+  submodules, which every install would refuse. `contribute` writes `change.patch` byte for byte, so on Windows
   it still applies with `git apply`. Neither changes the contract.
 - The test suite runs on Windows and macOS: fixtures write exact bytes,
   compare POSIX paths, clean up read-only Git objects and no longer depend

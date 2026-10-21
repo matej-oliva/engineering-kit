@@ -32,7 +32,8 @@ the owner approves anything that widens what the kit may write or do.
    are fixed and reviewed again, by a reviewer given the earlier findings.
 3. `CHANGELOG.md` says what changed, what a project must do after updating,
    and whether the contract changed.
-4. Run `python3 tools/kit.py release X.Y.Z` and
+4. Commit every kit file first: `release` builds from the committed tree
+   and refuses uncommitted kit files. Run `python3 tools/kit.py release X.Y.Z` and
    `python3 tools/kit.py release X.Y.Z --check`, commit `RELEASE.json`, tag
    `vX.Y.Z` with `git tag -a`, and push `main` and the tag. Publish the Git
    host's release page for that tag, with its changelog section as the
