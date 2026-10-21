@@ -62,6 +62,19 @@ class ReleaseCommit(unittest.TestCase):
         self.assertEqual(self.git('branch', '--list', 'release/*').strip(), '')
         self.assertEqual(self.git('tag', '--list').strip(), '')
 
+    def test_a_refused_commit_leaves_the_checkout_exactly_as_it_was(self):
+        hook = self.root / '.git' / 'hooks' / 'pre-commit'
+        hook.parent.mkdir(parents=True, exist_ok=True)
+        hook.write_bytes(b'#!/bin/sh\necho "hook says no"\nexit 1\n')
+        hook.chmod(0o755)
+        done = self.make('2.0.0')
+        self.assertNotEqual(done.returncode, 0)
+        self.assertIn('hook says no', done.stderr, 'the reason a commit failed is shown')
+        self.assertEqual(self.git('status', '--porcelain', '--untracked-files=all'), '')
+        self.assertTrue((self.root / '.github' / 'workflows' / 'native.yml').is_file())
+        self.assertEqual(self.git('rev-parse', '--abbrev-ref', 'HEAD').strip(), 'main')
+        self.assertEqual(self.git('branch', '--list', 'release/*').strip(), '')
+
     def test_a_detached_head_or_an_existing_tag_is_refused(self):
         self.git('tag', '-a', 'v2.0.0', '-m', 'already published')
         done = self.make('2.0.0')

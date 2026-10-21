@@ -20,7 +20,7 @@ HOST_ONLY = ('.github',)
 def git(*args, root: Path) -> str:
     done = subprocess.run(['git', *args], cwd=root, capture_output=True, text=True)
     if done.returncode:
-        raise SystemExit(f'git {args[0]} failed: {done.stderr.strip()}')
+        raise SystemExit(f'git {args[0]} failed: {(done.stdout + done.stderr).strip()}')
     return done.stdout
 
 
@@ -54,8 +54,10 @@ def make(root: Path, version: str, python: str = sys.executable) -> str:
         made = True
         return git('rev-parse', 'HEAD', root=root).strip()
     finally:
+        if not made:  # leave nothing half made behind; the checkout was clean when this began
+            git('reset', '-q', '--hard', root=root)
         git('switch', '-q', start, root=root)
-        if not made:  # leave nothing half made behind, so a rerun starts clean
+        if not made:
             git('branch', '-q', '-D', branch, root=root)
 
 
