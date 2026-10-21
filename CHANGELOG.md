@@ -3,7 +3,7 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
-## Unreleased
+## 1.1.0, 2026-10-21
 
 Contract version 1, unchanged. Nothing to do after updating; to add the
 skills, grant `writes-skills` to `agent-skills` in `project.json` and
@@ -24,6 +24,17 @@ update again.
   the owner's own operations repository.
 - `release` also refuses a link or submodule outside the installed files,
   as every install already did.
+- Release tags no longer hold repository-host files. The 1.0.1 tag holds
+  `.github/`, which the updater installed with 1.0.0 counts as kit files,
+  so `update 1.0.1` from 1.0.0 is refused before anything is written. A
+  project on 1.0.0 updates straight to 1.1.0, or to 1.0.1 by running the
+  tool from a 1.0.1 clone: `python3 PATH/TO/KIT-1.0.1/tools/kit.py update
+  1.0.1 --apply`. `tests/release_commit.py` now makes each release commit
+  without those files, `release` refuses a tree that an earlier updater
+  would misread, and a rehearsal updates the two newest published releases
+  to every candidate before it is tagged.
+- `kit.py adopt ../kit` and other relative source paths are read from
+  where the command runs, as typed.
 
 ## 1.0.1, 2026-10-21
 

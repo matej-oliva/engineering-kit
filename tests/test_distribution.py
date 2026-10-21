@@ -47,7 +47,8 @@ class Distribution(unittest.TestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
         self.source = self.temp / 'kit-source'
-        shutil.copytree(KIT, self.source, ignore=shutil.ignore_patterns('__pycache__', '.git'))
+        # A release commit holds no repository-host files (.github/), as MAINTAINING.md makes it.
+        shutil.copytree(KIT, self.source, ignore=shutil.ignore_patterns('__pycache__', '.git', '.github'))
         sh('init', '-q', '-b', 'main', cwd=self.source)
         self.release('0.1.0')
 
@@ -116,9 +117,14 @@ class Distribution(unittest.TestCase):
         workflow.write_text('name: Repository validation\n')
         sh('add', '.github', cwd=self.source)
         sh('commit', '-q', '-m', 'Add a repository workflow', cwd=self.source)
-        manifest = ku.build_release(self.source, '0.1.0')
-        self.assertNotIn('.github/workflows/native.yml', manifest['files'])
-        self.assertIn('integrations/github/workflow.yml', manifest['files'])
+        self.assertFalse(ku.payload('.github/workflows/native.yml'))
+        # Updaters up to 1.0.0 leave out only tests/, examples/ and conformance/, so they would count the
+        # workflow as a kit file the manifest lacks and refuse the release: it must not be in the tag.
+        with self.assertRaisesRegex(ku.KitError, r'\.github/workflows/native\.yml.*earlier release'):
+            ku.build_release(self.source, '0.1.0')
+        sh('rm', '-q', '-r', '.github', cwd=self.source)
+        sh('commit', '-q', '-m', 'Release commit without repository-host files', cwd=self.source)
+        self.assertIn('integrations/github/workflow.yml', ku.build_release(self.source, '0.1.0')['files'])
 
     def test_new_project_preview_writes_nothing_and_apply_installs_the_core(self):
         root = self.consumer()

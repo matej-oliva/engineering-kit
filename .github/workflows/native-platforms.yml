@@ -2,6 +2,11 @@ name: Native platform verification
 
 on:
   workflow_dispatch:
+    inputs:
+      candidate:
+        description: 'Release candidate X.Y.Z to rehearse before tagging; empty tests the two newest tags'
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -29,8 +34,10 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Suite
         run: python -m unittest discover -s tests -v
-      - name: Published release lifecycle
+      - name: Release lifecycle
         if: ${{ !cancelled() }}
+        env:
+          KIT_CANDIDATE: ${{ inputs.candidate }}
         run: python tests/native_release.py --source . --report "${{ runner.temp }}/native-report.json"
       - name: Retain platform evidence
         if: ${{ !cancelled() }}

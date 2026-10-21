@@ -36,6 +36,9 @@ PROJECT = f'{STATE}/project.json'
 JOURNAL = f'{STATE}/journal'
 VERSION = re.compile(r'v?(\d+)\.(\d+)\.(\d+)')
 SOURCE_ONLY = ('tests/', 'examples/', 'conformance/', '.github/')  # stay in the kit's repository
+# All that the updaters of 0.1.0 to 1.0.0 leave out. A release tree may hold nothing else outside
+# the payload: those updaters would count it as a kit file the manifest lacks and refuse the release.
+EARLIER_SOURCE_ONLY = ('tests/', 'examples/', 'conformance/')
 SOURCE_ONLY_FILES = ('RELEASE.json', 'SUPPORT.json')
 BEGIN, END = '<!-- engineering-kit:begin -->', '<!-- engineering-kit:end -->'
 RIGHTS = re.compile(r'owner-authored|licensed:[A-Za-z0-9.+-]+|cleared:\S.*')
@@ -102,6 +105,9 @@ def build_release(root: Path, version: str) -> dict:
             raise KitError(f'{name} is a link or submodule; a release cannot contain one')
         if payload(name):
             blobs[name] = blob
+        elif not name.startswith(EARLIER_SOURCE_ONLY) and name not in SOURCE_ONLY_FILES:
+            raise KitError(f'{name} would look like a missing kit file to the updater of an earlier release; '
+                           'make the release commit without it (MAINTAINING.md)')
     contents = {name: git('cat-file', 'blob', blob, cwd=root) for name, blob in blobs.items()}
     files = {name: sha256(data) for name, data in contents.items()}
     integrations = {}

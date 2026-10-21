@@ -34,6 +34,11 @@ MUTANTS = [
      "if version_key(version) == version_key(lock['version']):"),
     ('a relative source path is read from the temporary repository', 'kit_update.py',
      '        return str(Path(source).resolve())', '        return source'),
+    ('a release tree may hold files that earlier updaters count as kit files', 'kit_update.py',
+     '        elif not name.startswith(EARLIER_SOURCE_ONLY) and name not in SOURCE_ONLY_FILES:',
+     '        elif False:'),
+    ('the release commit keeps repository-host files', 'tests/release_commit.py',
+     "HOST_ONLY = ('.github',)", 'HOST_ONLY = ()'),
     ('repository workflows become installed payload', 'kit_update.py',
      "'conformance/', '.github/'", "'conformance/'"),
     ('a skipped check counts as a pass', 'kit.py',
@@ -163,11 +168,16 @@ MUTANTS = [
 ]
 
 
+def mutant_path(name: str) -> str:
+    """A bare name is a file in tools/; a name with a slash is relative to the kit."""
+    return name if '/' in name else f'tools/{name}'
+
+
 def survives(snapshot: Path, name: str, old: str, new: str) -> bool:
     with tempfile.TemporaryDirectory(prefix='kit-mutant-') as directory:
         copy = Path(directory) / 'kit'
         shutil.copytree(snapshot, copy)
-        target = copy / 'tools' / name
+        target = copy / mutant_path(name)
         target.write_text(target.read_text(encoding='utf-8').replace(old, new), encoding='utf-8')
         result = subprocess.run([sys.executable, '-B', '-m', 'unittest', 'discover', '-s', 'tests'], cwd=copy,
                                 capture_output=True, text=True, timeout=600)
@@ -184,7 +194,7 @@ def main(labels: list[str]) -> int:
         snapshot = Path(directory) / 'kit'
         shutil.copytree(KIT, snapshot, ignore=shutil.ignore_patterns('.git', '__pycache__'))
         stale = [label for label, name, old, _ in chosen
-                 if (snapshot / 'tools' / name).read_text(encoding='utf-8').count(old) != 1]
+                 if (snapshot / mutant_path(name)).read_text(encoding='utf-8').count(old) != 1]
         if stale:
             raise SystemExit('The original text is not in its file exactly once; update these mutants: '
                              + ', '.join(stale))
