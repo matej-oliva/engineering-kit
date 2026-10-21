@@ -43,7 +43,9 @@ Name each file after its task, `<id>.json`, and give a new task the next
 unused ID. Task IDs are unique within the project, and no record, task or
 handoff, is named like an instruction file (`AGENTS`, `CLAUDE`, `GEMINI`,
 `copilot-instructions`, `README`, or any file in `instructions.clients`),
-compared without case: agents read such files as rules.
+compared by the part before the first dot and without case, so
+`CLAUDE.local.md` is covered too: agents read such files as rules. The
+record folders are never a folder an agent client reads rules from.
 
 | Field | Meaning | Required from state |
 | --- | --- | --- |

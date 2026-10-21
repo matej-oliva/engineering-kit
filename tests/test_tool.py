@@ -67,15 +67,34 @@ class CommandLine(unittest.TestCase):
     def test_records_named_like_instruction_files_are_refused(self):
         root = self.copy_example()
         records = root / '.engineering-kit'
-        (records / 'tasks' / 'claude.json').write_text('{"kit": "task/1", "id": "claude", "title": "x", "state": "proposed"}')
-        (records / 'handoffs' / 'README.md').write_text((records / 'handoffs' / 'T-7.md').read_text()
-                                                        .replace('Task: T-7', 'Task: README'))
+        handoff = (records / 'handoffs' / 'T-7.md').read_text()
+        for stem in ('Claude', 'CLAUDE.local', 'agents', 'Gemini', 'copilot-instructions', 'house-rules'):
+            (records / 'tasks' / f'{stem}.json').write_text(
+                json.dumps({'kit': 'task/1', 'id': stem, 'title': 'x', 'state': 'proposed'}))
+            (records / 'handoffs' / f'{stem}.md').write_text(handoff.replace('Task: T-7', f'Task: {stem}'))
+        config = root / '.engineering-kit' / 'project.json'
+        project = json.loads(config.read_text())
+        project['instructions']['clients']['house'] = ['docs/HOUSE-RULES.local.md']
+        config.write_text(json.dumps(project))
         report = json.loads(run('check', '--json', '--root', str(root)).stdout)
         messages = {(f['rule'], f['where'], f['message']) for f in report['findings']}
-        self.assertIn(('FORMAT', '.engineering-kit/tasks/claude.json', 'a record may not be named like an instruction file'),
-                      messages)
-        self.assertIn(('HANDOFF', '.engineering-kit/handoffs/README.md', 'a handoff may not be named like an instruction file'),
-                      messages)
+        for stem in ('Claude', 'CLAUDE.local', 'agents', 'Gemini', 'copilot-instructions', 'house-rules'):
+            self.assertIn(('FORMAT', f'.engineering-kit/tasks/{stem}.json', 'a record may not be named like an instruction file'),
+                          messages, stem)
+            self.assertIn(('HANDOFF', f'.engineering-kit/handoffs/{stem}.md', 'a handoff may not be named like an instruction file'),
+                          messages, stem)
+        project['instructions'] = 'stricter'
+        config.write_text(json.dumps(project))
+        result = run('check', '--json', '--root', str(root))
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertNotIn('Traceback', result.stderr)
+
+    def test_the_first_task_line_names_the_handoff(self):
+        root = self.copy_example()
+        handoff = root / '.engineering-kit' / 'handoffs' / 'T-7.md'
+        handoff.write_text(handoff.read_text().replace('Task: T-7', 'Task: T-7\nTask: T-9'))
+        report = json.loads(run('check', '--json', '--root', str(root)).stdout)
+        self.assertEqual(report['result'], 'pass', report)
 
     def test_oversized_records_are_refused_not_crashed(self):
         root = self.copy_example()

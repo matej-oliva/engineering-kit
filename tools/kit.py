@@ -492,7 +492,9 @@ def check_handoff(source: str, task_states: dict[str, str] | None = None, where:
     lines = head.splitlines()
     if not lines or not re.fullmatch(r'# .+ handoff', lines[0].strip()):
         refuse('the first line is "# <title> handoff"')
-    fields = dict(re.findall(r'^(Task|Updated|State): *(.+?) *$', head, re.M))
+    fields = {}
+    for field, value in re.findall(r'^(Task|Updated|State): *(.+?) *$', head, re.M):
+        fields.setdefault(field, value)  # the first line of each, as the name rule reads it
     for field in ('Task', 'Updated', 'State'):
         if field not in fields:
             refuse(f'needs a "{field}:" line before the first section')
@@ -547,7 +549,7 @@ def check_all(root: Path) -> list[Finding]:
     reserved = reserved_stems(project)
     for path in sorted((root / paths['tasks']).glob('*.json')):
         where = path.relative_to(root).as_posix()
-        if path.stem.casefold() in reserved:
+        if first_component(path.name) in reserved:
             found.append(Finding(FORMAT, where, 'a record may not be named like an instruction file'))
         task, problems = load_json(path, where)
         found += problems
@@ -561,7 +563,7 @@ def check_all(root: Path) -> list[Finding]:
                 states[task['id']] = task.get('state')
     for path in sorted((root / paths['handoffs']).glob('*.md')):
         where = path.relative_to(root).as_posix()
-        if path.stem.casefold() in reserved:
+        if first_component(path.name) in reserved:
             found.append(Finding('HANDOFF', where, 'a handoff may not be named like an instruction file'))
         source = path.read_text(encoding='utf-8')
         found += check_handoff(source, states, where)
@@ -660,15 +662,23 @@ def record_folder_ok(value) -> bool:
 INSTRUCTION_STEMS = ('agents', 'claude', 'gemini', 'copilot-instructions', 'readme')
 
 
+def first_component(name: str) -> str:
+    """The part of a file name before its first dot, without case: an agent client reads
+    `NAME.local.md` like `NAME.md`."""
+    return PurePosixPath(name).name.split('.', 1)[0].casefold()
+
+
 def reserved_stems(project) -> set[str]:
-    """Names a record may not take, compared without case: files agent clients read as
-    instructions, in the kit's integrations or in the project's own configuration, and README."""
+    """Names a record may not take, compared by first component without case: files agent
+    clients read as instructions, in the kit's integrations or in the project's own
+    configuration, and README."""
     stems = set(INSTRUCTION_STEMS)
-    clients = (project.get('instructions') or {}).get('clients') if isinstance(project, dict) else None
+    instructions = project.get('instructions') if isinstance(project, dict) else None
+    clients = instructions.get('clients') if isinstance(instructions, dict) else None
     for files in (clients or {}).values() if isinstance(clients, dict) else ():
         for name in files if isinstance(files, list) else ():
             if isinstance(name, str):
-                stems.add(PurePosixPath(name).stem.casefold())
+                stems.add(first_component(name))
     return stems
 
 
@@ -728,7 +738,7 @@ def compare_integrated(root: Path, candidate: str, revision: str) -> list[Findin
         """A task record or handoff, by place, by content and by the name rule `check` enforces,
         in every version that exists."""
         parent, leaf = name.rsplit('/', 1) if '/' in name else ('', name)
-        if PurePosixPath(leaf).stem.casefold() in reserved:
+        if first_component(leaf) in reserved:
             return False  # named like an instruction file: never a record, whatever it contains
         if folders.get('tasks') == parent and leaf.endswith('.json'):
             def record(data):

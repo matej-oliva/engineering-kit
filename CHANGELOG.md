@@ -31,7 +31,8 @@ updating, run `kit.py check`: it now refuses a few malformed records that
   and integration files a release removed, are accepted when they match
   what the release does, and a kit removed after the candidate is unknown.
 - No task record or handoff may be named like an instruction file, such
-  as `CLAUDE.md` or `README.json`, compared without case; `check` refuses
+  as `CLAUDE.md`, `CLAUDE.local.md` or `README.json`, compared by the part
+  before the first dot and without case; `check` refuses
   it and `integrated` treats it as an ordinary file.
 - Tasks may list `contributors`, each a name, who may not approve the
   candidate.
