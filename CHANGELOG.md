@@ -3,7 +3,7 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
-## 1.0.0, unreleased, first supported release
+## 1.0.0, 2026-10-21, first supported release
 
 The first release with a support promise; see `MAINTAINING.md`. Contract
 version 1, unchanged, and no tool behaviour changed since 0.1.1. Nothing
