@@ -1,16 +1,16 @@
 {
   "kit": "release/1",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "contract": 1,
-  "digest": "8300034ab0841aa3dfb9f0c36360a471d47b9839434743bee51535a849a812bd",
+  "digest": "e222c79f3a56cfda7fb0a07fa594de383c5c12777bf510145e2998a17c32e43e",
   "files": {
     ".gitattributes": "118a8a960827c3270221647c020043458909ba34524d066bdec123ee5d5d014b",
     ".gitignore": "32dae3052f331ee34d628ef535709b301259a45df7c7522c4d35dcf49873f00b",
-    "CHANGELOG.md": "99f0fef6e47b41ad6b919222113e77a8b3330f7feab04d596e49b190b78d9a76",
+    "CHANGELOG.md": "352cf7611b2bfac9cd35d47bdae70d0f0ea488433a8f82678915bfa35a5e4620",
     "CONTRACT.md": "5c7763600f18057babf634229fed88620e0b162ac4dbdcd287af36d1e52486f8",
     "LICENSE": "37629ee1fc3b2a106a81aaf9115d0675cd66d18036bcd16957a64fb797f98a32",
-    "MAINTAINING.md": "ea4d69bc5c84ff449825d6765a0cdad349427b586d161758b069e57b9f65d03b",
-    "README.md": "651b65bd66cea09da79fbeb27dd3f93f9e33faae68576c6ff6f4bc8eee899866",
+    "MAINTAINING.md": "4805001a017893e79b2a87ea69ee6bc48b0cc8b98d266892ed31b3a91f6eee0d",
+    "README.md": "0496bc4a8ef48e4d6d079a5291a8e761e82729008c71e7a554ec4204b41fee7d",
     "RECORDS.md": "dbd284296c931397a3054a59135f878136612c90fe994a150e103bd30a29b8c5",
     "THIRD_PARTY_NOTICES.md": "aa86e5ba5ff8ef3fed04c5d43f02c53a53a6df9d14c91b3a61933da5e417f26f",
     "integrations/agents-md/integration.json": "4e1dc7955cf53005fc7216e70b9db5fbadcca9cc3ac7176fac4c88ed8e773e04",
@@ -40,7 +40,7 @@
     "templates/project.json": "eb6eb64f9d7136a521aca9919a7fc192d8d8aa7e01f834fa0a62eed7e20d5eb8",
     "templates/task.json": "9d3e267ec983f98385defb95b9d43b258ae11201bae3972261c4a408ca76aefd",
     "tools/kit.py": "b40909be3c3dee0a57a8bbeaff8701b7009ff25372ade44973f49bfceaf6cee1",
-    "tools/kit_update.py": "4c4b6df2fbf0911e34a9b345fe7d61e969cdc7d3e8ac99db414741529fc6a94c"
+    "tools/kit_update.py": "0152055ad8bb104e08fe4bcd71647fd94f445c8e3c0869f2f47214d83c59f3c8"
   },
   "integrations": {
     "agents-md": [
