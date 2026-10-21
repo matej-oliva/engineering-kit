@@ -66,7 +66,7 @@ class ContractConsistency(unittest.TestCase):
             if relative.suffix != '.md':
                 continue
             for name in pattern.findall(content):
-                if '<' in name or name in ('AGENTS.md', 'CLAUDE.md'):  # placeholders and a project's own files
+                if '<' in name or name in ('AGENTS.md', 'CLAUDE.md', 'GEMINI.md'):  # placeholders, a project's files
                     continue
                 with self.subTest(file=str(relative), path=name):
                     self.assertTrue((KIT / name.rstrip('/')).exists(), f'{relative} names {name}')

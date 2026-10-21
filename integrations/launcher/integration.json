@@ -1,0 +1,17 @@
+{
+  "kit": "integration/1",
+  "name": "launcher",
+  "summary": "A short command at the project root, so every kit command is `python3 kit COMMAND`, or `py kit COMMAND` on Windows. It runs the installed tool and nothing else.",
+  "contract": [1],
+  "capabilities": ["short-command"],
+  "runtime": "Python 3.11 or later",
+  "permissions": ["writes-launcher"],
+  "inputs": [],
+  "evidence": [],
+  "blocks": [],
+  "files": [
+    {"source": "kit", "target": "kit", "permission": "writes-launcher"}
+  ],
+  "tested": "none: the tests install it, run commands through it and remove it, but no project has used it yet.",
+  "manual": "Run python3 .engineering-kit/kit/tools/kit.py COMMAND from the project root."
+}

@@ -6,14 +6,20 @@ verified delivery and maintenance, and what evidence each step leaves. Each
 project keeps its own language, framework, design system, agent client, Git
 host, deployment platform and permissions.
 
-Status: version 1.1.0, contract version 1.
+Status: version 1.2.0, contract version 1.
 See `CHANGELOG.md` and `MAINTAINING.md`. MIT licence; see `LICENSE`.
+
+People start with the [guide](guide/README.md): what the kit does, a quick
+start, everyday commands, customization, troubleshooting and maintenance,
+with diagrams. It installs with the kit, so every adopting project has the
+guide of its release at `.engineering-kit/kit/guide/`, readable offline.
 
 ## Contents
 
 | Path | What it is |
 | --- | --- |
-| `CONTRACT.md` | The rules, each with how it is enforced. Start here. |
+| `guide/` | The guide for people, with diagrams. Start here. |
+| `CONTRACT.md` | The rules, each with how it is enforced. Agents start here. |
 | `RECORDS.md` | The project configuration, task record and handoff formats. |
 | `procedures/` | The steps for each stage, each ending in a checkable result. |
 | `templates/` | A starting project configuration, task, handoff and the entry block for instruction files. |
@@ -33,11 +39,16 @@ The reference checker needs Python 3.11 or later and nothing else;
 runs a command that a project supplies.
 
 ```sh
-python3 .engineering-kit/kit/tools/kit.py check
-python3 .engineering-kit/kit/tools/kit.py check-task .engineering-kit/tasks/T-1.json
-python3 .engineering-kit/kit/tools/kit.py scan-secrets
-python3 .engineering-kit/kit/tools/kit.py integrated CANDIDATE MERGED
+python3 kit check
+python3 kit check-task .engineering-kit/tasks/T-1.json
+python3 kit scan-secrets
+python3 kit integrated CANDIDATE MERGED
+python3 kit                  # every everyday command, with the guide's location
 ```
+
+`python3 kit` is the short command the `launcher` integration installs at
+the project root; on Windows type `py kit`. Without it, type
+`python3 .engineering-kit/kit/tools/kit.py` in its place.
 
 `check` exits 1 and names the contract rule for each refusal. A project that
 does not use Python follows the same procedures and checks its records by
@@ -52,9 +63,9 @@ project's root. It installs the release it was cloned at, from the address
 it was cloned from:
 
 ```sh
-git clone --depth 1 --branch v1.1.0 KIT_ADDRESS ~/engineering-kit-1.1.0
-python3 ~/engineering-kit-1.1.0/tools/kit.py adopt --with copilot           # preview
-python3 ~/engineering-kit-1.1.0/tools/kit.py adopt --with copilot --apply   # write
+git clone --depth 1 --branch v1.2.0 KIT_ADDRESS ~/engineering-kit-1.2.0
+python3 ~/engineering-kit-1.2.0/tools/kit.py adopt --with launcher --with agent-skills           # preview
+python3 ~/engineering-kit-1.2.0/tools/kit.py adopt --with launcher --with agent-skills --apply   # write
 ```
 
 `--with` names the instruction files your agents read, beyond `AGENTS.md`:
@@ -62,17 +73,18 @@ python3 ~/engineering-kit-1.1.0/tools/kit.py adopt --with copilot --apply   # wr
 `--with agent-skills` to install one skill per procedure in `.agents/skills/`
 and `.claude/skills/`, the folders most agent clients search, so an agent
 loads the procedure that fits its work without being told. Each skill only
-points at its installed procedure.
+points at its installed procedure. `--with launcher` installs the short
+`kit` command at the project root.
 
 To install the newest release without choosing its version, give the
 address alone: `kit.py adopt KIT_ADDRESS`. Later, from the project, one
 command moves to the newest release; it previews first and never moves back:
 
 ```sh
-python3 .engineering-kit/kit/tools/kit.py update --diff      # preview the newest release
-python3 .engineering-kit/kit/tools/kit.py update --apply     # install it
-python3 .engineering-kit/kit/tools/kit.py update 1.0.1 --apply   # or a chosen release
-python3 .engineering-kit/kit/tools/kit.py rollback --apply   # back to the previous one
+python3 kit update --diff         # preview the newest release
+python3 kit update --apply        # install it
+python3 kit update 1.1.0 --apply  # or a chosen release
+python3 kit rollback --apply      # back to the previous one
 ```
 
 On Windows, run `py` instead of `python3`. A private kit repository needs
@@ -118,7 +130,7 @@ in `procedures/adopt-and-update.md`.
 
 ## Context cost
 
-Only the entry block is loaded into every agent session: about 0.4 kB. The
+Only the entry block is loaded into every agent session: about 0.5 kB. The
 contract is read when work is planned, reviewed or released: about 6.8 kB.
 A procedure is about 2.1 kB and is read only for its stage. With the
 `agent-skills` integration, clients that support skills also load each

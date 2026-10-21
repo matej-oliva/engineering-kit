@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 430" width="960" height="430" role="img" aria-labelledby="title desc" font-family="Helvetica, Arial, sans-serif">
+  <title id="title">How an update, rollback or removal decides</title>
+  <desc id="desc">The command first builds and shows a plan. If local and kit changes overlap, or a file is in the way, it stops and writes nothing; you settle each file by merging by hand or with --resolve PATH=kit or PATH=local, then preview again. Otherwise --apply writes the plan, saving each earlier file in a journal first. When it finishes, the journal is removed and lock.json records the release. If the apply is interrupted, recover restores the earlier files from the journal, or recover --abandon keeps the files as they are.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+    </marker>
+  </defs>
+  <rect width="960" height="430" fill="#ffffff"/>
+  <g font-size="15" fill="#111827" text-anchor="middle">
+    <rect x="20" y="40" width="190" height="70" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="115" y="70" font-weight="bold">Preview</text>
+    <text x="115" y="92" font-size="13" font-family="Menlo, Consolas, monospace">update --diff</text>
+
+    <polygon points="370,30 470,75 370,120 270,75" fill="#fff4d6" stroke="#b45309" stroke-width="2"/>
+    <text x="370" y="70" font-size="14">Overlap or a</text>
+    <text x="370" y="88" font-size="14">file in the way?</text>
+
+    <rect x="540" y="40" width="190" height="70" rx="10" fill="#fde2e2" stroke="#b91c1c" stroke-width="2"/>
+    <text x="635" y="70" font-weight="bold">Stop</text>
+    <text x="635" y="92" font-size="13">nothing written</text>
+
+    <rect x="770" y="30" width="170" height="90" rx="10" fill="#eef2f7" stroke="#4b5563" stroke-width="2"/>
+    <text x="855" y="58" font-weight="bold">Settle each file</text>
+    <text x="855" y="78" font-size="13">merge by hand, or</text>
+    <text x="855" y="96" font-size="12" font-family="Menlo, Consolas, monospace">--resolve PATH=kit</text>
+    <text x="855" y="112" font-size="12" font-family="Menlo, Consolas, monospace">or PATH=local</text>
+
+    <rect x="275" y="190" width="190" height="70" rx="10" fill="#e3f5e8" stroke="#15803d" stroke-width="2"/>
+    <text x="370" y="220" font-weight="bold">Apply</text>
+    <text x="370" y="242" font-size="13" font-family="Menlo, Consolas, monospace">update --apply</text>
+
+    <rect x="540" y="190" width="190" height="70" rx="10" fill="#eef2f7" stroke="#4b5563" stroke-width="2"/>
+    <text x="635" y="218" font-weight="bold">Journal</text>
+    <text x="635" y="240" font-size="13">earlier file saved, then written</text>
+
+    <rect x="770" y="190" width="170" height="70" rx="10" fill="#e3f5e8" stroke="#15803d" stroke-width="2"/>
+    <text x="855" y="218" font-weight="bold">Done</text>
+    <text x="855" y="240" font-size="13">lock.json updated</text>
+
+    <rect x="540" y="330" width="190" height="80" rx="10" fill="#fde2e2" stroke="#b91c1c" stroke-width="2"/>
+    <text x="635" y="358" font-weight="bold">Interrupted</text>
+    <text x="635" y="380" font-size="13">later commands refuse</text>
+    <text x="635" y="398" font-size="13">until it is recovered</text>
+
+    <rect x="770" y="330" width="170" height="80" rx="10" fill="#eef2f7" stroke="#4b5563" stroke-width="2"/>
+    <text x="855" y="358" font-weight="bold" font-family="Menlo, Consolas, monospace" font-size="14">recover</text>
+    <text x="855" y="380" font-size="13">restores earlier files</text>
+    <text x="855" y="398" font-size="12" font-family="Menlo, Consolas, monospace">or recover --abandon</text>
+  </g>
+  <g stroke="#1f2937" stroke-width="2" fill="none" font-size="13">
+    <line x1="210" y1="75" x2="268" y2="75" marker-end="url(#arrow)"/>
+    <line x1="470" y1="75" x2="538" y2="75" marker-end="url(#arrow)"/>
+    <line x1="730" y1="75" x2="768" y2="75" marker-end="url(#arrow)"/>
+    <path d="M855,30 C855,0 115,0 115,38" marker-end="url(#arrow)"/>
+    <line x1="370" y1="120" x2="370" y2="188" marker-end="url(#arrow)"/>
+    <line x1="465" y1="225" x2="538" y2="225" marker-end="url(#arrow)"/>
+    <line x1="730" y1="225" x2="768" y2="225" marker-end="url(#arrow)"/>
+    <line x1="635" y1="260" x2="635" y2="328" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+    <line x1="730" y1="370" x2="768" y2="370" marker-end="url(#arrow)"/>
+  </g>
+  <g font-size="13" fill="#111827">
+    <text x="490" y="66">yes</text>
+    <text x="380" y="160">no</text>
+    <text x="440" y="32">preview again</text>
+    <text x="645" y="300">crash or closed terminal</text>
+  </g>
+</svg>

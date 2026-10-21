@@ -515,7 +515,7 @@ def apply(root: Path, writes: list[Action], *, fail_after: int | None = None) ->
     `recover` undoes a partial apply. FAIL_AFTER is for tests."""
     journal = root / JOURNAL
     if journal.exists():
-        raise KitError('an earlier apply was interrupted; run "kit.py recover" first')
+        raise KitError(f'an earlier apply was interrupted; run {recover_command()} first')
     journal.mkdir(parents=True)
     steps, finals = [], []
     for number, action in enumerate(writes):
@@ -559,7 +559,7 @@ def recover(root: Path, abandon: bool = False) -> int:
             raise ValueError
     except (ValueError, KeyError, AttributeError):
         raise KitError('the journal is unreadable; check the files the apply was changing, then run '
-                       '"kit.py recover --abandon"') from None
+                       + recover_command(' --abandon')) from None
     for step in steps:
         path, backup = step.get('path'), step.get('backup')
         if (not isinstance(path, str) or area(path) == 'unsafe'
@@ -579,7 +579,7 @@ def recover(root: Path, abandon: bool = False) -> int:
     if changed:
         raise KitError('these files changed since the interrupted apply: ' + ', '.join(changed) +
                        '. Save those changes elsewhere and run recover again, or keep the files as they are '
-                       'with "kit.py recover --abandon"')
+                       'with ' + recover_command(' --abandon'))
     for step in reversed(applied):
         target = root / step['path']
         if step['backup']:
@@ -647,7 +647,7 @@ def change(root: Path, source: str, version: str | None, *, adopting: bool = Fal
     root = root.resolve()
     resolutions = resolutions or {}
     if (root / JOURNAL).exists():
-        raise KitError('an earlier apply was interrupted; run "kit.py recover" first')
+        raise KitError(f'an earlier apply was interrupted; run {recover_command()} first')
     lock = load_lock(root)
     if adopting and lock:
         raise KitError(f'already adopted at {lock["version"]}; use update')
@@ -729,6 +729,11 @@ def local_source(source: str | None) -> str | None:
     return source
 
 
+def recover_command(options: str = '') -> str:
+    """The recover command as the person types it, so a refusal names a step they can copy."""
+    return f'"{kit.invocation()} recover{options}"'
+
+
 def version_key(version: str) -> tuple[int, int, int]:
     return tuple(int(part) for part in VERSION.fullmatch(version).groups())
 
@@ -776,7 +781,7 @@ def previous_version(root: Path) -> str:
 def status(root: Path) -> tuple[int, list[str]]:
     lock = load_lock(root)
     if (root / JOURNAL).exists():
-        return 1, ['An apply was interrupted. Run "kit.py recover" to restore the earlier files.']
+        return 1, [f'An apply was interrupted. Run {recover_command()} to restore the earlier files.']
     if not lock:
         return 0, ['The kit is not adopted here.']
     lines = [f'Kit {lock["version"]} (contract {lock["contract"]}) from {lock["source"]}, '

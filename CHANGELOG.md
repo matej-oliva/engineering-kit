@@ -3,6 +3,35 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
+## 1.2.0, 2026-10-21
+
+Contract version 1, unchanged. To update from 1.1.0 run
+`python3 .engineering-kit/kit/tools/kit.py update --apply`; from 1.0.1,
+1.0.0 or a pilot release, name the version once:
+`update 1.2.0 --apply`. Nothing else is required. For the short command,
+grant `writes-launcher` to `launcher` in `project.json` and update again;
+from then on every command is `python3 kit COMMAND`, or `py kit COMMAND` on
+Windows. The marked block in your instruction files gains one sentence that
+points at the guide; your text outside it is unchanged.
+
+- A guide for people, in `guide/`: what the kit is and when it is useful,
+  a quick start, everyday use with a worked example, how the contract,
+  configuration, records, integrations and releases fit together and what
+  the checks can and cannot prove, customization with contrasting projects,
+  troubleshooting and recovery, and maintenance. Four diagrams, each with a
+  text alternative and a prose explanation. It installs with every release
+  at `.engineering-kit/kit/guide/`, works offline in any Markdown viewer,
+  and updates with the kit.
+- The optional `launcher` integration installs a short `kit` command at the
+  project root. It runs only the installed tool, and a project module of
+  the same name cannot replace the kit's.
+- `kit.py` with no command lists the everyday commands and where the guide
+  is; every command's `--help` has a description and an example, and the
+  new `guide` command names the installed guide. Refusals that ask you to
+  run `recover` name it as you type it.
+- `tests/release_commit.py` also removes a new file, such as a
+  `RELEASE.json` whose check failed, when a release commit fails.
+
 ## 1.1.0, 2026-10-21
 
 Contract version 1, unchanged. Nothing to do after updating; to add the

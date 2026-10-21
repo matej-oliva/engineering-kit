@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+"""Short command for the engineering kit installed in this project.
+
+Run it from the project root: `python3 kit COMMAND`, or `py kit COMMAND` on
+Windows. `python3 kit` alone lists the everyday commands. It runs the tool
+installed in `.engineering-kit/kit/tools/` and nothing else.
+"""
+import os
+from pathlib import Path
+import runpy
+import sys
+
+tools = Path(__file__).resolve().parent / '.engineering-kit' / 'kit' / 'tools'
+if not (tools / 'kit.py').is_file():
+    sys.exit(f'The engineering kit is not installed next to {Path(__file__).name}; '
+             f'expected {tools / "kit.py"}.')
+sys.path[0] = str(tools)  # the kit's own modules, never a project module of the same name
+sys.dont_write_bytecode = True
+os.environ['ENGINEERING_KIT_COMMAND'] = f'{"py" if os.name == "nt" else "python3"} {Path(__file__).name}'
+sys.argv[0] = str(tools / 'kit.py')
+runpy.run_path(str(tools / 'kit.py'), run_name='__main__')

@@ -36,7 +36,9 @@ the owner approves anything that widens what the kit may write or do.
    `git diff vPREVIOUS..HEAD` against the commit messages. Blocking findings
    are fixed and reviewed again, by a reviewer given the earlier findings.
 3. `CHANGELOG.md` says what changed, what a project must do after updating,
-   and whether the contract changed.
+   and whether the contract changed. The guide in `guide/` describes the
+   release's behaviour, including its moving-to section in
+   `guide/maintenance.md`, and every diagram still matches its prose.
 4. Commit every kit file, push `main`, then run
    `python3 tests/release_commit.py X.Y.Z`. On a local branch
    `release/X.Y.Z` it leaves out repository-host files such as `.github/`,

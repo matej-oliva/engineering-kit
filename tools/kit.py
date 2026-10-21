@@ -21,6 +21,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
 import hashlib
 import json
+import os
 from pathlib import Path, PurePosixPath
 import re
 import subprocess
@@ -858,23 +859,85 @@ def report(found: list[Finding], as_json: bool, success: str) -> int:
     return 1 if found else 0
 
 
+GUIDE = Path('.engineering-kit') / 'kit' / 'guide' / 'README.md'
+# What each command is for and one example, shown by COMMAND --help; {kit} is how this tool was called.
+COMMANDS = {
+    'check': ('check the project, its tasks and handoffs against the contract', '{kit} check'),
+    'check-task': ('check one task record', '{kit} check-task .engineering-kit/tasks/T-1.json'),
+    'check-handoff': ('check one handoff', '{kit} check-handoff .engineering-kit/handoffs/T-1.md'),
+    'scan-secrets': ('look for credentials in the staged copy of each file', 'git add -A && {kit} scan-secrets'),
+    'integrated': ('compare a merged revision with its reviewed candidate', '{kit} integrated abc1234 main'),
+    'adopt': ('install the kit into this project; previews unless --apply',
+              '{kit} adopt --with agent-skills --with launcher --apply'),
+    'update': ('move to the newest release, or the one named; previews unless --apply',
+               '{kit} update --diff\n  {kit} update --apply'),
+    'rollback': ('return to the previously installed release', '{kit} rollback --apply'),
+    'remove': ('take the kit out, keeping project.json, tasks and handoffs', '{kit} remove --apply'),
+    'status': ('show the installed release and any local changes to kit files', '{kit} status'),
+    'recover': ('undo the writes of an interrupted apply', '{kit} recover'),
+    'release': ('write RELEASE.json in the kit source folder', '{kit} release 1.2.0 --check'),
+    'contribute': ('offer locally changed kit files back to the kit',
+                   '{kit} contribute .engineering-kit/kit/procedures/review.md --out ../lesson '
+                   '--need ... --evidence ... --limits ... --rights ... --owner ...'),
+    'check-contribution': ('check a contribution record', '{kit} check-contribution ../lesson/contribution.json'),
+    'guide': ('show where the guide is', '{kit} guide'),
+}
+EVERYDAY = [('check', 'check the project, tasks and handoffs'), ('check-task FILE', 'check one task record'),
+            ('status', 'show the installed release and local changes'),
+            ('update --diff', 'preview moving to the newest release'), ('update --apply', 'move to it'),
+            ('rollback --apply', 'return to the previous release'), ('recover', 'undo an interrupted apply'),
+            ('remove --apply', 'take the kit out, keeping project records'), ('guide', 'show where the guide is')]
+
+
+def invocation() -> str:
+    """How a person runs this tool, for examples: the launcher sets ENGINEERING_KIT_COMMAND."""
+    named = os.environ.get('ENGINEERING_KIT_COMMAND')
+    if named:
+        return named
+    tool = Path(sys.argv[0]).resolve()
+    try:
+        tool = tool.relative_to(Path.cwd().resolve())
+    except ValueError:
+        pass
+    return f'{"py" if os.name == "nt" else "python3"} {tool.as_posix()}'
+
+
+def overview() -> str:
+    kit = invocation()
+    width = max(len(name) for name, _ in EVERYDAY)
+    lines = [f'Engineering kit. Everyday commands, run from the project root as "{kit} COMMAND":', '']
+    lines += [f'  {name.ljust(width)}  {summary}' for name, summary in EVERYDAY]
+    lines += ['', 'Commands that change files preview first and write only with --apply.',
+              f'"{kit} COMMAND --help" shows options and an example. People start with {GUIDE.as_posix()}.']
+    return '\n'.join(lines)
+
+
+def guide_path(root: Path) -> Path:
+    installed = root / GUIDE
+    return installed if installed.is_file() else Path(__file__).resolve().parents[1] / 'guide' / 'README.md'
+
+
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog='kit.py', description=__doc__.splitlines()[0])
-    commands = parser.add_subparsers(dest='command', required=True)
+    parser = argparse.ArgumentParser(prog=invocation(), description=__doc__.splitlines()[0])
+    commands = parser.add_subparsers(dest='command', metavar='COMMAND')
+
+    def add(name):
+        summary, example = COMMANDS[name]
+        return commands.add_parser(name, help=summary, description=summary[0].upper() + summary[1:] + '.',
+                                   epilog='Example:\n  ' + example.format(kit=invocation()),
+                                   formatter_class=argparse.RawDescriptionHelpFormatter)
     for name in ('check', 'check-task', 'check-handoff', 'scan-secrets', 'integrated'):
-        command = commands.add_parser(name)
-        command.add_argument('--root', type=Path, default=Path.cwd())
+        command = add(name)
+        command.add_argument('--root', type=Path, default=Path.cwd(), help='the project folder (default: here)')
         command.add_argument('--json', action='store_true')
         if name in ('check-task', 'check-handoff'):
             command.add_argument('file', type=Path)
         if name == 'integrated':
             command.add_argument('candidate')
             command.add_argument('revision')
-    changes = {'adopt': 'adopt the kit from SOURCE at VERSION', 'update': 'move to another release',
-               'rollback': 'return to the previously installed release', 'remove': 'remove the kit'}
-    for name, summary in changes.items():
-        command = commands.add_parser(name, help=summary)
-        command.add_argument('--root', type=Path, default=Path.cwd())
+    for name in ('adopt', 'update', 'rollback', 'remove'):
+        command = add(name)
+        command.add_argument('--root', type=Path, default=Path.cwd(), help='the project folder (default: here)')
         if name == 'adopt':
             command.add_argument('source', nargs='?', help='default: the repository this tool was cloned from')
             command.add_argument('version', nargs='?', help='default: the newest release at SOURCE, or with '
@@ -889,26 +952,39 @@ def main(argv: list[str] | None = None) -> int:
             command.add_argument('--accept-contract', type=int, metavar='N')
         command.add_argument('--apply', action='store_true', help='write the previewed changes')
         command.add_argument('--plan', metavar='DIGEST', help='apply only if the plan is still this preview')
-        command.add_argument('--resolve', action='append', default=[], metavar='PATH=kit|local')
+        command.add_argument('--resolve', action='append', default=[], metavar='PATH=kit|local',
+                             help='settle an overlap: keep the kit\'s version or your own')
         command.add_argument('--diff', action='store_true', help='show each change as a diff')
-    commands.add_parser('status').add_argument('--root', type=Path, default=Path.cwd())
-    command = commands.add_parser('recover', help='undo the writes of an interrupted apply')
-    command.add_argument('--root', type=Path, default=Path.cwd())
+    add('status').add_argument('--root', type=Path, default=Path.cwd(), help='the project folder (default: here)')
+    command = add('recover')
+    command.add_argument('--root', type=Path, default=Path.cwd(), help='the project folder (default: here)')
     command.add_argument('--abandon', action='store_true', help='drop the journal and keep the files as they are')
-    command = commands.add_parser('release', help='write RELEASE.json in the kit source folder')
+    command = add('release')
     command.add_argument('version')
-    command.add_argument('--root', type=Path, default=Path.cwd())
+    command.add_argument('--root', type=Path, default=Path.cwd(), help='the kit source folder (default: here)')
     command.add_argument('--check', action='store_true', help='refuse if RELEASE.json is not current')
-    command = commands.add_parser('contribute', help='offer locally changed kit files back')
+    command = add('contribute')
     command.add_argument('files', nargs='+')
-    command.add_argument('--root', type=Path, default=Path.cwd())
+    command.add_argument('--root', type=Path, default=Path.cwd(), help='the project folder (default: here)')
     command.add_argument('--out', type=Path, required=True)
     for field in ('need', 'evidence', 'limits', 'rights', 'owner'):
         command.add_argument(f'--{field}', required=True)
-    command = commands.add_parser('check-contribution')
+    command = add('check-contribution')
     command.add_argument('file', type=Path)
     command.add_argument('--json', action='store_true')
+    add('guide').add_argument('--root', type=Path, default=Path.cwd(), help='the project folder (default: here)')
     args = parser.parse_args(argv)
+    if args.command is None:
+        print(overview())
+        return 0
+    if args.command == 'guide':
+        path = guide_path(args.root.resolve())
+        try:
+            path = path.relative_to(Path.cwd().resolve())
+        except ValueError:
+            pass
+        print(f'The guide is {path}. Open it in any Markdown viewer; its links and pictures work offline.')
+        return 0
     if args.command not in ('check', 'check-task', 'check-handoff', 'scan-secrets', 'integrated'):
         sys.dont_write_bytecode = True  # leave no compiled files inside the project's kit folder
         import kit_update  # only distribution needs it, and it needs the git command line

@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -499,6 +500,60 @@ class Distribution(unittest.TestCase):
                 self.assertEqual({f.rule for f in ku.check_contribution({**record, field: value})}, {'LESSON'})
 
     # ---------------------------- findings of the fresh review, 2026-10-20
+
+    def test_the_guide_installs_and_its_links_work_from_the_installed_copy(self):
+        root = self.consumer(files={'AGENTS.md': '# Shop\n'})
+        self.adopt(root)
+        installed = root / '.engineering-kit' / 'kit'
+        guide = installed / 'guide'
+        self.assertEqual(sorted(p.relative_to(guide).as_posix() for p in guide.rglob('*') if p.is_file()),
+                         sorted(p.relative_to(self.source / 'guide').as_posix()
+                                for p in (self.source / 'guide').rglob('*') if p.is_file()))
+        for page in guide.glob('*.md'):
+            for target in re.findall(r'\]\(([^)#\s]+)', page.read_text(encoding='utf-8')):
+                with self.subTest(page=page.name, target=target):
+                    resolved = (page.parent / target).resolve()
+                    self.assertTrue(resolved.is_file())
+                    self.assertTrue(resolved.is_relative_to(installed.resolve()))
+        self.assertIn('.engineering-kit/kit/guide/README.md', (root / 'AGENTS.md').read_text())
+
+    def test_the_launcher_runs_the_installed_tool_from_the_project_root(self):
+        # The project's own module of the same name must not be what the kit imports.
+        root = self.consumer(files={'kit_update.py': 'raise SystemExit("the project module was imported")\n'})
+        status, report = self.run_change(root, '0.1.0', apply_now=True, with_integrations=['launcher'])
+        self.assertEqual(status, 0, report)
+
+        def kit(*args):
+            return subprocess.run([sys.executable, 'kit', *args], cwd=root, capture_output=True, text=True)
+        overview = kit()
+        self.assertEqual(overview.returncode, 0, overview.stderr)
+        self.assertIn('as "python3 kit COMMAND"' if os.name != 'nt' else 'as "py kit COMMAND"', overview.stdout)
+        result = kit('status')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn('Kit 0.1.0', result.stdout)
+        self.assertIn('Example:\n  python3 kit update --diff' if os.name != 'nt' else 'Example:\n  py kit update',
+                      kit('update', '--help').stdout)
+        self.assertEqual(kit('remove').returncode, 0)                 # a preview through the launcher
+        self.assertTrue((root / 'kit').is_file())
+        result = kit('remove', '--apply')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertFalse((root / 'kit').exists())
+        self.grant_github(root)
+        project = json.loads((root / ku.PROJECT).read_text())
+        project['integrations']['launcher'] = {'grant': ['writes-launcher']}
+        (root / ku.PROJECT).write_text(json.dumps(project, indent=2))
+        self.assertEqual(self.run_change(root, '0.1.0', apply_now=True)[0], 0)
+        self.grant_github(root)  # now drop the launcher's grant, and interrupt the apply that removes it
+        with self.assertRaises(ku.KitError):
+            self.run_change(root, '0.1.0', apply_now=True, fail_after=0)
+        hint = 'py kit recover' if os.name == 'nt' else 'python3 kit recover'
+        self.assertIn(f'"{hint}"', kit('status').stdout, 'the next step is named as the person types it')
+        self.assertEqual(kit('recover').returncode, 0)
+        self.assertEqual(kit('remove', '--apply').returncode, 0)
+        missing = subprocess.run([sys.executable, str(self.source / 'integrations' / 'launcher' / 'kit')],
+                                 cwd=root, capture_output=True, text=True)
+        self.assertNotEqual(missing.returncode, 0)
+        self.assertIn('not installed', missing.stderr)
 
     def test_agent_skills_install_beside_the_project_skills_and_leave_on_removal(self):
         own = '.claude/skills/deploy/SKILL.md'

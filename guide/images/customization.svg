@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" width="960" height="420" role="img" aria-labelledby="title desc" font-family="Helvetica, Arial, sans-serif">
+  <title id="title">Choices that fit the kit to a project</title>
+  <desc id="desc">Two groups of choices. First, integrations chosen with adopt --with: which agents read instructions (agents-md, claude-code, copilot, gemini), whether agents get skills (agent-skills), whether people get the short kit command (launcher), and which Git host runs review templates and checks (github or gitlab). Second, the facts in project.json, filled in order: commands and checks, delivery profiles, acceptance boundaries, authority over effects, the project's own rules and exceptions, and the task and handoff folders.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+    </marker>
+  </defs>
+  <rect width="960" height="420" fill="#ffffff"/>
+  <g font-size="15" fill="#111827">
+    <text x="20" y="32" font-size="19" font-weight="bold">1. Integrations: what the kit installs</text>
+    <text x="20" y="54" font-size="13" font-family="Menlo, Consolas, monospace">adopt --with NAME</text>
+    <rect x="20" y="70" width="215" height="105" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="34" y="96" font-weight="bold">Which agents?</text>
+    <text x="34" y="120" font-size="13" font-family="Menlo, Consolas, monospace">agents-md, claude-code,</text>
+    <text x="34" y="138" font-size="13" font-family="Menlo, Consolas, monospace">copilot, gemini</text>
+    <text x="34" y="160" font-size="13">the entry block in their files</text>
+
+    <rect x="255" y="70" width="215" height="105" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="269" y="96" font-weight="bold">Skills for agents?</text>
+    <text x="269" y="120" font-size="13" font-family="Menlo, Consolas, monospace">agent-skills</text>
+    <text x="269" y="142" font-size="13">one skill per procedure</text>
+    <text x="269" y="160" font-size="13">loaded when work matches</text>
+
+    <rect x="490" y="70" width="215" height="105" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="504" y="96" font-weight="bold">Short command?</text>
+    <text x="504" y="120" font-size="13" font-family="Menlo, Consolas, monospace">launcher</text>
+    <text x="504" y="142" font-size="13">python3 kit COMMAND</text>
+    <text x="504" y="160" font-size="13">at the project root</text>
+
+    <rect x="725" y="70" width="215" height="105" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="739" y="96" font-weight="bold">Git host checks?</text>
+    <text x="739" y="120" font-size="13" font-family="Menlo, Consolas, monospace">github or gitlab</text>
+    <text x="739" y="142" font-size="13">review template and a</text>
+    <text x="739" y="160" font-size="13">workflow running check</text>
+
+    <text x="20" y="232" font-size="19" font-weight="bold">2. Facts in project.json, top to bottom</text>
+    <g font-size="14" text-anchor="middle">
+      <rect x="20" y="250" width="140" height="80" rx="10" fill="#e3f5e8" stroke="#15803d" stroke-width="2"/>
+      <text x="90" y="282" font-weight="bold">Commands</text>
+      <text x="90" y="304" font-size="13">and checks</text>
+      <rect x="180" y="250" width="140" height="80" rx="10" fill="#e3f5e8" stroke="#15803d" stroke-width="2"/>
+      <text x="250" y="282" font-weight="bold">Profiles</text>
+      <text x="250" y="304" font-size="13">per kind of work</text>
+      <rect x="340" y="250" width="140" height="80" rx="10" fill="#e3f5e8" stroke="#15803d" stroke-width="2"/>
+      <text x="410" y="282" font-weight="bold">Boundaries</text>
+      <text x="410" y="304" font-size="13">weakest first</text>
+      <rect x="500" y="250" width="140" height="80" rx="10" fill="#e3f5e8" stroke="#15803d" stroke-width="2"/>
+      <text x="570" y="282" font-weight="bold">Authority</text>
+      <text x="570" y="304" font-size="13">who allows effects</text>
+      <rect x="660" y="250" width="140" height="80" rx="10" fill="#e3f5e8" stroke="#15803d" stroke-width="2"/>
+      <text x="730" y="282" font-weight="bold">Rules</text>
+      <text x="730" y="304" font-size="13">and exceptions</text>
+      <rect x="820" y="250" width="120" height="80" rx="10" fill="#e3f5e8" stroke="#15803d" stroke-width="2"/>
+      <text x="880" y="282" font-weight="bold">Folders</text>
+      <text x="880" y="304" font-size="13">tasks, handoffs</text>
+    </g>
+    <g stroke="#1f2937" stroke-width="2" marker-end="url(#arrow)">
+      <line x1="160" y1="290" x2="178" y2="290"/>
+      <line x1="320" y1="290" x2="338" y2="290"/>
+      <line x1="480" y1="290" x2="498" y2="290"/>
+      <line x1="640" y1="290" x2="658" y2="290"/>
+      <line x1="800" y1="290" x2="818" y2="290"/>
+    </g>
+    <text x="20" y="375" font-size="14">Then run <tspan font-family="Menlo, Consolas, monospace">python3 kit check</tspan> until it passes, and commit the result.</text>
+    <text x="20" y="400" font-size="13" font-style="italic">The kit's own files stay as released; nothing else needs editing.</text>
+  </g>
+</svg>

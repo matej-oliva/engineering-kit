@@ -39,6 +39,35 @@ class CommandLine(unittest.TestCase):
         shutil.copytree(EXAMPLE, root)
         return root
 
+    def test_no_command_lists_the_everyday_commands_and_the_guide(self):
+        result = run()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        for command in ('check', 'check-task', 'status', 'update --diff', 'update --apply', 'rollback --apply',
+                        'recover', 'remove --apply', 'guide'):
+            self.assertIn(f'  {command}', result.stdout)
+        self.assertIn('--apply', result.stdout)
+        self.assertIn('guide/README.md', result.stdout)
+
+    def test_each_everyday_command_shows_an_example(self):
+        for command in ('check', 'check-task', 'status', 'adopt', 'update', 'rollback', 'recover', 'remove',
+                        'integrated', 'scan-secrets', 'contribute'):
+            with self.subTest(command):
+                result = run(command, '--help')
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn('Example', result.stdout)
+
+    def test_guide_names_the_installed_guide_or_the_kits_own(self):
+        root = self.temp / 'project'
+        guide = root / '.engineering-kit' / 'kit' / 'guide'
+        guide.mkdir(parents=True)
+        (guide / 'README.md').write_text('# Guide\n')
+        def named(result):
+            self.assertEqual(result.returncode, 0, result.stderr)
+            return (self.temp / result.stdout.split('The guide is ', 1)[1].split('. Open', 1)[0]).resolve()
+        self.assertEqual(named(run('guide', '--root', str(root), cwd=self.temp)), (guide / 'README.md').resolve())
+        self.assertEqual(named(run('guide', '--root', str(self.temp / 'no-kit-here'), cwd=self.temp)),
+                         (KIT / 'guide' / 'README.md').resolve())
+
     def test_check_passes_the_worked_project(self):
         result = run('check', '--root', str(EXAMPLE))
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

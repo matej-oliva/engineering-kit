@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 330" width="960" height="330" role="img" aria-labelledby="title desc" font-family="Helvetica, Arial, sans-serif">
+  <title id="title">How a task moves through the kit</title>
+  <desc id="desc">Six stages in order: Understand, Design and plan, Implement, Review and validate, Release and verify, Maintain and learn. Each stage names the task state it ends in. A defect enters at Implement through a reproduction first. Work that stops before acceptance leaves a handoff, and the next session resumes from it at the stage where work stopped.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+    </marker>
+  </defs>
+  <rect width="960" height="330" fill="#ffffff"/>
+  <g font-size="16" text-anchor="middle">
+    <g>
+      <rect x="20" y="70" width="135" height="90" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+      <text x="87" y="105" font-weight="bold" fill="#111827">Understand</text>
+      <text x="87" y="130" font-size="13" fill="#1f2937">ends: accepted</text>
+    </g>
+    <g>
+      <rect x="175" y="70" width="135" height="90" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+      <text x="242" y="100" font-weight="bold" fill="#111827">Design and</text>
+      <text x="242" y="120" font-weight="bold" fill="#111827">plan</text>
+      <text x="242" y="143" font-size="13" fill="#1f2937">profile, risks</text>
+    </g>
+    <g>
+      <rect x="330" y="70" width="135" height="90" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+      <text x="397" y="105" font-weight="bold" fill="#111827">Implement</text>
+      <text x="397" y="130" font-size="13" fill="#1f2937">ends: candidate</text>
+    </g>
+    <g>
+      <rect x="485" y="70" width="135" height="90" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+      <text x="552" y="100" font-weight="bold" fill="#111827">Review and</text>
+      <text x="552" y="120" font-weight="bold" fill="#111827">validate</text>
+      <text x="552" y="143" font-size="13" fill="#1f2937">ends: reviewed</text>
+    </g>
+    <g>
+      <rect x="640" y="70" width="135" height="90" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+      <text x="707" y="100" font-weight="bold" fill="#111827">Release and</text>
+      <text x="707" y="120" font-weight="bold" fill="#111827">verify</text>
+      <text x="707" y="143" font-size="13" fill="#1f2937">ends: verified</text>
+    </g>
+    <g>
+      <rect x="795" y="70" width="145" height="90" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+      <text x="867" y="100" font-weight="bold" fill="#111827">Maintain and</text>
+      <text x="867" y="120" font-weight="bold" fill="#111827">learn</text>
+      <text x="867" y="143" font-size="13" fill="#1f2937">ends: closed</text>
+    </g>
+  </g>
+  <g stroke="#1f2937" stroke-width="2" marker-end="url(#arrow)">
+    <line x1="155" y1="115" x2="173" y2="115"/>
+    <line x1="310" y1="115" x2="328" y2="115"/>
+    <line x1="465" y1="115" x2="483" y2="115"/>
+    <line x1="620" y1="115" x2="638" y2="115"/>
+    <line x1="775" y1="115" x2="793" y2="115"/>
+  </g>
+  <g font-size="14" fill="#111827">
+    <rect x="300" y="12" width="195" height="40" rx="8" fill="#fff4d6" stroke="#b45309" stroke-width="2"/>
+    <text x="397" y="37" text-anchor="middle">Defect: reproduce first</text>
+    <line x1="397" y1="52" x2="397" y2="68" stroke="#b45309" stroke-width="2" marker-end="url(#arrow)"/>
+  </g>
+  <g font-size="14" fill="#111827">
+    <rect x="300" y="235" width="360" height="56" rx="8" fill="#eef2f7" stroke="#4b5563" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="480" y="259" text-anchor="middle" font-weight="bold">Handoff</text>
+    <text x="480" y="279" text-anchor="middle">state, evidence, open gates, one next action</text>
+    <path d="M552,160 C552,200 600,215 600,233" fill="none" stroke="#4b5563" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+    <path d="M360,233 C360,210 397,200 397,162" fill="none" stroke="#4b5563" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+    <text x="640" y="205" font-size="13">work stops early</text>
+    <text x="340" y="215" font-size="13" text-anchor="end">next session resumes</text>
+  </g>
+</svg>

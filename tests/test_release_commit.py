@@ -75,6 +75,17 @@ class ReleaseCommit(unittest.TestCase):
         self.assertEqual(self.git('rev-parse', '--abbrev-ref', 'HEAD').strip(), 'main')
         self.assertEqual(self.git('branch', '--list', 'release/*').strip(), '')
 
+    def test_a_failed_manifest_check_leaves_no_new_file(self):
+        tool = self.root / 'tools' / 'kit_update.py'
+        text = tool.read_text(encoding='utf-8')
+        self.assertEqual(text.count('code = 0 if current == manifest else 1'), 1)
+        tool.write_text(text.replace('code = 0 if current == manifest else 1', 'code = 1'), encoding='utf-8')
+        self.git('commit', '-q', '-am', 'A manifest check that always fails')
+        done = self.make('2.0.0')
+        self.assertNotEqual(done.returncode, 0)
+        self.assertEqual(self.git('status', '--porcelain', '--untracked-files=all'), '')
+        self.assertEqual(self.git('rev-parse', '--abbrev-ref', 'HEAD').strip(), 'main')
+
     def test_a_detached_head_or_an_existing_tag_is_refused(self):
         self.git('tag', '-a', 'v2.0.0', '-m', 'already published')
         done = self.make('2.0.0')

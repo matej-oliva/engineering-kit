@@ -56,6 +56,7 @@ def make(root: Path, version: str, python: str = sys.executable) -> str:
     finally:
         if not made:  # leave nothing half made behind; the checkout was clean when this began
             git('reset', '-q', '--hard', root=root)
+            git('clean', '-q', '-f', '-d', root=root)  # such as a RELEASE.json whose check failed
         git('switch', '-q', start, root=root)
         if not made:
             git('branch', '-q', '-D', branch, root=root)
