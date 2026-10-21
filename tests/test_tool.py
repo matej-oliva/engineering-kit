@@ -11,6 +11,8 @@ import sys
 import tempfile
 import unittest
 
+from native_release import remove_tree  # Git object files are read-only on Windows
+
 KIT = Path(__file__).resolve().parents[1]
 TOOL = KIT / 'tools' / 'kit.py'
 EXAMPLE = KIT / 'examples' / 'walkthrough' / 'project'
@@ -30,7 +32,7 @@ def run(*args, cwd=None, env=None):
 class CommandLine(unittest.TestCase):
     def setUp(self):
         self.temp = Path(tempfile.mkdtemp(prefix='kit-tool-'))
-        self.addCleanup(shutil.rmtree, self.temp)
+        self.addCleanup(remove_tree, self.temp)
 
     def copy_example(self) -> Path:
         root = self.temp / 'project'
@@ -161,7 +163,7 @@ class CommandLine(unittest.TestCase):
 class SecretScan(unittest.TestCase):
     def setUp(self):
         self.temp = Path(tempfile.mkdtemp(prefix='kit-secrets-'))
-        self.addCleanup(shutil.rmtree, self.temp)
+        self.addCleanup(remove_tree, self.temp)
         self.env = isolated_git_env(self.temp)
         self.repo = self.temp / 'repo'
         self.repo.mkdir()

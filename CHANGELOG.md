@@ -9,6 +9,13 @@ and whether the contract changed. Newest first.
   triggered native-platform workflow runs the suite and an offline published
   0.1.1 to 1.0.0 adoption, update, rollback and removal exercise. Native
   platform support remains unverified until the matrix passes.
+- `release` hashes files as Git stores them, so a release made from a
+  working copy whose editor saved CRLF no longer fails verification on
+  install. `contribute` writes `change.patch` byte for byte, so on Windows
+  it still applies with `git apply`. Neither changes the contract.
+- The test suite runs on Windows and macOS: fixtures write exact bytes,
+  compare POSIX paths, clean up read-only Git objects and no longer depend
+  on `/etc/hostname`.
 
 ## 1.0.0, 2026-10-21, first supported release
 

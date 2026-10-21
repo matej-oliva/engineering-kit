@@ -18,6 +18,7 @@ KIT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(KIT / 'tools'))
 import kit  # noqa: E402
 import kit_update as ku  # noqa: E402
+from native_release import remove_tree  # noqa: E402  Git object files are read-only on Windows
 
 REVIEW = '.engineering-kit/kit/procedures/review.md'
 CONTRACT = '.engineering-kit/kit/CONTRACT.md'
@@ -29,15 +30,15 @@ def sh(*args, cwd):
 
 
 def edit(path: Path, old: str, new: str):
-    text = path.read_text(encoding='utf-8')
+    text = path.read_text(encoding='utf-8', newline='')
     assert text.count(old) == 1, (path, old)
-    path.write_text(text.replace(old, new), encoding='utf-8')
+    path.write_text(text.replace(old, new), encoding='utf-8', newline='')
 
 
 class Distribution(unittest.TestCase):
     def setUp(self):
         self.temp = Path(tempfile.mkdtemp(prefix='kit-distribution-'))
-        self.addCleanup(shutil.rmtree, self.temp)
+        self.addCleanup(remove_tree, self.temp)
         env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
         env.update(HOME=str(self.temp), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM='1',
                    GIT_AUTHOR_NAME='Kit Test', GIT_AUTHOR_EMAIL='kit@example.invalid',
@@ -75,7 +76,7 @@ class Distribution(unittest.TestCase):
         root.mkdir()
         for path, content in (files or {}).items():
             (root / path).parent.mkdir(parents=True, exist_ok=True)
-            (root / path).write_text(content)
+            (root / path).write_text(content, newline='')
         sh('init', '-q', cwd=root)
         return root
 
@@ -91,7 +92,7 @@ class Distribution(unittest.TestCase):
         return report
 
     def snapshot(self, root):
-        return {str(p.relative_to(root)): p.read_bytes() for p in sorted(root.rglob('*'))
+        return {p.relative_to(root).as_posix(): p.read_bytes() for p in sorted(root.rglob('*'))
                 if p.is_file() and '.git' not in p.relative_to(root).parts}
 
     def assertOnlyPlaceholdersLeft(self, root):
@@ -367,11 +368,26 @@ class Distribution(unittest.TestCase):
         self.assertEqual(list(outside.iterdir()), [])
 
     def test_a_release_containing_a_link_is_refused(self):
-        (self.source / 'procedures' / 'link.md').symlink_to('/etc/hostname')
+        target = self.temp / 'external.md'
+        target.write_text('Outside the release.\n', encoding='utf-8')
+        (self.source / 'procedures' / 'link.md').symlink_to(target)
         self.release('0.2.0')
         root = self.consumer()
         with self.assertRaisesRegex(ku.KitError, 'link or submodule'):
             self.run_change(root, '0.2.0')
+
+    def test_a_release_saved_with_windows_line_endings_installs(self):
+        """Git stores kit files with LF; a maintainer's editor saving CRLF must still give a valid release."""
+        def change(source):
+            path = source / 'procedures' / 'review.md'
+            text = path.read_bytes().replace(REVIEW_STEP.encode(), b'Use when a candidate is ready; never self-review.')
+            path.write_bytes(text.replace(b'\n', b'\r\n'))
+        self.release('0.2.0', change)
+        root = self.consumer()
+        self.adopt(root, '0.2.0')
+        installed = (root / REVIEW).read_bytes()
+        self.assertIn(b'never self-review.\n', installed)
+        self.assertNotIn(b'\r', installed)
 
     def test_a_moved_release_tag_is_refused(self):
         root = self.consumer()
@@ -706,7 +722,7 @@ class Distribution(unittest.TestCase):
                 sh('clean', '-qfd', cwd=root)
 
         def edit_tool_and_lock():
-            tool.write_text('import sys\nsys.exit(0)\n')
+            tool.write_bytes(b'import sys\nsys.exit(0)\n')
             lock = json.loads(lock_path.read_text())
             lock['files']['.engineering-kit/kit/tools/kit.py'] = hashlib.sha256(tool.read_bytes()).hexdigest()
             lock_path.write_text(json.dumps(lock))
@@ -862,7 +878,7 @@ class Distribution(unittest.TestCase):
                 sh('clean', '-qfd', cwd=root)
 
         def forge():
-            tool.write_text('import sys\nsys.exit(0)\n')
+            tool.write_bytes(b'import sys\nsys.exit(0)\n')
             lock = json.loads(lock_path.read_text())
             lock['files']['.engineering-kit/kit/tools/kit.py'] = hashlib.sha256(tool.read_bytes()).hexdigest()
             core = {k[len('.engineering-kit/kit/'):]: v for k, v in lock['files'].items()

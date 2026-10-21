@@ -18,6 +18,9 @@ KIT = Path(__file__).resolve().parents[1]
 
 # (label, file under tools/, exact original text, replacement)
 MUTANTS = [
+    ('a release hashes the working copy, not what Git stores', 'kit_update.py',
+     "{name: git('cat-file', 'blob', blob, cwd=root) for name, blob in blobs.items()}",
+     "{name: (root / name).read_bytes() for name in blobs}"),
     ('repository workflows become installed payload', 'kit_update.py',
      "'conformance/', '.github/'", "'conformance/'"),
     ('a skipped check counts as a pass', 'kit.py',

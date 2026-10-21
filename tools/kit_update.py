@@ -77,14 +77,23 @@ def payload(path: str) -> bool:
 # ------------------------------------------------------------- releases
 
 def build_release(root: Path, version: str) -> dict:
-    """Manifest for the tracked files under ROOT, the kit's source folder."""
-    names = [n for n in git('ls-files', '-z', cwd=root).decode().split('\0') if n and payload(n)]
-    files = {name: sha256((root / name).read_bytes()) for name in names}
+    """Manifest for the tracked files under ROOT, the kit's source folder, as Git stores them.
+
+    Hashing the staged blobs rather than the working copy keeps the manifest valid when an
+    editor saved CRLF that .gitattributes normalizes to LF on commit."""
+    blobs = {}
+    for record in git('ls-files', '-s', '-z', cwd=root).decode().split('\0'):
+        if record:
+            meta, name = record.split('\t', 1)
+            if payload(name):
+                blobs[name] = meta.split()[1]
+    contents = {name: git('cat-file', 'blob', blob, cwd=root) for name, blob in blobs.items()}
+    files = {name: sha256(data) for name, data in contents.items()}
     integrations = {}
-    for name in names:
+    for name, data in contents.items():
         parts = PurePosixPath(name).parts
         if len(parts) == 3 and parts[0] == 'integrations' and parts[2] == 'integration.json':
-            integrations[parts[1]] = json.loads((root / name).read_text(encoding='utf-8'))['permissions']
+            integrations[parts[1]] = json.loads(data.decode('utf-8'))['permissions']
     return {'kit': 'release/1', 'version': tag_for(version)[1:], 'contract': kit.CONTRACT_VERSION,
             'digest': digest_of(files), 'files': files, 'integrations': integrations,
             'notes': 'CHANGELOG.md'}
@@ -799,7 +808,7 @@ def contribute(root: Path, paths: list[str], out: Path, details: dict) -> list[s
     if found:
         raise KitError('; '.join(f.message for f in found))
     out.mkdir(parents=True, exist_ok=True)
-    (out / 'change.patch').write_text(''.join(patch), encoding='utf-8')
+    (out / 'change.patch').write_text(''.join(patch), encoding='utf-8', newline='')  # exact bytes for git apply
     (out / 'contribution.json').write_text(json.dumps(record, indent=2) + '\n', encoding='utf-8')
     return [f'Wrote {out / "contribution.json"} and {out / "change.patch"} for {", ".join(files)}.',
             'Apply the patch in the kit repository with "git apply", add its evidence, review and release it.']
