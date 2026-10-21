@@ -105,7 +105,7 @@ class ContractConsistency(unittest.TestCase):
                 self.assertEqual(data['kit'], 'integration/1')
                 self.assertEqual(data['name'], manifest.parent.name)
                 self.assertIn(kit.CONTRACT_VERSION, data['contract'])
-                for field in ('summary', 'runtime', 'manual'):
+                for field in ('summary', 'runtime', 'tested', 'manual'):
                     self.assertTrue(data[field].strip())
                 for field in ('capabilities', 'permissions', 'inputs', 'evidence', 'blocks', 'files'):
                     self.assertIsInstance(data[field], list)

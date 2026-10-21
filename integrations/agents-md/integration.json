@@ -22,5 +22,6 @@
     }
   ],
   "files": [],
+  "tested": "Codex CLI and Claude Code sessions found the kit through AGENTS.md in two pilot projects and a new project, releases 0.1.0 and 0.1.1, October 2026.",
   "manual": "Paste templates/entry-block.md into the project's own instruction file."
 }

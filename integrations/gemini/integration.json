@@ -10,5 +10,6 @@
   "evidence": [],
   "blocks": [{"target": "GEMINI.md"}],
   "files": [],
+  "tested": "none: the file is written and removed by the tests, but no Gemini session has used it.",
   "manual": "Paste templates/entry-block.md into GEMINI.md, or configure the Gemini command line to read AGENTS.md and use agents-md instead."
 }

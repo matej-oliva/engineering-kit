@@ -13,5 +13,6 @@
     {"source": "merge_request_template.md", "target": ".gitlab/merge_request_templates/engineering-kit.md", "permission": "review-template"},
     {"source": "ci.yml", "target": ".gitlab/engineering-kit-ci.yml", "permission": "ci-workflow"}
   ],
+  "tested": "Installed in place of github in a throwaway copy of a pilot project, October 2026; never run on GitLab.",
   "manual": "Add `include: [{local: .gitlab/engineering-kit-ci.yml}]` to the project's own .gitlab-ci.yml; the integration never edits that file."
 }

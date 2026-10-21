@@ -6,8 +6,8 @@ verified delivery and maintenance, and what evidence each step leaves. Each
 project keeps its own language, framework, design system, agent client, Git
 host, deployment platform and permissions.
 
-Status: version 0.1.1, a pilot release, contract version 1. See
-`CHANGELOG.md`. MIT licence; see `LICENSE`.
+Status: version 1.0.0, the first supported release, contract version 1.
+See `CHANGELOG.md` and `MAINTAINING.md`. MIT licence; see `LICENSE`.
 
 ## Contents
 
@@ -19,6 +19,7 @@ Status: version 0.1.1, a pilot release, contract version 1. See
 | `templates/` | A starting project configuration, task, handoff and the entry block for instruction files. |
 | `tools/kit.py` | The reference checker. |
 | `integrations/` | Optional adapters that connect the contract to a particular tool. |
+| `MAINTAINING.md` | Versions, support, releases, contributions and recovery. |
 
 The kit's own repository also holds what an installed copy leaves out:
 `conformance/`, planted failures and known-good records that any checker
@@ -51,9 +52,9 @@ project's root. It installs the release it was cloned at, from the address
 it was cloned from:
 
 ```sh
-git clone --depth 1 --branch v0.1.1 KIT_ADDRESS ~/engineering-kit-0.1.1
-python3 ~/engineering-kit-0.1.1/tools/kit.py adopt --with copilot           # preview
-python3 ~/engineering-kit-0.1.1/tools/kit.py adopt --with copilot --apply   # write
+git clone --depth 1 --branch v1.0.0 KIT_ADDRESS ~/engineering-kit-1.0.0
+python3 ~/engineering-kit-1.0.0/tools/kit.py adopt --with copilot           # preview
+python3 ~/engineering-kit-1.0.0/tools/kit.py adopt --with copilot --apply   # write
 ```
 
 `--with` names the instruction files your agents read, beyond `AGENTS.md`:
@@ -61,7 +62,7 @@ python3 ~/engineering-kit-0.1.1/tools/kit.py adopt --with copilot --apply   # wr
 project:
 
 ```sh
-python3 .engineering-kit/kit/tools/kit.py update 0.2.0 --diff
+python3 .engineering-kit/kit/tools/kit.py update 1.1.0 --diff
 python3 .engineering-kit/kit/tools/kit.py rollback --apply
 ```
 
@@ -74,6 +75,34 @@ stop without writing when they overlap. `procedures/adopt-and-update.md` and
 release and contribution files. The kit is never installed by running code
 from a release, and it writes only under `.engineering-kit/kit/`, the files
 its granted integrations name, and the marked entry block.
+
+## Supported environments
+
+| Environment | Status |
+| --- | --- |
+| Linux on ARM64, Python 3.14, Git 2.53 | Tested: the suite, the mutation check, both pilots and a fresh install |
+| Python 3.11 to 3.13 | The declared minimum is 3.11; only the grammar is checked against it |
+| Windows | Line endings are tested by simulation on Linux; the tool has not run on Windows |
+| macOS | Not run |
+| Agent clients, Git hosts | Each integration's `tested` field says what has used it in a real project; some have only been installed by the tests |
+
+## Known limits
+
+- `kit.py check` reads records. It never runs a project's checks, so a
+  recorded pass is only as true as the session that recorded it; reviews
+  rerun what matters.
+- `kit.py integrated` needs Git access to the kit's repository when the
+  lock changed after the candidate. Without it the result is unknown.
+- Permissions are declarations shown in the preview, not a sandbox.
+- A private kit repository needs the machine to be signed in to an account
+  that can read it.
+- Releases are not signed. A project trusts the repository it installs from
+  and pins each release by its commit and digest.
+- The record folders are the project's reviewed choice. Nothing stops a
+  configuration from naming a folder an agent client reads settings from,
+  where a record-shaped file could carry live hooks; reviewers read a
+  configuration change like code. A client file with a leading dot, such
+  as `.cursorrules`, reserves no useful name.
 
 ## Context cost
 

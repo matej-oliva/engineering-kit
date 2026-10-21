@@ -30,7 +30,10 @@ other change. Every command previews by default and writes only with
 ## Update or roll back
 
 1. Run `tools/kit.py status` to see the installed release and any local
-   changes to kit files.
+   changes to kit files. Keep project notes in `project.json` `rules` or in
+   your instruction files outside the entry block, not inside kit files: a
+   changed kit file conflicts with updates, and `kit.py integrated` counts
+   it as a change, so merging it makes a new candidate.
 2. Preview with `tools/kit.py update VERSION --diff`, after reading the
    release notes. Local changes are merged with the release's changes. An
    overlap stops the update without writing anything: edit the local file to

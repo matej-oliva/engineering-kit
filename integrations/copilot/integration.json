@@ -10,5 +10,6 @@
   "evidence": [],
   "blocks": [{"target": ".github/copilot-instructions.md"}],
   "files": [],
+  "tested": "none: the file is written and removed by the tests, but no Copilot session has used it.",
   "manual": "Paste templates/entry-block.md into .github/copilot-instructions.md."
 }

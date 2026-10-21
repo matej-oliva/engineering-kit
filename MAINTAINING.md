@@ -1,0 +1,55 @@
+# Maintaining the kit
+
+The repository owner maintains the kit. Agents prepare changes and releases;
+the owner approves anything that widens what the kit may write or do.
+
+## Versions and support
+
+- A release is an annotated tag `vMAJOR.MINOR.PATCH` on the commit holding
+  its `RELEASE.json`. A published tag never moves: projects refuse a tag
+  that no longer matches what they installed.
+- PATCH releases fix defects and wording. MINOR releases add procedures,
+  integrations or checks, including checks that refuse records an earlier
+  release accepted; the changelog lists them. MAJOR releases change the
+  contract version, which projects accept with `--accept-contract`.
+- The latest release and the one before it are supported. A security fix
+  ships as a PATCH of the latest release within seven days of the finding,
+  or the changelog names a workaround until it does.
+- Projects review their installed version when a release appears and at
+  least once a month, by reading `CHANGELOG.md` and previewing the update.
+
+## Making a release
+
+1. Every change since the last release has passed
+   `python3 -m unittest discover -s tests`, and
+   `python3 tests/mutation_check.py` reports every mutant caught. Add a
+   mutant whenever you add a guard.
+2. A fresh reviewer who did not write the changes reviews
+   `git diff vPREVIOUS..HEAD` against the commit messages. Blocking findings
+   are fixed and reviewed again, by a reviewer given the earlier findings.
+3. `CHANGELOG.md` says what changed, what a project must do after updating,
+   and whether the contract changed.
+4. Run `python3 tools/kit.py release X.Y.Z` and
+   `python3 tools/kit.py release X.Y.Z --check`, commit `RELEASE.json`, tag
+   `vX.Y.Z` with `git tag -a`, and push `main` and the tag.
+5. Install the release from the repository into a throwaway project with
+   the commands in `README.md`, run `kit.py check`, and remove it again.
+
+## Contributions
+
+Lessons arrive through `procedures/contribute.md` as a patch and a
+contribution record. Check the record with `tools/kit.py check-contribution`,
+apply the patch, add a check or conformance case where the lesson is
+mechanical, and release it like any change. Material without stated rights,
+or belonging to an employer or client without clearance, stays out.
+
+## Recovery
+
+- A defective release: publish a fixed PATCH. Projects that already updated
+  return with `tools/kit.py rollback`, which keeps their own changes. Never
+  move or delete a published tag.
+- An interrupted update in a project: `tools/kit.py recover`, as described in
+  `procedures/adopt-and-update.md`.
+- A lost repository: any clone holds the full history and tags. Each
+  project's lock names the commit and digest of the release it installed, so
+  a restored repository can be checked against them before projects update.

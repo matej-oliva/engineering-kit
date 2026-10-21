@@ -3,6 +3,23 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
+## 1.0.0, unreleased, first supported release
+
+The first release with a support promise; see `MAINTAINING.md`. Contract
+version 1, unchanged, and no tool behaviour changed since 0.1.1. Nothing
+to do after updating.
+
+- `MAINTAINING.md`: version policy, the two supported releases, how a
+  release is made and reviewed, contributions and recovery.
+- `README.md` lists the environments the kit has run on and its known
+  limits. Each integration gains a `tested` field saying what has used it
+  in a real project.
+- The review procedure says a handoff is not evidence, where a reviewer's
+  own reruns go, and that the reviewer proposes a task for each
+  non-blocking finding. The update procedure says to keep project notes
+  out of kit files, because a changed kit file makes every merge a new
+  candidate.
+
 ## 0.1.1, 2026-10-21, pilot release
 
 Lessons from the first pilots. Contract version 1, unchanged. After

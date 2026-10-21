@@ -13,5 +13,6 @@
     {"source": "pull_request_template.md", "target": ".github/pull_request_template.md", "permission": "review-template"},
     {"source": "workflow.yml", "target": ".github/workflows/engineering-kit.yml", "permission": "ci-workflow"}
   ],
+  "tested": "Installed and swapped out in a throwaway copy of a pilot project, October 2026; the workflow has never run on GitHub.",
   "manual": "Run tools/kit.py check before asking for review, and link the task record in the pull request description."
 }

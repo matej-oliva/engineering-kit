@@ -6,9 +6,10 @@ Use when a candidate is ready. The reviewer is not the author.
    not write the change and starts from the task record rather than the
    author's conversation. Give them the requirement, the acceptance
    examples, the candidate revision and the evidence, and nothing that
-   argues for a verdict. Anyone who changed the candidate or recorded its
-   evidence for the author is listed in `contributors` and does not review
-   it.
+   argues for a verdict. A handoff is for resuming work: a reviewer who
+   reads it checks each claim and does not treat it as evidence. Anyone who
+   changed the candidate or recorded its evidence for the author is listed
+   in `contributors` and does not review it.
 2. **Review against the requirement.** For each acceptance example, does the
    candidate meet it, and is there evidence? Are the required checks
    meaningful, recorded for this revision and passing? Look for changes
@@ -16,7 +17,8 @@ Use when a candidate is ready. The reviewer is not the author.
    and documentation that no longer matches.
 3. **Record findings** with `blocking` set when an acceptance example is not
    met, a check is wrong or missing, a risk is unhandled or a contract rule
-   is broken. Other findings are not blocking and become tasks.
+   is broken. Other findings are not blocking; the reviewer proposes each
+   as a new task in state `proposed` for the decision owner.
 4. **Return or approve.** With blocking findings open, the verdict is
    `changes` and the task returns to the author. The author fixes them in a
    new candidate; checks and review then apply to that revision. A reviewer
@@ -30,10 +32,11 @@ Use when a candidate is ready. The reviewer is not the author.
    record it in `candidate.integrated` with the output of
    `tools/kit.py integrated CANDIDATE REVISION` as its evidence, run from
    the candidate's checkout or a clone of the kit, never from the revision
-   under judgement. When it
-   reports `UNKNOWN`, such as a kit adopted or moved to another source after
-   the candidate, review that kit change before you rely on the result.
+   under judgement. When it reports `UNKNOWN`, such as a kit adopted or
+   moved to another source after the candidate, review that kit change
+   before you rely on the result.
 6. **Mark the task reviewed** once a review of this revision approves it and
    its required checks pass. Put what you examined and reran in the review's
-   `evidence`. Done when `tools/kit.py check-task FILE` passes
-   in state `reviewed` (rules `REVIEW` and `CHECKS`).
+   `evidence`, not in `checks`: recording the author's checks would make you
+   a contributor. Done when `tools/kit.py check-task FILE` passes in state
+   `reviewed` (rules `REVIEW` and `CHECKS`).

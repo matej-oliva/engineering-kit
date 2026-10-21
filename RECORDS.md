@@ -107,6 +107,7 @@ the future, and `State` equals the task record's state.
 | `inputs`, `evidence` | What it reads and the evidence it produces. |
 | `files` | `[{"source", "target", "permission"}]`: files it installs, with `source` relative to its folder and the declared permission that covers the file. Targets stay outside `.engineering-kit/` and any `.git` folder, compared without case. |
 | `blocks` | `[{"target"}]`: instruction files that receive the marked entry block; it needs the `writes-instructions` permission. |
+| `tested` | What has exercised it in a real project, with releases and dates, or `none`. |
 | `manual` | How to meet the same need by hand without it. |
 
 Permissions: `writes-instructions` adds the entry block to an instruction

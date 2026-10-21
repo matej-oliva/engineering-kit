@@ -22,5 +22,6 @@
     }
   ],
   "files": [],
+  "tested": "Claude Code sessions worked in a pilot project that had the block in both CLAUDE.md and AGENTS.md, releases 0.1.0 and 0.1.1, October 2026; which file they read first was not recorded.",
   "manual": "Paste templates/entry-block.md into CLAUDE.md, or import AGENTS.md from it and use agents-md instead."
 }
