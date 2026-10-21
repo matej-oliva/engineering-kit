@@ -34,6 +34,9 @@ points at the guide; your text outside it is unchanged.
   subfolder instead of reading the wrong project.
 - Removing a kit file also removes the folders that leaves empty, so
   `remove` no longer leaves empty skill and kit folders behind.
+- `rollback` and `remove` accept `--source`, like `update`, and all three
+  now read the installed release from that source, checked against the
+  lock, so a kit that moved is given its new place once.
 - `procedures/understand.md` names the author and a first delivery profile
   before accepting a task, as `check-task` requires; `design.md` confirms
   or changes that profile.

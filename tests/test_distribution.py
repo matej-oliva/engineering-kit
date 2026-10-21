@@ -517,6 +517,53 @@ class Distribution(unittest.TestCase):
                     self.assertTrue(resolved.is_relative_to(installed.resolve()))
         self.assertIn('.engineering-kit/kit/guide/README.md', (root / 'AGENTS.md').read_text())
 
+    def test_a_moved_source_is_given_once_with_source(self):
+        original = self.temp / 'kit-before-move'
+        sh('clone', '-q', str(self.source), str(original), cwd=self.temp)
+        root = self.consumer()
+        self.assertEqual(self.run_change(root, '0.1.0', apply_now=True, source=str(original))[0], 0)
+        self.second_release()
+        moved = self.temp / 'kit-after-move'
+        sh('clone', '-q', str(self.source), str(moved), cwd=self.temp)
+        shutil.rmtree(original)
+        installed = [sys.executable, str(root / '.engineering-kit' / 'kit' / 'tools' / 'kit.py')]
+
+        def kit(*args):
+            return subprocess.run([*installed, *args, '--root', str(root)], capture_output=True, text=True)
+        refused = kit('update', '0.2.0')
+        self.assertEqual(refused.returncode, 1)
+        self.assertIn('git fetch failed', refused.stdout)
+        updated = kit('update', '0.2.0', '--apply', '--source', str(moved))
+        self.assertEqual(updated.returncode, 0, updated.stdout + updated.stderr)
+        self.assertEqual(Path(ku.load_lock(root)['source']), moved)
+        shutil.rmtree(moved)
+        again = self.temp / 'kit-moved-again'
+        sh('clone', '-q', str(self.source), str(again), cwd=self.temp)
+        rolled = kit('rollback', '--apply', '--source', str(again))
+        self.assertEqual(rolled.returncode, 0, rolled.stdout + rolled.stderr)
+        shutil.rmtree(again)
+        last = self.temp / 'kit-last'
+        sh('clone', '-q', str(self.source), str(last), cwd=self.temp)
+        removed = kit('remove', '--apply', '--source', str(last))
+        self.assertEqual(removed.returncode, 0, removed.stdout + removed.stderr)
+        self.assertIsNone(ku.load_lock(root))
+
+    def test_another_source_must_hold_exactly_the_installed_release(self):
+        root = self.consumer()
+        self.adopt(root)
+        other = self.temp / 'other-kit'
+        shutil.copytree(self.source, other, ignore=shutil.ignore_patterns('.git'))
+        sh('init', '-q', '-b', 'main', cwd=other)
+        edit(other / 'procedures' / 'review.md', REVIEW_STEP, 'A different 0.1.0.')
+        sh('add', '-A', cwd=other)
+        sh('commit', '-q', '-m', 'not the same release', cwd=other)
+        (other / 'RELEASE.json').write_text(json.dumps(ku.build_release(other, '0.1.0'), indent=2) + '\n')
+        sh('add', '-A', cwd=other)
+        sh('commit', '-q', '-m', 'Release 0.1.0', cwd=other)
+        sh('tag', 'v0.1.0', cwd=other)
+        with self.assertRaisesRegex(ku.KitError, 'not what was installed'):
+            self.run_change(root, None, source=str(other), moved_to=str(other))
+
     def test_a_release_without_a_granted_integration_names_the_grant_to_remove(self):
         root = self.consumer()
         self.adopt(root)

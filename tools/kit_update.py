@@ -539,7 +539,10 @@ def apply(root: Path, writes: list[Action], *, fail_after: int | None = None) ->
             flush(target.parent)
             folder = target.parent  # drop the folders this leaves empty, never the project root itself
             while folder != root and folder.is_dir() and not any(folder.iterdir()):
-                folder.rmdir()
+                try:
+                    folder.rmdir()
+                except OSError:  # tidying only: a folder in use stays, and the apply goes on
+                    break
                 folder = folder.parent
         else:
             write_atomic(target, final)
@@ -643,8 +646,11 @@ def describe(actions: list[Action], problems: list[str], root: Path, show_diff: 
 def change(root: Path, source: str, version: str | None, *, adopting: bool = False, apply_now: bool = False,
            resolutions: dict[str, str] | None = None, expected_plan: str | None = None,
            accept_contract: int | None = None, show_diff: bool = False,
-           fail_after: int | None = None, with_integrations: list[str] | None = None) -> tuple[int, list[str]]:
+           fail_after: int | None = None, with_integrations: list[str] | None = None,
+           moved_to: str | None = None) -> tuple[int, list[str]]:
     """Adopt, update, roll back or remove. Returns an exit status and report lines.
+
+    MOVED_TO, from --source, is where to read the installed release instead of the recorded source.
 
     WITH_INTEGRATIONS, only when adopting into a project without project.json,
     enables those integrations in the new file and grants exactly what each
@@ -660,10 +666,11 @@ def change(root: Path, source: str, version: str | None, *, adopting: bool = Fal
         raise KitError('this project has not adopted the kit; use adopt')
     with tempfile.TemporaryDirectory(prefix='kit-fetch-') as work:
         base = None
-        if lock:
-            base = fetch(lock['source'], lock['version'], Path(work))
+        if lock:  # from the recorded source, or one named with --source: the lock says what it must hold
+            installed_from = moved_to or lock['source']
+            base = fetch(installed_from, lock['version'], Path(work))
             if base.commit != lock['commit'] or base.manifest['digest'] != lock['digest']:
-                raise KitError(f'release {lock["version"]} at {lock["source"]} is not what was installed '
+                raise KitError(f'release {lock["version"]} at {installed_from} is not what was installed '
                                f'(commit {base.commit[:12]}, recorded {lock["commit"][:12]}); refusing')
         target = fetch(source, version, Path(work)) if version else None
         for entry in (lock or {}).get('history', []) if target else []:
@@ -930,13 +937,15 @@ def cli(args) -> int:
                     # interrupted apply is handled as for an update to the same version.
                     print(f'The newest release at the source is {version}.')
             elif args.command == 'rollback':
-                source, version = (lock or {}).get('source', ''), previous_version(root)
+                source, version = local_source(args.source) or (lock or {}).get('source', ''), previous_version(root)
             else:
-                source, version = (lock or {}).get('source', ''), None
+                source, version = local_source(args.source) or (lock or {}).get('source', ''), None
             code, lines = change(root, source, version, adopting=args.command == 'adopt', apply_now=args.apply,
                                  resolutions=resolutions, expected_plan=args.plan,
                                  accept_contract=getattr(args, 'accept_contract', None), show_diff=args.diff,
-                                 with_integrations=getattr(args, 'with_integrations', []))
+                                 with_integrations=getattr(args, 'with_integrations', []),
+                                 moved_to=local_source(getattr(args, 'source', None))
+                                 if args.command != 'adopt' else None)
     except (KitError, OSError, ValueError) as error:
         print(f'refused: {error}')
         return 1

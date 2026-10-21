@@ -83,7 +83,7 @@ the files as they are with `python3 kit recover --abandon`.
 | `the contract changes from 1 to 2; read the release notes, then rerun with --accept-contract 2` | Read what changed in the contract, then rerun with that option. |
 | `... is a symbolic link` | The kit never writes through a link. Replace the link with a real folder or file. |
 | `release ... manifest does not match its files` | The release does not match what was published. Use another release and tell the kit's maintainer. |
-| `git ls-remote failed: ...` or `git fetch failed: ...` | The machine cannot read the kit's source: a Git address it is not signed in to, or a folder that moved or is missing. Sign in, or give the new address or folder once: `python3 kit update --source NEW_ADDRESS`. |
+| `git ls-remote failed: ...` or `git fetch failed: ...` | The machine cannot read the kit's source: a Git address it is not signed in to, or a folder that moved or is missing. Sign in, or give the new address or folder once with `--source`, for example `python3 kit update --source NEW_ADDRESS`; `rollback` and `remove` take it too. The new source must hold exactly the release you have installed. |
 | `Run it from the project root: cd ...` | The short `kit` command works only from the folder that holds it. Change to that folder and run it again. |
 | `FORMAT` from `check` | A file cannot be read as a record, or still holds a `kit-placeholder:` value. Fix the field the line names. |
 | A rule ID from `check`, such as `CHECKS` | The record lacks evidence the rule needs. [`RECORDS.md`](../RECORDS.md) names the field. |

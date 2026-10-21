@@ -31,10 +31,11 @@ each file it touches.
   it.
 - **Releases** are version tags in the kit's repository. Each holds a
   manifest of every file with its digest, so an install is checked against
-  exactly what was published. A published release never changes. Update
-  and rollback read releases from the source recorded in `lock.json`, a Git
-  address or a folder on this machine, so that source must be reachable
-  when you run them.
+  exactly what was published. A published release never changes. Update,
+  rollback and remove read releases from the source recorded in
+  `lock.json`, a Git address or a folder on this machine, so that source
+  must be reachable when you run them; `integrated` needs it too when the
+  lock changed. If the kit moved, give its new place once with `--source`.
 
 ## Who owns which file
 

@@ -951,8 +951,9 @@ def main(argv: list[str] | None = None) -> int:
                                  help='enable an integration in the new project.json and grant what it declares')
         if name == 'update':
             command.add_argument('version', nargs='?', help='default: the newest release at the source')
-        if name == 'update':
-            command.add_argument('--source', help='fetch from here instead of the recorded source')
+        if name in ('update', 'rollback', 'remove'):
+            command.add_argument('--source', help='read releases from here instead of the recorded source, '
+                                                  'for example after the kit moved')
         if name in ('update', 'rollback'):
             command.add_argument('--accept-contract', type=int, metavar='N')
         command.add_argument('--apply', action='store_true', help='write the previewed changes')

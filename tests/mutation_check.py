@@ -46,6 +46,8 @@ MUTANTS = [
     ('a failed release commit leaves its branch behind', 'tests/release_commit.py',
      "        if not made:\n            git('branch', '-q', '-D', branch, root=root)",
      "        if False:\n            git('branch', '-q', '-D', branch, root=root)"),
+    ('--source cannot reach a kit that moved', 'kit_update.py',
+     "            installed_from = moved_to or lock['source']", "            installed_from = lock['source']"),
     ('removal leaves the folders it emptied', 'kit_update.py',
      '            while folder != root and folder.is_dir() and not any(folder.iterdir()):',
      '            while False:'),
