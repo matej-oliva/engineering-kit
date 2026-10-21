@@ -98,11 +98,10 @@ def build_release(root: Path, version: str) -> dict:
             continue
         meta, name = record.split('\t', 1)
         mode, kind, blob = meta.split()
-        if not payload(name):
-            continue
-        if mode in ('120000', '160000') or kind != 'blob':
+        if mode in ('120000', '160000') or kind != 'blob':  # fetch() refuses one anywhere in the tree
             raise KitError(f'{name} is a link or submodule; a release cannot contain one')
-        blobs[name] = blob
+        if payload(name):
+            blobs[name] = blob
     contents = {name: git('cat-file', 'blob', blob, cwd=root) for name, blob in blobs.items()}
     files = {name: sha256(data) for name, data in contents.items()}
     integrations = {}

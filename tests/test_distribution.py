@@ -378,6 +378,15 @@ class Distribution(unittest.TestCase):
         sh('commit', '-q', '-m', 'Add a link', cwd=self.source)
         with self.assertRaisesRegex(ku.KitError, 'link or submodule'):
             ku.build_release(self.source, '0.2.0')
+        # Installs refuse a link anywhere in the tagged tree, so a release refuses one outside the payload too.
+        sh('mv', 'procedures/link.md', 'tests/link.md', cwd=self.source)
+        sh('commit', '-q', '-m', 'Move the link out of the payload', cwd=self.source)
+        with self.assertRaisesRegex(ku.KitError, 'tests/link.md is a link or submodule'):
+            ku.build_release(self.source, '0.2.0')
+        sh('rm', '-q', 'tests/link.md', cwd=self.source)
+        link.symlink_to(target)
+        sh('add', '-A', cwd=self.source)
+        sh('commit', '-q', '-m', 'Restore the link', cwd=self.source)
         # A tag whose manifest was built before the link was added is refused on install.
         sh('rm', '-q', str(link), cwd=self.source)
         self.release('0.2.0')
