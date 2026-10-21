@@ -19,7 +19,7 @@ KIT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(KIT / 'tools'))
 import kit  # noqa: E402
 import kit_update as ku  # noqa: E402
-from native_release import remove_tree  # noqa: E402  Git object files are read-only on Windows
+from native_release import QUIET_GIT, remove_tree  # noqa: E402  Git object files are read-only on Windows
 
 REVIEW = '.engineering-kit/kit/procedures/review.md'
 CONTRACT = '.engineering-kit/kit/CONTRACT.md'
@@ -41,7 +41,7 @@ class Distribution(unittest.TestCase):
         self.temp = Path(tempfile.mkdtemp(prefix='kit-distribution-'))
         self.addCleanup(remove_tree, self.temp)
         env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
-        env.update(HOME=str(self.temp), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM='1',
+        env.update(QUIET_GIT, HOME=str(self.temp), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM='1',
                    GIT_AUTHOR_NAME='Kit Test', GIT_AUTHOR_EMAIL='kit@example.invalid',
                    GIT_COMMITTER_NAME='Kit Test', GIT_COMMITTER_EMAIL='kit@example.invalid')
         patcher = mock.patch.dict(os.environ, env, clear=True)
@@ -547,6 +547,18 @@ class Distribution(unittest.TestCase):
         removed = kit('remove', '--apply', '--source', str(last))
         self.assertEqual(removed.returncode, 0, removed.stdout + removed.stderr)
         self.assertIsNone(ku.load_lock(root))
+
+    def test_a_short_or_wrong_batch_read_is_refused(self):
+        ids = ['a' * 40, 'b' * 40]
+        whole = f'{ids[0]} blob 3\nab\n\n{ids[1]} blob 0\n\n'.encode()
+        with mock.patch.object(ku, 'git', return_value=whole):
+            self.assertEqual(ku.read_blobs(ids, self.temp), [b'ab\n', b''])
+        for output, reason in ((f'{ids[0]} blob 3\nab'.encode(), 'cut short'),
+                               (f'{ids[0]} missing\n'.encode(), 'did not return'),
+                               (whole.replace(b'blob 3', b'tree 3'), 'did not return')):
+            with self.subTest(reason), mock.patch.object(ku, 'git', return_value=output):
+                with self.assertRaisesRegex(ku.KitError, reason):
+                    ku.read_blobs(ids, self.temp)
 
     def test_source_may_hold_only_the_new_release(self):
         """A clone made with --depth 1 --branch vX holds one tag; the installed one comes from the lock's source."""

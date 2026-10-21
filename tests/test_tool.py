@@ -11,7 +11,7 @@ import sys
 import tempfile
 import unittest
 
-from native_release import remove_tree  # Git object files are read-only on Windows
+from native_release import QUIET_GIT, remove_tree  # Git object files are read-only on Windows
 
 KIT = Path(__file__).resolve().parents[1]
 TOOL = KIT / 'tools' / 'kit.py'
@@ -21,7 +21,7 @@ EXAMPLE = KIT / 'examples' / 'walkthrough' / 'project'
 def isolated_git_env(home: Path) -> dict:
     """Keep the caller's Git configuration and hooks out of the test."""
     env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
-    env.update(HOME=str(home), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM='1')
+    env.update(QUIET_GIT, HOME=str(home), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM='1')
     return env
 
 

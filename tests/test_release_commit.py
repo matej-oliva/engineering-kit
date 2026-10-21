@@ -11,7 +11,7 @@ import unittest
 
 KIT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(KIT / 'tests'))
-from native_release import remove_tree  # noqa: E402  Git object files are read-only on Windows
+from native_release import QUIET_GIT, remove_tree  # noqa: E402  Git object files are read-only on Windows
 
 
 class ReleaseCommit(unittest.TestCase):
@@ -19,7 +19,7 @@ class ReleaseCommit(unittest.TestCase):
         self.temp = Path(tempfile.mkdtemp(prefix='kit-release-commit-'))
         self.addCleanup(remove_tree, self.temp)
         self.env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
-        self.env.update(HOME=str(self.temp), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM='1',
+        self.env.update(QUIET_GIT, HOME=str(self.temp), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM='1',
                         GIT_AUTHOR_NAME='Kit Test', GIT_AUTHOR_EMAIL='kit@example.invalid',
                         GIT_COMMITTER_NAME='Kit Test', GIT_COMMITTER_EMAIL='kit@example.invalid')
         self.root = self.temp / 'kit'

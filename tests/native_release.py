@@ -18,13 +18,26 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
+
+# Git runs automatic maintenance detached after a commit or fetch; in a scratch repository it can
+# still be writing while the test removes the folder.
+QUIET_GIT = {'GIT_CONFIG_COUNT': '2', 'GIT_CONFIG_KEY_0': 'maintenance.auto', 'GIT_CONFIG_VALUE_0': 'false',
+             'GIT_CONFIG_KEY_1': 'gc.auto', 'GIT_CONFIG_VALUE_1': '0'}
 
 
 def remove_tree(path):
     def writable(function, name, error):
         os.chmod(name, stat.S_IWRITE | stat.S_IREAD)
         function(name)
-    shutil.rmtree(path, onerror=writable)
+    for attempt in range(3):
+        try:
+            shutil.rmtree(path, onerror=writable)
+            return
+        except OSError:
+            if attempt == 2:
+                raise
+            time.sleep(1)  # something still writing there, such as a background process, finishes first
 
 
 def newest_two(source: Path) -> tuple[str, str]:
@@ -44,7 +57,7 @@ def exercise(source: Path, report: Path, candidate: str | None = None):
               'image_version': os.environ.get('ImageVersion'), 'steps': []}
     scratch = Path(tempfile.mkdtemp(prefix='kit native releases '))
     env = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
-    env.update(GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM='1',
+    env.update(QUIET_GIT, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM='1',
                GIT_TERMINAL_PROMPT='0', PYTHONDONTWRITEBYTECODE='1', GIT_AUTHOR_NAME='Kit rehearsal',
                GIT_AUTHOR_EMAIL='kit@example.invalid', GIT_COMMITTER_NAME='Kit rehearsal',
                GIT_COMMITTER_EMAIL='kit@example.invalid')

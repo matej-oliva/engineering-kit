@@ -82,6 +82,8 @@ def read_blobs(ids: list[str], cwd: Path) -> list[bytes]:
         if len(header) != 3 or header[0].decode() != expected or header[1] != b'blob':
             raise KitError(f'git cat-file did not return blob {expected}')
         start = end + 1
+        if len(out) < start + int(header[2]) + 1:
+            raise KitError(f'git cat-file returned blob {expected} cut short')
         contents.append(out[start:start + int(header[2])])
         position = start + int(header[2]) + 1
     return contents
