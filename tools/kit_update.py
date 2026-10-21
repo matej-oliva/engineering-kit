@@ -141,7 +141,8 @@ def fetch(source: str, version: str, work: Path) -> Release:
     repository = work / 'source.git'
     if not repository.exists():
         git('init', '--bare', '-q', str(repository))
-    git('-c', 'protocol.ext.allow=never', 'fetch', '--quiet', '--no-tags', '--', source,
+    # --update-shallow accepts a one-tag clone (--depth 1) as a source; the manifest still checks every file.
+    git('-c', 'protocol.ext.allow=never', 'fetch', '--quiet', '--update-shallow', '--no-tags', '--', source,
         f'+refs/tags/{tag}:refs/tags/{tag}', cwd=repository)
     commit = git('rev-parse', f'refs/tags/{tag}^{{commit}}', cwd=repository).decode().strip()
     tree = {}
@@ -668,7 +669,13 @@ def change(root: Path, source: str, version: str | None, *, adopting: bool = Fal
         base = None
         if lock:  # from the recorded source, or one named with --source: the lock says what it must hold
             installed_from = moved_to or lock['source']
-            base = fetch(installed_from, lock['version'], Path(work))
+            try:
+                base = fetch(installed_from, lock['version'], Path(work))
+            except KitError:
+                if not moved_to:
+                    raise
+                installed_from = lock['source']  # a new source may hold only the new release, such as a
+                base = fetch(installed_from, lock['version'], Path(work))  # clone of one tag
             if base.commit != lock['commit'] or base.manifest['digest'] != lock['digest']:
                 raise KitError(f'release {lock["version"]} at {installed_from} is not what was installed '
                                f'(commit {base.commit[:12]}, recorded {lock["commit"][:12]}); refusing')

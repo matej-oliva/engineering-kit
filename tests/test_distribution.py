@@ -548,6 +548,20 @@ class Distribution(unittest.TestCase):
         self.assertEqual(removed.returncode, 0, removed.stdout + removed.stderr)
         self.assertIsNone(ku.load_lock(root))
 
+    def test_source_may_hold_only_the_new_release(self):
+        """A clone made with --depth 1 --branch vX holds one tag; the installed one comes from the lock's source."""
+        root = self.consumer()
+        self.adopt(root)
+        self.second_release()
+        single = self.temp / 'single-tag-clone'
+        sh('clone', '-q', '--depth', '1', '--branch', 'v0.2.0', f'file://{self.source.as_posix()}', str(single),
+           cwd=self.temp)
+        installed = [sys.executable, str(root / '.engineering-kit' / 'kit' / 'tools' / 'kit.py')]
+        result = subprocess.run([*installed, 'update', '0.2.0', '--apply', '--source', str(single),
+                                 '--root', str(root)], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(ku.load_lock(root)['version'], '0.2.0')
+
     def test_another_source_must_hold_exactly_the_installed_release(self):
         root = self.consumer()
         self.adopt(root)
