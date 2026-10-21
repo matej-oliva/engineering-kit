@@ -151,8 +151,22 @@ def lifecycle(origin, clones, result, older, newer, project, run):
         assert all(path.is_file() for path in skills)
         command(installed, 'check')
         result['steps'].append(f'grant agent-skills, update without a version and check: {newer} with skills')
+    launcher = project / 'kit'
+    if (clones[newer] / 'integrations' / 'launcher').is_dir():
+        config['integrations']['launcher'] = {'grant': ['writes-launcher']}
+        config_bytes = (json.dumps(config, indent=2) + '\n').encode()
+        config_path.write_bytes(config_bytes)
+        change(installed, 'update')
+        assert 'Everyday commands' in command(launcher)        # python kit, with no command
+        assert f'Kit {newer}' in command(launcher, 'status')
+        command(launcher, 'check')
+        guide = project / '.engineering-kit/kit/guide/README.md'
+        assert guide.is_file() and (guide.parent / 'images/lifecycle.svg').is_file()
+        assert 'guide/README.md' in command(launcher, 'guide')
+        result['steps'].append(f'grant launcher; run status, check and guide through it; the guide is installed')
     change(installed, 'remove')
     assert not any(path.exists() for path in skills)
+    assert not launcher.exists()
     assert (project / 'AGENTS.md').read_bytes() == instructions
     assert config_path.read_bytes() == config_bytes
     assert task.read_bytes() == task_bytes
