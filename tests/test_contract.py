@@ -161,7 +161,7 @@ class Portability(unittest.TestCase):
     def test_python_files_parse_with_the_declared_minimum_grammar(self):
         """Python 3.11 is the declared minimum. This catches newer syntax, not newer library calls."""
         import ast
-        for path in sorted(KIT.rglob('*.py')):
+        for path in sorted([*KIT.rglob('*.py'), KIT / 'integrations' / 'launcher' / 'kit']):
             if '.git' in path.relative_to(KIT).parts:
                 continue
             with self.subTest(str(path.relative_to(KIT))):

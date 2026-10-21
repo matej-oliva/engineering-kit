@@ -3,9 +3,10 @@
 Use after a task is accepted and before implementation.
 
 1. **Choose the delivery profile** from `project.json` that fits the work's
-   risk: a wording fix needs less evidence than a data migration. Done when
-   `profile` is set and you know its required checks, and whether review
-   and release apply (rule `PROFILE`).
+   risk: a wording fix needs less evidence than a data migration. Acceptance
+   records a first choice; change it here if the risk calls for another.
+   Done when `profile` is set and you know its required checks, and whether
+   review and release apply (rule `PROFILE`).
 2. **Compare alternatives when the choice is costly to reverse.** Note two
    or three options, their trade-offs and the reason for your choice. A
    decision that is hard to reverse, surprising without its context and the

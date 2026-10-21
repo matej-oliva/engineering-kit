@@ -517,6 +517,35 @@ class Distribution(unittest.TestCase):
                     self.assertTrue(resolved.is_relative_to(installed.resolve()))
         self.assertIn('.engineering-kit/kit/guide/README.md', (root / 'AGENTS.md').read_text())
 
+    def test_a_release_without_a_granted_integration_names_the_grant_to_remove(self):
+        root = self.consumer()
+        self.adopt(root)
+        self.set_integrations(root, {'agents-md': {'grant': ['writes-instructions']},
+                                     'launcher': {'grant': ['writes-launcher']}})
+        self.adopt(root)
+        self.release('0.2.0', lambda source: shutil.rmtree(source / 'integrations' / 'launcher'))
+        status, report = self.run_change(root, '0.2.0')
+        self.assertEqual(status, 1)
+        self.assertIn('integration launcher is not in release 0.2.0; to use that release, remove "launcher" '
+                      'from integrations in .engineering-kit/project.json', report)
+
+    def test_the_next_step_after_adopting_names_the_command_the_project_has(self):
+        with_launcher, without = self.consumer('with'), self.consumer('without')
+        _, report = self.run_change(with_launcher, '0.1.0', apply_now=True, with_integrations=['launcher'])
+        self.assertIn('then run "python3 kit check"' if os.name != 'nt' else 'then run "py kit check"', report)
+        _, report = self.run_change(without, '0.1.0', apply_now=True)
+        self.assertIn(f'then run "{"py" if os.name == "nt" else "python3"} .engineering-kit/kit/tools/kit.py check"',
+                      report)
+
+    def test_the_launcher_refuses_to_run_from_a_subfolder(self):
+        root = self.consumer()
+        self.run_change(root, '0.1.0', apply_now=True, with_integrations=['launcher'])
+        (root / 'src').mkdir()
+        result = subprocess.run([sys.executable, '../kit', 'status'], cwd=root / 'src', capture_output=True,
+                                text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('Run it from the project root', result.stderr)
+
     def test_the_launcher_runs_the_installed_tool_from_the_project_root(self):
         # The project's own module of the same name must not be what the kit imports.
         root = self.consumer(files={'kit_update.py': 'raise SystemExit("the project module was imported")\n'})

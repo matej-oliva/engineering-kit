@@ -2,7 +2,9 @@
 
 [Guide](README.md) · You need Git and Python 3.11 or newer. A private kit
 repository also needs this machine to be signed in to an account that can
-read it.
+read it. The kit's tests run on Linux, on Windows Server and on macOS; the
+[supported environments](../README.md#supported-environments) list exactly
+which versions. Desktop Windows has not been tested.
 
 ## 1. Install the kit
 
@@ -20,12 +22,14 @@ On Windows, in PowerShell, use `py` and backslashes:
 
 ```powershell
 git clone --depth 1 --branch vX.Y.Z KIT_ADDRESS $HOME\engineering-kit
+cd PATH\TO\YOUR\PROJECT
+py $HOME\engineering-kit\tools\kit.py adopt --with launcher --with agent-skills
 py $HOME\engineering-kit\tools\kit.py adopt --with launcher --with agent-skills --apply
 ```
 
 `KIT_ADDRESS` is where your kit repository lives, and `vX.Y.Z` is the newest
 release tag listed there. To install the newest release without looking up
-its number, give the address instead: `adopt KIT_ADDRESS --apply`.
+its number, give the address to `adopt`: `adopt KIT_ADDRESS --apply`.
 
 The first `adopt` only previews. Read the list: it adds the
 `.engineering-kit/` folder, a short marked block in `AGENTS.md`, the `kit`
@@ -45,9 +49,11 @@ fill it in for you from the repository; review the result.
 python3 kit check
 ```
 
-`check` lists what is still missing, each with the rule it breaks. When it
-says the project passes, commit the new files like any other change. The kit
-never commits for you.
+`check` lists what is still missing. Each line names a rule from
+[`CONTRACT.md`](../CONTRACT.md), or `FORMAT` when a file cannot be read as a
+record yet, for example because a placeholder remains. When it says the
+project passes, commit the new files like any other change. The kit never
+commits for you.
 
 ## 3. Run your first task through it
 
@@ -59,11 +65,11 @@ contract, it writes a task record in `.engineering-kit/tasks/`, for example
 python3 kit check-task .engineering-kit/tasks/T-1.json
 ```
 
-A refusal names a rule from [`CONTRACT.md`](../CONTRACT.md), such as
-`CHECKS` when a required check has not passed on the exact revision under
-review. Fix the record or the work, not the checker. The kit's repository
-holds a complete worked example, a defect taken from its report to a closed
-task.
+A refusal names the rule it enforces, such as `CHECKS` when a required check
+has not passed on the exact revision under review. Fix the record or the
+work, not the checker. The kit's own repository, not your installed copy,
+holds a complete worked example in `examples/walkthrough/`: a defect taken
+from its report to a closed task.
 
 ## Next
 

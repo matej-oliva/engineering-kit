@@ -26,11 +26,12 @@ each is enforced, any exceptions, and where tasks and handoffs live.
 | `claude-code`, `copilot`, `gemini` | the same block in `CLAUDE.md`, `.github/copilot-instructions.md` or `GEMINI.md` | `writes-instructions` |
 | `agent-skills` | one skill per procedure in `.agents/skills/` and `.claude/skills/` | `writes-skills` |
 | `launcher` | the short `kit` command at the project root | `writes-launcher` |
-| `github`, `gitlab` | a review template and a workflow that runs `check` | `review-template`, `ci-workflow` |
+| `github` | a pull request template and a workflow that runs `check` | `review-template`, `ci-workflow` |
+| `gitlab` | a merge request template, and a pipeline file your own `.gitlab-ci.yml` must include before it runs | `review-template`, `ci-workflow` |
 
-`adopt --with NAME` enables an integration in a new `project.json`. In an
-existing project, add it under `integrations` with its permissions and run
-`python3 kit update --apply`:
+`adopt --with NAME` enables an integration in a new `project.json` and
+grants what it declares. In an existing project, add it under
+`integrations` with its permissions and run `python3 kit update --apply`:
 
 ```json
 "integrations": {
@@ -39,17 +40,38 @@ existing project, add it under `integrations` with its permissions and run
 }
 ```
 
-An integration whose target file already exists and is not the kit's stops
-the change before anything is written; move or merge that file first. Each
-integration's `integration.json` says what has tested it.
+A grant is a declaration shown in the preview, not a sandbox: read the
+integration's files before you grant it. An integration whose target file
+already exists and is not the kit's stops the change before anything is
+written; move or merge that file first. Each integration's
+`integration.json` has a `tested` field saying what has really used it;
+several, including the continuous integration workflows and the launcher,
+have so far been exercised only by the kit's tests.
+
+## Agent entry points
+
+`instructions.clients` lists, for each agent client you use, the
+instruction files it reads, in the order it reads them. `check` refuses a
+listed file that does not exist, so keep this in step with the
+integrations you enabled. `instructions.precedence` is always `"stricter"`:
+where your instructions and the contract differ, the stricter one applies.
+
+```json
+"instructions": {
+  "clients": {"any-agent": ["AGENTS.md"], "claude-code": ["CLAUDE.md", "AGENTS.md"]},
+  "precedence": "stricter"
+}
+```
 
 ## Commands, checks and profiles
 
-`checks` names what must pass, with the command if one exists. A check
-without a command is done by hand and recorded the same way. `profiles`
-groups checks by kind of work:
+`commands` records the commands people use, for reference. `checks` names
+what must pass, with the command if one exists. A check without a command
+is done by hand and recorded the same way. `profiles` groups checks by kind
+of work:
 
 ```json
+"commands": {"test": "make test", "serve": "make serve"},
 "checks": {
   "tests": {"description": "Unit tests pass", "command": "make test"},
   "visual": {"description": "Screens match the design at three widths"}
@@ -57,13 +79,15 @@ groups checks by kind of work:
 "profiles": {
   "change": {"required_checks": ["tests"], "review": "required", "release": false},
   "defect": {"required_checks": ["tests"], "review": "required", "release": false, "reproduction": true},
-  "screen": {"required_checks": ["tests", "visual"], "review": "required", "release": true}
+  "screen": {"required_checks": ["tests", "visual"], "review": "required", "release": true},
+  "docs": {"required_checks": [], "review": "none", "release": false}
 }
 ```
 
 `reproduction: true` makes a defect fix start with a check that fails before
 the fix. `release: true` adds the release stage, with its effects and
-rollback. A task names one profile.
+rollback. `"review": "none"` skips review, which the contract allows only
+through a recorded exception, shown below. A task names one profile.
 
 ## Boundaries and authority
 
@@ -83,10 +107,12 @@ not listed is refused:
 
 ## Rules and exceptions
 
-Add your own rules with how each is enforced, from `guidance` (people apply
-it) to `checked` or `integration`, and what enforces it. To relax a contract
-rule that is not fixed, record an exception with its scope, reason, approver
-and date; the checker accepts nothing less.
+Add your own rules with how each is enforced: `guidance` (people apply it),
+`partial`, `checked` or `integration`, and what enforces it unless it is
+guidance. A project rule needs its own ID, not one from the contract. To
+relax a contract rule that is not fixed, record an exception with its
+scope, reason, approving role and date. The scope is `project`,
+`profile:NAME` or `task:ID`.
 
 ```json
 "rules": [{"id": "API-COMPAT", "text": "Public APIs stay backward compatible within a major version",
@@ -110,7 +136,8 @@ The same kit fits very different work. Three sketches:
 - **A data pipeline** that handles restricted data: `data.restricted` lists
   what must never enter a record, a `backfill` effect is marked `one-way`
   with what it cannot undo, and verification happens at a `staging`
-  boundary on a copy before `production`.
+  boundary on a copy before `production`. The `data` fields guide people
+  and agents; no check reads them.
 
 None of these needs a particular language, framework or design system. If
 your project has a design system, name it in the optional `design` field.

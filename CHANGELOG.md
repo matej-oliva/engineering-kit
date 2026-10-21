@@ -28,7 +28,13 @@ points at the guide; your text outside it is unchanged.
 - `kit.py` with no command lists the everyday commands and where the guide
   is; every command's `--help` has a description and an example, and the
   new `guide` command names the installed guide. Refusals that ask you to
-  run `recover` name it as you type it.
+  run `recover`, and the next step after adopting, name the command as you
+  type it. A release that lacks an integration you granted names the entry
+  to remove from `project.json`. The launcher refuses to run from a
+  subfolder instead of reading the wrong project.
+- `procedures/understand.md` names the author and a first delivery profile
+  before accepting a task, as `check-task` requires; `design.md` confirms
+  or changes that profile.
 - `tests/release_commit.py` also removes a new file, such as a
   `RELEASE.json` whose check failed, when a release commit fails.
 

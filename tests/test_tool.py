@@ -48,6 +48,15 @@ class CommandLine(unittest.TestCase):
         self.assertIn('--apply', result.stdout)
         self.assertIn('guide/README.md', result.stdout)
 
+    def test_examples_quote_a_tool_path_with_a_space(self):
+        copy = self.temp / 'my kit' / 'tools'
+        shutil.copytree(KIT / 'tools', copy, ignore=shutil.ignore_patterns('__pycache__'))
+        result = subprocess.run([sys.executable, str(copy / 'kit.py')], cwd=self.temp, capture_output=True,
+                                text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        quoted = '"my kit/tools/kit.py"' if os.name == 'nt' else "'my kit/tools/kit.py'"
+        self.assertIn(f' {quoted} COMMAND', result.stdout)
+
     def test_each_everyday_command_shows_an_example(self):
         for command in ('check', 'check-task', 'status', 'adopt', 'update', 'rollback', 'recover', 'remove',
                         'integrated', 'scan-secrets', 'contribute'):

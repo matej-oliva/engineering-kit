@@ -26,7 +26,9 @@ each file it touches.
   adapters: the entry block in your agents' instruction files, skills, the
   short `kit` command, review templates and continuous integration for your
   Git host. Each declares the permissions it needs, and is installed only
-  when `project.json` grants them all.
+  when `project.json` grants them all. A grant is a declaration shown in
+  the preview, not a sandbox: read an integration's files before you grant
+  it.
 - **Releases** are version tags in the kit's repository. Each holds a
   manifest of every file with its digest, so an install is checked against
   exactly what was published. A published release never changes.
@@ -47,6 +49,8 @@ outside the marked block; the kit never changes them. The **tool keeps**
 `.engineering-kit/lock.json`, which records the installed release and the
 digest of every file it wrote, and, only while an apply runs, a journal in
 `.engineering-kit/journal/` that lets `recover` undo an interrupted write.
+Commit `lock.json` with the kit files; never commit a journal, and do not
+edit either by hand.
 
 Keep project notes in `project.json` rules or in your instruction files
 outside the block. A changed kit file still works, but it must be merged at

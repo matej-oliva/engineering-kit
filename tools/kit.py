@@ -24,6 +24,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+import shlex
 import subprocess
 import sys
 
@@ -865,10 +866,10 @@ COMMANDS = {
     'check': ('check the project, its tasks and handoffs against the contract', '{kit} check'),
     'check-task': ('check one task record', '{kit} check-task .engineering-kit/tasks/T-1.json'),
     'check-handoff': ('check one handoff', '{kit} check-handoff .engineering-kit/handoffs/T-1.md'),
-    'scan-secrets': ('look for credentials in the staged copy of each file', 'git add -A && {kit} scan-secrets'),
+    'scan-secrets': ('look for credentials in the staged copy of each file', 'git add -A\n  {kit} scan-secrets'),
     'integrated': ('compare a merged revision with its reviewed candidate', '{kit} integrated abc1234 main'),
     'adopt': ('install the kit into this project; previews unless --apply',
-              '{kit} adopt --with agent-skills --with launcher --apply'),
+              'python3 PATH/TO/KIT-CLONE/tools/kit.py adopt --with agent-skills --with launcher --apply'),
     'update': ('move to the newest release, or the one named; previews unless --apply',
                '{kit} update --diff\n  {kit} update --apply'),
     'rollback': ('return to the previously installed release', '{kit} rollback --apply'),
@@ -899,7 +900,10 @@ def invocation() -> str:
         tool = tool.relative_to(Path.cwd().resolve())
     except ValueError:
         pass
-    return f'{"py" if os.name == "nt" else "python3"} {tool.as_posix()}'
+    path = tool.as_posix()
+    if os.name == 'nt':
+        return f'py "{path}"' if ' ' in path else f'py {path}'
+    return f'python3 {shlex.quote(path)}'
 
 
 def overview() -> str:

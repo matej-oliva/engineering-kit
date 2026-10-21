@@ -32,6 +32,9 @@ The preview lists the file with `local and kit changes overlap` and ends
 
 A file you deleted that the release still provides, and a file you changed
 that the release drops, stop the same way and are settled the same way.
+Keeping your side of a deleted or unmanaged file with `PATH=local` takes
+that path out of the kit's care for good: later updates leave it alone, and
+the lock lists it under `excluded`.
 
 ## An unmanaged file is in the way
 
@@ -40,6 +43,15 @@ project already has with different content. Rename or merge your file, or
 leave the integration out of `project.json`, then preview again. If your
 file is identical to the kit's, the kit adopts it and leaves it in place if
 the kit is ever removed.
+
+## A release lacks an integration you granted
+
+`integration launcher is not in release 1.1.0; to use that release, remove
+"launcher" from integrations in .engineering-kit/project.json` appears when
+you roll back or move to a release older than an integration. Remove the
+named entry, then preview again. If the removed integration is `launcher`,
+the `kit` command goes with it; use
+`python3 .engineering-kit/kit/tools/kit.py` instead.
 
 ## The plan changed since the preview
 
@@ -50,7 +62,9 @@ release appeared. Preview again and apply the new plan.
 ## An apply was interrupted
 
 A crash, a full disk or a closed terminal can stop an apply halfway. Every
-later command then refuses with `an earlier apply was interrupted`. Run:
+later `adopt`, `update`, `rollback` or `remove` then refuses with
+`an earlier apply was interrupted`; `check` and the other read-only commands
+still run. Run:
 
 ```sh
 python3 kit recover
@@ -69,13 +83,16 @@ the files as they are with `python3 kit recover --abandon`.
 | `the contract changes from 1 to 2; read the release notes, then rerun with --accept-contract 2` | Read what changed in the contract, then rerun with that option. |
 | `... is a symbolic link` | The kit never writes through a link. Replace the link with a real folder or file. |
 | `release ... manifest does not match its files` | The release does not match what was published. Use another release and tell the kit's maintainer. |
-| `git fetch failed: ...` | The machine cannot read the kit repository. Sign in to an account that can, or check the address in `.engineering-kit/lock.json`. |
+| `git ls-remote failed: ...` or `git fetch failed: ...` | The machine cannot read the kit repository. Sign in to an account that can read it. If the kit moved, give the new address once: `python3 kit update --source NEW_ADDRESS`. |
+| `FORMAT` from `check` | A file cannot be read as a record, or still holds a `kit-placeholder:` value. Fix the field the line names. |
 | A rule ID from `check`, such as `CHECKS` | The record lacks evidence the rule needs. [`RECORDS.md`](../RECORDS.md) names the field. |
 
 ## Start again
 
-If the kit files are in a state you no longer trust, remove and adopt again.
-Your `project.json`, tasks and handoffs are kept:
+If the kit files are in a state you no longer trust, remove the kit and
+adopt it again from a clone of a release tag. Your `project.json`, tasks and
+handoffs are kept. A kit file you changed stops the removal; settle it with
+`--resolve PATH=kit` first.
 
 ```sh
 python3 kit remove --apply

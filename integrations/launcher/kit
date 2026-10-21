@@ -10,10 +10,13 @@ from pathlib import Path
 import runpy
 import sys
 
-tools = Path(__file__).resolve().parent / '.engineering-kit' / 'kit' / 'tools'
+root = Path(__file__).resolve().parent
+tools = root / '.engineering-kit' / 'kit' / 'tools'
 if not (tools / 'kit.py').is_file():
     sys.exit(f'The engineering kit is not installed next to {Path(__file__).name}; '
              f'expected {tools / "kit.py"}.')
+if Path.cwd().resolve() != root:  # commands read the project from the current folder
+    sys.exit(f'Run it from the project root: cd {root}')
 sys.path[0] = str(tools)  # the kit's own modules, never a project module of the same name
 sys.dont_write_bytecode = True
 os.environ['ENGINEERING_KIT_COMMAND'] = f'{"py" if os.name == "nt" else "python3"} {Path(__file__).name}'

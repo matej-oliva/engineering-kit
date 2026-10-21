@@ -2,7 +2,9 @@
 
 [Guide](README.md) · Run every command from the project's root folder.
 `python3 kit` alone lists them, and `python3 kit COMMAND --help` shows a
-command's options with an example.
+command's options with an example. Without the `launcher` integration,
+type `python3 .engineering-kit/kit/tools/kit.py` where this page says
+`python3 kit`.
 
 | Command | What it does | Changes files |
 | --- | --- | --- |
@@ -14,14 +16,17 @@ command's options with an example.
 | `integrated CANDIDATE REVISION` | Shows whether a merge changed anything beyond the reviewed candidate | never |
 | `update` | Moves to the newest release, or the one you name | only with `--apply` |
 | `rollback` | Returns to the release installed before | only with `--apply` |
-| `recover` | Undoes the writes of an interrupted apply | yes, from its journal |
 | `remove` | Takes the kit out, keeping `project.json`, tasks and handoffs | only with `--apply` |
+| `recover` | Undoes the writes of an interrupted apply | yes, at once |
 | `guide` | Shows where this guide is | never |
 
-Every command that changes files first prints the plan, ending in a line
-such as `plan 3f2a9c1e5d7b8a40`, and writes only when you add `--apply`.
-Nothing is committed: review the change with `git diff` and commit it
-yourself. Exit status 0 means success, 1 means a refusal with its reason.
+`update`, `rollback`, `remove` and `adopt` first print the plan, ending in a
+line such as `plan 3f2a9c1e5d7b8a40`, and write only when you add
+`--apply`. Add `--plan 3f2a9c1e5d7b8a40` to apply only that exact plan, so
+nothing that changed since the preview slips in. `recover` writes at once:
+it only puts back files from an interrupted apply. Nothing is committed:
+review the change with `git diff` and commit it yourself. Exit status 0
+means success, 1 a refusal with its reason, and 2 a mistyped command.
 
 ## Before you ask for review
 
@@ -67,7 +72,11 @@ python3 kit rollback --apply
 ```
 
 Rollback returns the kit files to the earlier release and keeps your own
-changes, like an update in the other direction.
+changes, like an update in the other direction. An earlier release may
+lack an integration you granted later, such as `launcher` before 1.2.0:
+the preview then refuses and names it. Remove that entry from
+`integrations` in `project.json` first. Rolling back past the `launcher`
+also removes the `kit` command, so use the long form afterwards.
 
 ## Remove the kit
 
@@ -78,7 +87,9 @@ python3 kit remove --apply
 
 Removal deletes the kit files, the integration files and the marked block in
 each instruction file, and restores those files' other text byte for byte.
-`project.json`, tasks and handoffs stay, so you can adopt again later.
+`project.json`, tasks and handoffs stay, so you can adopt again later. A
+kit file you changed stops the removal like an update overlap; settle it the
+same way.
 
 ## Check a merge
 
@@ -96,11 +107,15 @@ task's `candidate.integrated`, as the message says.
 
 A teammate asks for a `--quiet` option. The agent records task `T-12` with
 the problem, the owner, an acceptance example ("`tool --quiet sync` prints
-nothing and exits 0") and the boundary `merged`. It chooses the profile
-`change`, whose required check is `tests`. It implements, commits candidate
-`9f1c2ab`, runs the tests and records `{"id": "tests", "revision":
-"9f1c2ab", "result": "pass"}`. A different reviewer approves `9f1c2ab`.
-After the merge, `python3 kit integrated 9f1c2ab main` passes, and the
-record moves to `verified` with that evidence, then to `closed` with the
-documentation it updated. If the reviewer had approved an older revision,
-`check-task` would refuse the record with rule `CANDIDATE`.
+nothing and exits 0") and the boundary `merged`, names itself as author and
+chooses the profile `change`, whose required check is `tests`. It
+implements, commits candidate `9f1c2ab`, runs the tests and records
+`{"id": "tests", "revision": "9f1c2ab", "result": "pass", "evidence": "make
+test: 214 passed"}`. A different reviewer approves `9f1c2ab`. After the
+merge into `main` as `4d7e0b3`, `python3 kit integrated 9f1c2ab 4d7e0b3`
+passes; the agent records `4d7e0b3` in `candidate.integrated` with that
+output as evidence, and adds `{"boundary": "merged", "revision": "4d7e0b3",
+"result": "pass", "evidence": "..."}` to `verification`. The record moves to
+`verified`, then to `closed` with the documentation it updated. If the
+reviewer had approved an older revision, `check-task` would refuse the
+record with rule `CANDIDATE`.

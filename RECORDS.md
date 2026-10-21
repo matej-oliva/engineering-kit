@@ -114,7 +114,8 @@ Permissions: `writes-instructions` adds the entry block to an instruction
 file; `review-template` adds a template to a hosting service's review form;
 `ci-workflow` adds automation that runs on the hosting service when code is
 pushed; `writes-skills` adds skill files that agent clients load when their
-description matches the work. An integration that declares a permission the project has not
+description matches the work; `writes-launcher` adds the `kit` command at
+the project root. An integration that declares a permission the project has not
 granted is not installed, and a release that adds a permission stops the
 update until the project grants it. Permissions are declarations shown in
 the preview, not a sandbox: review a release's files before granting.

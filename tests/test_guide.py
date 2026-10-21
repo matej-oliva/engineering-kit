@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path, PurePosixPath
 import re
+import subprocess
 import sys
 import unittest
 import xml.etree.ElementTree as ET
@@ -60,6 +61,28 @@ class Guide(unittest.TestCase):
                         after = text.split(f']({target})', 1)[1].lstrip()
                         self.assertTrue(after.startswith('In words:'), 'a prose explanation follows')
         self.assertEqual(shown, {svg.resolve() for svg in (GUIDE / 'images').glob('*.svg')})
+
+    def test_every_command_the_guide_shows_exists_with_its_options(self):
+        shown = {}
+        for page in pages():
+            for line in page.read_text(encoding='utf-8').replace('\\\n', ' ').splitlines():
+                for match in re.finditer(r'(?:python3|py) kit ([a-z-]+)((?: +[^ `|#]+)*)', line):
+                    options = set(re.findall(r'(?<!\S)(--[a-z-]+)', match.group(2)))
+                    shown.setdefault(match.group(1), set()).update(options)
+        self.assertGreater(len(shown), 8)
+        for command, options in sorted(shown.items()):
+            with self.subTest(command):
+                result = subprocess.run([sys.executable, str(KIT / 'tools' / 'kit.py'), command, '--help'],
+                                        capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, f'{command} is not a command: {result.stderr}')
+                for option in options:
+                    self.assertIn(option, result.stdout, f'{command} has no option {option}')
+
+    def test_rights_shown_in_the_guide_are_accepted(self):
+        text = (GUIDE / 'maintenance.md').read_text(encoding='utf-8')
+        for value in re.findall(r'--rights (\S+)', text) + re.findall(r'`(licensed:\w+)`', text):
+            with self.subTest(value):
+                self.assertRegex(value, ku.RIGHTS)
 
     def test_diagrams_are_accessible_and_self_contained(self):
         for svg in sorted((GUIDE / 'images').glob('*.svg')):

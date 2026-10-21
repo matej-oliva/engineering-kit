@@ -25,8 +25,10 @@ Use at the start of every task, before choosing tools or writing code.
 6. **Ask only what is the decision owner's** (rule `DECIDE`): one batch of
    questions in the task's `questions`, each with a recommended answer.
    Choose routine engineering details yourself and write the assumption down.
-7. **Accept the task**: when the request fixes the outcome, set `state` to
-   `accepted` yourself; the decision owner can still correct an assumption.
+7. **Accept the task**: when the request fixes the outcome, name its
+   `author` and the delivery `profile` that fits its risk
+   (`procedures/design.md` step 1), then set `state` to `accepted`
+   yourself; the decision owner can still correct an assumption.
    When the outcome itself is the owner's open question, wait for the
    answer. Run `tools/kit.py check-task FILE`. Done when it passes (rule
    `ACCEPT`).

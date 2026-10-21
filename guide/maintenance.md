@@ -14,8 +14,10 @@ python3 kit update --diff
 
 Apply it when the preview shows what you expect, run `python3 kit check`,
 review and commit. The newest release and the one before it are supported,
-and a security fix ships as a patch release, so staying within one release
-of the newest keeps a project supported.
+and a security fix ships as a patch release within seven days of the
+finding, or the changelog names a workaround until it does
+([`MAINTAINING.md`](../MAINTAINING.md)). Staying within one release of the
+newest keeps a project supported.
 
 This guide is part of each release. An update replaces it with the guide of
 the new release, so the guide in your project always describes the kit you
@@ -37,7 +39,10 @@ else is required. To get the short command and the skills, add these to
 ```
 
 The marked block in your instruction files gains one sentence pointing at
-this guide; your text outside the block is unchanged.
+this guide; your text outside the block is unchanged. Once you grant
+`launcher` or `agent-skills`, rolling back to a release without them needs
+that grant removed first, as [Troubleshooting](troubleshooting.md#a-release-lacks-an-integration-you-granted)
+explains.
 
 ## Send a lesson back
 
@@ -51,8 +56,12 @@ prepares the patch and a contribution record:
 ```sh
 python3 kit contribute .engineering-kit/kit/procedures/review.md --out ../lesson \
   --need "Reviews missed ..." --evidence "Task T-31 ..." --limits "Only for ..." \
-  --rights "Our own work" --owner "Dana Ruiz"
+  --rights owner-authored --owner "Dana Ruiz"
 ```
+
+`--rights` is `owner-authored` for your own work, `licensed:` followed by
+the licence's SPDX identifier, such as `licensed:MIT`, or `cleared:`
+followed by a reference to the clearance you hold.
 
 The kit's maintainer applies the patch in the kit's repository, reviews it
 like any change and releases it. Material from an employer, client or third

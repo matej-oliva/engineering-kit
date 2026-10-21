@@ -228,7 +228,8 @@ def desired(release: Release, integrations: dict[str, list[str]] | None, names: 
     for name in names:
         manifest_path = f'integrations/{name}/integration.json'
         if manifest_path not in release.files:
-            problems.append(f'integration {name} is not in release {release.version}')
+            problems.append(f'integration {name} is not in release {release.version}; to use that release, '
+                            f'remove "{name}" from integrations in {PROJECT}')
             continue
         manifest = json.loads(release.text(manifest_path))
         declared = set(manifest.get('permissions', []))
@@ -717,8 +718,11 @@ def change(root: Path, source: str, version: str | None, *, adopting: bool = Fal
         lines.append(f'Applied {len(writes) - 1} changes and recorded the release in {LOCK}.'
                      if target else f'Removed the kit; {PROJECT}, tasks and handoffs stay.')
         if writes_project:
+            python = 'py' if os.name == 'nt' else 'python3'
+            tool = 'kit' if (root / 'kit').is_file() and 'launcher' in project.get('integrations', {}) \
+                else f'{MANAGED_ROOT}/tools/kit.py'
             lines.append(f'Next: replace every "{kit.TEMPLATE_MARKER}" value in {PROJECT} with this project\'s '
-                         'facts, then run kit.py check.')
+                         f'facts, then run "{python} {tool} check".')
         return 0, lines
 
 
