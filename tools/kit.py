@@ -830,7 +830,7 @@ def lock_against_release(lock: dict) -> list[Finding]:
     sys.dont_write_bytecode = True  # leave no compiled files inside a project's kit folder
     import kit_update  # the release check needs the distribution code and the git command line
     try:
-        with tempfile.TemporaryDirectory(prefix='kit-verify-') as work:
+        with tempfile.TemporaryDirectory(prefix='kit-verify-', ignore_cleanup_errors=True) as work:
             release = kit_update.fetch(str(lock.get('source', '')), str(lock.get('version', '')), Path(work))
             files, blocks, problems = kit_update.desired(release, None, list(lock.get('integrations', [])))
     except (kit_update.KitError, OSError, ValueError, KeyError) as error:

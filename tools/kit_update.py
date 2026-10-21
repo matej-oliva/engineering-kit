@@ -160,7 +160,9 @@ def fetch(source: str, version: str, work: Path) -> Release:
     if not repository.exists():
         git('init', '--bare', '-q', str(repository))
     # --update-shallow accepts a one-tag clone (--depth 1) as a source; the manifest still checks every file.
-    git('-c', 'protocol.ext.allow=never', 'fetch', '--quiet', '--update-shallow', '--no-tags', '--', source,
+    # No automatic maintenance: run detached, it could still write here while the folder is removed.
+    git('-c', 'protocol.ext.allow=never', '-c', 'maintenance.auto=false', '-c', 'gc.auto=0',
+        'fetch', '--quiet', '--update-shallow', '--no-tags', '--', source,
         f'+refs/tags/{tag}:refs/tags/{tag}', cwd=repository)
     commit = git('rev-parse', f'refs/tags/{tag}^{{commit}}', cwd=repository).decode().strip()
     tree = {}
@@ -683,7 +685,7 @@ def change(root: Path, source: str, version: str | None, *, adopting: bool = Fal
         raise KitError(f'already adopted at {lock["version"]}; use update')
     if not adopting and not lock:
         raise KitError('this project has not adopted the kit; use adopt')
-    with tempfile.TemporaryDirectory(prefix='kit-fetch-') as work:
+    with tempfile.TemporaryDirectory(prefix='kit-fetch-', ignore_cleanup_errors=True) as work:
         base = None
         if lock:  # from the recorded source, or one named with --source: the lock says what it must hold
             installed_from = moved_to or lock['source']
@@ -875,7 +877,7 @@ def contribute(root: Path, paths: list[str], out: Path, details: dict) -> list[s
     if not lock:
         raise KitError('this project has not adopted the kit')
     project = json.loads(read(root, PROJECT) or b'{}')
-    with tempfile.TemporaryDirectory(prefix='kit-fetch-') as work:
+    with tempfile.TemporaryDirectory(prefix='kit-fetch-', ignore_cleanup_errors=True) as work:
         base = fetch(lock['source'], lock['version'], Path(work))
         patch, files = [], []
         for path in paths:
