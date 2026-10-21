@@ -6,7 +6,7 @@ verified delivery and maintenance, and what evidence each step leaves. Each
 project keeps its own language, framework, design system, agent client, Git
 host, deployment platform and permissions.
 
-Status: version 1.0.0, the first supported release, contract version 1.
+Status: version 1.0.1, contract version 1.
 See `CHANGELOG.md` and `MAINTAINING.md`. MIT licence; see `LICENSE`.
 
 ## Contents
@@ -52,9 +52,9 @@ project's root. It installs the release it was cloned at, from the address
 it was cloned from:
 
 ```sh
-git clone --depth 1 --branch v1.0.0 KIT_ADDRESS ~/engineering-kit-1.0.0
-python3 ~/engineering-kit-1.0.0/tools/kit.py adopt --with copilot           # preview
-python3 ~/engineering-kit-1.0.0/tools/kit.py adopt --with copilot --apply   # write
+git clone --depth 1 --branch v1.0.1 KIT_ADDRESS ~/engineering-kit-1.0.1
+python3 ~/engineering-kit-1.0.1/tools/kit.py adopt --with copilot           # preview
+python3 ~/engineering-kit-1.0.1/tools/kit.py adopt --with copilot --apply   # write
 ```
 
 `--with` names the instruction files your agents read, beyond `AGENTS.md`:
@@ -85,7 +85,7 @@ in `procedures/adopt-and-update.md`.
 | --- | --- |
 | Linux on ARM64, Python 3.14, Git 2.53 | Tested: the suite, the mutation check, both pilots and a fresh install |
 | Python 3.11 to 3.13 | The declared minimum is 3.11; the suite passes natively on 3.11 (Windows, macOS) and on 3.12 (Linux) |
-| Windows Server 2025 x64, Python 3.11 and 3.14, Git 2.56 | Tested on hosted runners: installing 0.1.1, updating to 1.0.0, rolling back, updating again and removing. Making a release or a contribution from a Windows checkout needs the release after 1.0.0 |
+| Windows Server 2025 x64, Python 3.11 and 3.14, Git 2.56 | Tested on hosted runners: installing 0.1.1, updating to 1.0.0, rolling back, updating again and removing, and the full suite. Making a release or a contribution from a Windows checkout needs 1.0.1 or later |
 | macOS 15 on Apple silicon, Python 3.11 and 3.14, Git 2.55 | Tested on hosted runners: the same lifecycle and the full suite |
 | Agent clients, Git hosts | Each integration's `tested` field says what has used it in a real project; some have only been installed by the tests |
 

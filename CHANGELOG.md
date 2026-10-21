@@ -5,17 +5,22 @@ and whether the contract changed. Newest first.
 
 ## Unreleased
 
-- Repository workflows stay out of installed release payloads. The manually
-  triggered native-platform workflow runs the suite and an offline published
-  0.1.1 to 1.0.0 adoption, update, rollback and removal exercise. Native
-  platform support remains unverified until the matrix passes.
+Contract version 1, unchanged. Nothing to do after updating.
+
+- Tested on Windows Server 2025 and macOS 15, each with Python 3.11 and
+  3.14, as well as Linux. The manually started native-platform workflow runs
+  the suite and an offline published 0.1.1 to 1.0.0 adoption, update,
+  rollback and removal exercise. Repository workflows stay out of installed
+  release payloads.
 - `release` hashes files as Git stores them, so a release made from a
   working copy whose editor saved CRLF no longer fails verification on
   install. `contribute` writes `change.patch` byte for byte, so on Windows
   it still applies with `git apply`. Neither changes the contract.
 - The test suite runs on Windows and macOS: fixtures write exact bytes,
   compare POSIX paths, clean up read-only Git objects and no longer depend
-  on `/etc/hostname`.
+  on `/etc/hostname`. `tests/windows_text_mode.py` runs the suite with
+  Windows text-mode newlines on any host, and each release tag also gets a
+  release page on the kit's Git host.
 
 ## 1.0.0, 2026-10-21, first supported release
 

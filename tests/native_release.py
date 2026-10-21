@@ -1,4 +1,4 @@
-"""Exercise published tags offline on a native host; never modify the source repository."""
+"""Exercise the two newest published releases offline on a native host; never modify the source."""
 from __future__ import annotations
 
 import argparse
@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
 import stat
 import subprocess
@@ -20,7 +21,19 @@ def remove_tree(path):
     shutil.rmtree(path, onerror=writable)
 
 
+def newest_two(source: Path) -> tuple[str, str]:
+    """The two supported releases: the newest release tag and the one before it."""
+    tags = subprocess.run(['git', 'tag', '--list', 'v*'], cwd=source, capture_output=True, text=True,
+                          check=True).stdout.split()
+    versions = sorted((tuple(map(int, tag[1:].split('.'))) for tag in tags
+                       if re.fullmatch(r'v\d+\.\d+\.\d+', tag)))
+    if len(versions) < 2:
+        raise RuntimeError('the source needs at least two release tags')
+    return tuple('.'.join(map(str, version)) for version in versions[-2:])
+
+
 def exercise(source: Path, report: Path):
+    older, newer = newest_two(source)
     result = {'platform': platform.platform(), 'machine': platform.machine(),
               'python': platform.python_version(), 'image': os.environ.get('ImageOS'),
               'image_version': os.environ.get('ImageVersion'), 'steps': []}
@@ -39,7 +52,7 @@ def exercise(source: Path, report: Path):
     try:
         result['git'] = run('git', '--version')
         clones = {}
-        for version in ('0.1.1', '1.0.0'):
+        for version in (older, newer):
             clone = scratch / ('release ' + version)
             run('git', 'clone', '--quiet', '--no-hardlinks', '--branch', 'v' + version,
                 str(source), str(clone))
@@ -51,7 +64,7 @@ def exercise(source: Path, report: Path):
         run('git', 'init', '--quiet', cwd=project)
         instructions = b'# Local instructions\r\n\r\nKeep workshop records local.\r\n'
         (project / 'AGENTS.md').write_bytes(instructions)
-        installer = clones['0.1.1'] / 'tools/kit.py'
+        installer = clones[older] / 'tools/kit.py'
 
         def command(tool, *args):
             return run(sys.executable, str(tool), *args, cwd=project)
@@ -60,7 +73,7 @@ def exercise(source: Path, report: Path):
             command(tool, *args)
             command(tool, *args, '--apply')
 
-        change(installer, 'adopt', str(source), '0.1.1', '--with', 'claude-code')
+        change(installer, 'adopt', str(source), older, '--with', 'claude-code')
         config_path = project / '.engineering-kit/project.json'
 
         def filled(value):
@@ -81,8 +94,8 @@ def exercise(source: Path, report: Path):
         task.write_bytes(task_bytes)
         installed = project / '.engineering-kit/kit/tools/kit.py'
         command(installed, 'check')
-        result['steps'].append('adopt 0.1.1 and check')
-        for operation, version in (('update', '1.0.0'), ('rollback', '0.1.1'), ('update', '1.0.0')):
+        result['steps'].append(f'adopt {older} and check')
+        for operation, version in (('update', newer), ('rollback', older), ('update', newer)):
             args = (operation, version) if operation == 'update' else (operation,)
             change(installed, *args)
             lock = json.loads((project / '.engineering-kit/lock.json').read_text(encoding='utf-8'))

@@ -21,9 +21,12 @@ the owner approves anything that widens what the kit may write or do.
 ## Making a release
 
 1. Every change since the last release has passed
-   `python3 -m unittest discover -s tests`, and
+   `python3 -m unittest discover -s tests` and
+   `python3 tests/windows_text_mode.py`, and
    `python3 tests/mutation_check.py` reports every mutant caught. Add a
-   mutant whenever you add a guard.
+   mutant whenever you add a guard. The manually started native platform
+   workflow passes on the candidate commit; the repository's host-specific
+   commands are in `.github/RELEASING.md`.
 2. A fresh reviewer who did not write the changes reviews
    `git diff vPREVIOUS..HEAD` against the commit messages. Blocking findings
    are fixed and reviewed again, by a reviewer given the earlier findings.
@@ -31,7 +34,9 @@ the owner approves anything that widens what the kit may write or do.
    and whether the contract changed.
 4. Run `python3 tools/kit.py release X.Y.Z` and
    `python3 tools/kit.py release X.Y.Z --check`, commit `RELEASE.json`, tag
-   `vX.Y.Z` with `git tag -a`, and push `main` and the tag.
+   `vX.Y.Z` with `git tag -a`, and push `main` and the tag. Publish the Git
+   host's release page for that tag, with its changelog section as the
+   notes. The tag stays the release; the page announces it.
 5. Install the release from the repository into a throwaway project with
    the commands in `README.md`, run `kit.py check`, and remove it again.
 
