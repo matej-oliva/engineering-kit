@@ -58,12 +58,21 @@ python3 ~/engineering-kit-1.0.1/tools/kit.py adopt --with copilot --apply   # wr
 ```
 
 `--with` names the instruction files your agents read, beyond `AGENTS.md`:
-`claude-code`, `copilot` or `gemini`; see `integrations/`. Later, from the
-project:
+`claude-code`, `copilot` or `gemini`; see `integrations/`. Add
+`--with agent-skills` to install one skill per procedure in `.agents/skills/`
+and `.claude/skills/`, the folders most agent clients search, so an agent
+loads the procedure that fits its work without being told. Each skill only
+points at its installed procedure.
+
+To install the newest release without choosing its version, give the
+address alone: `kit.py adopt KIT_ADDRESS`. Later, from the project, one
+command moves to the newest release; it previews first and never moves back:
 
 ```sh
-python3 .engineering-kit/kit/tools/kit.py update 1.1.0 --diff
-python3 .engineering-kit/kit/tools/kit.py rollback --apply
+python3 .engineering-kit/kit/tools/kit.py update --diff      # preview the newest release
+python3 .engineering-kit/kit/tools/kit.py update --apply     # install it
+python3 .engineering-kit/kit/tools/kit.py update 1.0.1 --apply   # or a chosen release
+python3 .engineering-kit/kit/tools/kit.py rollback --apply   # back to the previous one
 ```
 
 On Windows, run `py` instead of `python3`. A private kit repository needs
@@ -111,7 +120,10 @@ in `procedures/adopt-and-update.md`.
 
 Only the entry block is loaded into every agent session: about 0.4 kB. The
 contract is read when work is planned, reviewed or released: about 6.8 kB.
-A procedure is about 2.0 kB and is read only for its stage.
+A procedure is about 2.1 kB and is read only for its stage. With the
+`agent-skills` integration, clients that support skills also load each
+skill's name and description, near 2.9 kB for all twelve, and open a skill,
+and so its procedure, only when the work matches it.
 
 ## Test the kit
 

@@ -34,8 +34,11 @@ other change. Every command previews by default and writes only with
    your instruction files outside the entry block, not inside kit files: a
    changed kit file conflicts with updates, and `kit.py integrated` counts
    it as a change, so merging it makes a new candidate.
-2. Preview with `tools/kit.py update VERSION --diff`, after reading the
-   release notes. Local changes are merged with the release's changes. An
+2. Preview with `tools/kit.py update --diff`, after reading the release
+   notes. Without a version it previews the newest release at the source and
+   never moves the project back; give `VERSION` to choose one. If a newer
+   release appears between the preview and the apply, `--plan` refuses the
+   apply. Local changes are merged with the release's changes. An
    overlap stops the update without writing anything: edit the local file to
    include the kit's change, or rerun with `--resolve PATH=kit` or
    `--resolve PATH=local`. A release that changes the contract needs

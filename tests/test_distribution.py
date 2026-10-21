@@ -494,6 +494,23 @@ class Distribution(unittest.TestCase):
 
     # ---------------------------- findings of the fresh review, 2026-10-20
 
+    def test_agent_skills_install_beside_the_project_skills_and_leave_on_removal(self):
+        own = '.claude/skills/deploy/SKILL.md'
+        root = self.consumer(files={own: '---\nname: deploy\ndescription: Ours.\n---\n'})
+        status, report = self.run_change(root, '0.1.0', apply_now=True, with_integrations=['agent-skills'])
+        self.assertEqual(status, 0, report)
+        procedures = sorted(p.stem for p in (root / '.engineering-kit' / 'kit' / 'procedures').glob('*.md'))
+        for folder in ('.agents/skills', '.claude/skills'):
+            for stem in procedures:
+                skill = (root / folder / f'kit-{stem}' / 'SKILL.md').read_text(encoding='utf-8')
+                self.assertIn(f'name: kit-{stem}\n', skill)
+                self.assertTrue((root / '.engineering-kit' / 'kit' / 'procedures' / f'{stem}.md').is_file())
+        self.assertEqual(ku.status(root)[0], 0)
+        status, report = self.run_change(root, None, apply_now=True)
+        self.assertEqual(status, 0, report)
+        self.assertEqual([p for p in (root / '.agents').rglob('*') if p.is_file()], [])
+        self.assertEqual([p.relative_to(root).as_posix() for p in (root / '.claude' / 'skills').rglob('*.md')], [own])
+
     def grant_github(self, root):
         self.set_integrations(root, {'agents-md': {'grant': ['writes-instructions']},
                                      'github': {'grant': ['review-template', 'ci-workflow']}})
@@ -1254,6 +1271,12 @@ class Distribution(unittest.TestCase):
         self.assertEqual(preview.returncode, 0, preview.stdout + preview.stderr)
         self.assertIn('0.10.0', preview.stdout)
         self.assertEqual(ku.load_lock(root)['version'], '0.1.0', 'a preview writes nothing')
+        self.release('0.11.0')                      # appears between the preview and the apply
+        stale = kit('update', '--apply', '--plan', preview.stdout.rsplit('plan ', 1)[1].split()[0])
+        self.assertEqual(stale.returncode, 1, stale.stdout)
+        self.assertIn('preview again', stale.stdout)
+        self.assertEqual(ku.load_lock(root)['version'], '0.1.0')
+        sh('tag', '-d', 'v0.11.0', cwd=self.source)
         applied = kit('update', '--apply')
         self.assertEqual(applied.returncode, 0, applied.stdout + applied.stderr)
         self.assertEqual(ku.load_lock(root)['version'], '0.10.0')

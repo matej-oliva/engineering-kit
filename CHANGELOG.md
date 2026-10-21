@@ -3,6 +3,28 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
+## Unreleased
+
+Contract version 1, unchanged. Nothing to do after updating; to add the
+skills, grant `writes-skills` to `agent-skills` in `project.json` and
+update again.
+
+- `kit.py update` without a version moves to the newest release at the
+  source, compared as numbers, previews first and never moves a project
+  back. `kit.py adopt SOURCE` without a version installs the newest release.
+- The optional `agent-skills` integration installs one skill per procedure
+  in `.agents/skills/` and `.claude/skills/`. Each skill names when it
+  applies and points at the installed procedure, so the steps stay in one
+  place.
+- `implement.md` asks for checks on every claimed platform and the oldest
+  supported runtime, for exit statuses that a pipeline cannot hide, and for
+  safe work in a shared environment. `change-preflight.md` asks for a
+  committed, self-recording script, not pasted commands, when a person must
+  apply an effect. Lessons from the kit's first native platform tests and
+  the owner's own operations repository.
+- `release` also refuses a link or submodule outside the installed files,
+  as every install already did.
+
 ## 1.0.1, 2026-10-21
 
 Contract version 1, unchanged. Nothing to do after updating.
