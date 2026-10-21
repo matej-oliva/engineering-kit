@@ -1,0 +1,84 @@
+{
+  "kit": "release/1",
+  "version": "1.1.0",
+  "contract": 1,
+  "digest": "1b003c6f445a57ea9580246a2529eec7fe920876e84461768980a4da1e29e381",
+  "files": {
+    ".gitattributes": "118a8a960827c3270221647c020043458909ba34524d066bdec123ee5d5d014b",
+    ".gitignore": "32dae3052f331ee34d628ef535709b301259a45df7c7522c4d35dcf49873f00b",
+    "CHANGELOG.md": "726710ff23a87fc04da97ed12433387c7e19b3c14895e4d002c74efefbcd3e8d",
+    "CONTRACT.md": "5c7763600f18057babf634229fed88620e0b162ac4dbdcd287af36d1e52486f8",
+    "LICENSE": "37629ee1fc3b2a106a81aaf9115d0675cd66d18036bcd16957a64fb797f98a32",
+    "MAINTAINING.md": "f80df313ccf54eed1a0e59f4b770939119196c8a9f1d54c83510f579f24535ba",
+    "README.md": "5096e591294451665807eea895349b28ca8c22cf4a605abc76c90dc81145366a",
+    "RECORDS.md": "5e1b04cd4ec1a81cdb8a17ce888bf74f9aa2abe7de729c0dd68ab19d14bd1b72",
+    "THIRD_PARTY_NOTICES.md": "aa86e5ba5ff8ef3fed04c5d43f02c53a53a6df9d14c91b3a61933da5e417f26f",
+    "integrations/agent-skills/integration.json": "a4811c6b69b6394da95a2b4191a854b9636d0f512fe64ea70f8c84bf584b61df",
+    "integrations/agent-skills/skills/kit-adopt-and-update/SKILL.md": "1aac5c3dfa63153a1b32a0840b4d974afcd3a516d22023bbe12b95be7315782a",
+    "integrations/agent-skills/skills/kit-change-preflight/SKILL.md": "d44109a7797db7bd45e8526ff78312e47561d7d463bac73f361f2f3d4b8d6aeb",
+    "integrations/agent-skills/skills/kit-contribute/SKILL.md": "9b216c277f284e01fb93892271544295d9c1824c7eee1bcd8c2d8cb4f0869d9e",
+    "integrations/agent-skills/skills/kit-design/SKILL.md": "23ab63d937428036815d2cd3945c527ea3e45f8ceddf3dc0ae40ee6ae70cf72b",
+    "integrations/agent-skills/skills/kit-diagnose-defect/SKILL.md": "2a8f39880bbaf0127e9c6c3c8d1fba2659bc41d2b654fc4c7954aeb8d83876b8",
+    "integrations/agent-skills/skills/kit-handoff/SKILL.md": "a7cd3a2eac80bed1d9c4718ca436905199ae48cde62b7d533e24d50e98286400",
+    "integrations/agent-skills/skills/kit-implement/SKILL.md": "cd833c867b7e776b33f2deae8a978fedd2fc87e732a2548720d7a268992ea59f",
+    "integrations/agent-skills/skills/kit-maintain/SKILL.md": "4addae2961de886208e9bb07b0dd076e8277ec847761d9c33179525f4934b3d5",
+    "integrations/agent-skills/skills/kit-release/SKILL.md": "76e9f9a3aa6b35df0e40c7682eece785cac80347ec60307a420693f14c65d360",
+    "integrations/agent-skills/skills/kit-review/SKILL.md": "cc71c9567bbe8637c4aef71f70b7e27508efa924568acce84e5d15a548da5fa8",
+    "integrations/agent-skills/skills/kit-understand/SKILL.md": "4fb48b4ad3ac24211e9c9ff499b0f39266e7d04c92da7ff2b6f83fe1e047a67d",
+    "integrations/agent-skills/skills/kit-write-instructions/SKILL.md": "f11812d203bdb1d3e9ad6384f3f3eff99acc5453fe5fcdc104d8928450aa9a1d",
+    "integrations/agents-md/integration.json": "4e1dc7955cf53005fc7216e70b9db5fbadcca9cc3ac7176fac4c88ed8e773e04",
+    "integrations/claude-code/integration.json": "44bcd35071cb71f4f3b9c9ca246d6964a92933b56a54a19901b2df3c62971c05",
+    "integrations/copilot/integration.json": "058a7f3c1f6a76a6754e9ff1a9e3ec7f8f12a68604205f721e946b299ae69372",
+    "integrations/gemini/integration.json": "cdae151d4d9dc8944b2cedc13f6370394d510cd37efbeba8248f684e8e93fb1b",
+    "integrations/github/integration.json": "077ab13ba7f6a6baf1dc21a08698c665a8ae591072ba3bb8dabfe01f5c8748e8",
+    "integrations/github/pull_request_template.md": "42f4ca0257e1894c6006c94a1e438da6a6655cdf10a1b899273b092b02905adf",
+    "integrations/github/workflow.yml": "7c40fba360ef3d3a962d5ce6a9c1d2845c672287ec0b37f8670eae3fbc8feae9",
+    "integrations/gitlab/ci.yml": "116bc82740e3d8bfbc34db04296e801cbd729ffebaa6249751c14130a4918812",
+    "integrations/gitlab/integration.json": "148d1c03e2a034bca084a585d606e998bfcab2323ed148e3835b31fc66de7adc",
+    "integrations/gitlab/merge_request_template.md": "42f4ca0257e1894c6006c94a1e438da6a6655cdf10a1b899273b092b02905adf",
+    "procedures/adopt-and-update.md": "52224ab0c74ba8839c179f6330fb3969cfee9c1ea0bf135736399d6efdb82a45",
+    "procedures/change-preflight.md": "ff77618df92b3b97e3b33791777c0cfd82ba1ad7f98a972eb295e7cc628ffa97",
+    "procedures/contribute.md": "cb1b70dedc195dcc39b6c2c03576c19951333459d3208ec94f2b86d5d8ac0f88",
+    "procedures/design.md": "bfe929418860e34e34e0434d053669bca55060e47eefd2f72219cc264708330a",
+    "procedures/diagnose-defect.md": "444af192479245954f4e85cd7034d086e6f3973a6220b3caffed50c0a32eb94e",
+    "procedures/handoff.md": "b0c56f5554004ed443bb3c7409b945771403085d45b824ed396dde0ab8d6a76e",
+    "procedures/implement.md": "5e900ebaee9ec140ce5877ed5e7c270a2e3825325dc93f1bec3103146b17ec39",
+    "procedures/maintain.md": "705ab2d1f35a8aeec349af16304d3d643580fbb95df09140b2ea1c7d9b1d38ed",
+    "procedures/release.md": "3b6b6887d51d8db9136018d4215c0350cc81cfb90e4abc1c903741487b40a743",
+    "procedures/review.md": "ca67a966e3d04a41b7cbd5686a63129ed77540dc948d97463f4b8ecbd0b9097c",
+    "procedures/understand.md": "bcd509bd75e254e2f19a9604f649fd689bf7dc545652f0cba0f8c268cbcffca0",
+    "procedures/write-instructions.md": "e964027b6fd2b25d9515d620fefe3abf0ba3130b908113179bdbab856bfaf257",
+    "templates/entry-block.md": "e7e7e095dc819eeebfa2a321a511c6e2ebcdafb1921d7f76e7feab599e5d67a5",
+    "templates/handoff.md": "fa1be2c65d3cc6492c40ae2c7c8381ec43ee56db763935a3d11222224496daf0",
+    "templates/project.json": "eb6eb64f9d7136a521aca9919a7fc192d8d8aa7e01f834fa0a62eed7e20d5eb8",
+    "templates/task.json": "9d3e267ec983f98385defb95b9d43b258ae11201bae3972261c4a408ca76aefd",
+    "tools/kit.py": "f22864be21f76af6f8bf67c9abb541036f628627e5c9bb3ec1375f19acb12e01",
+    "tools/kit_update.py": "31963ca08cb595fab0ad3394bd6f049f7fcafa000e7d52df816a8f48bc9c0d9a"
+  },
+  "integrations": {
+    "agent-skills": [
+      "writes-skills"
+    ],
+    "agents-md": [
+      "writes-instructions"
+    ],
+    "claude-code": [
+      "writes-instructions"
+    ],
+    "copilot": [
+      "writes-instructions"
+    ],
+    "gemini": [
+      "writes-instructions"
+    ],
+    "github": [
+      "review-template",
+      "ci-workflow"
+    ],
+    "gitlab": [
+      "review-template",
+      "ci-workflow"
+    ]
+  },
+  "notes": "CHANGELOG.md"
+}
