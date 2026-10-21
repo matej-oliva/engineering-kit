@@ -771,6 +771,9 @@ class Distribution(unittest.TestCase):
         with self.subTest('a handoff naming its task only inside a section'):
             tampered(lambda: (root / '.engineering-kit' / 'handoffs' / 'T-1.md').write_text(
                 '# Billing handoff\n\n## State\nTask: T-1\n'), ['.engineering-kit/handoffs/T-1.md'])
+        with self.subTest('a handoff named after another task'):
+            tampered(lambda: (root / '.engineering-kit' / 'handoffs' / 'T-2.md').write_text(
+                '# Billing handoff\n\nTask: T-1\n'), ['.engineering-kit/handoffs/T-2.md'])
         with self.subTest('a handoff whose title is not its first line'):
             tampered(lambda: (root / '.engineering-kit' / 'handoffs' / 'T-1.md').write_text(
                 'Read me first.\n# Billing handoff\n\nTask: T-1\n'), ['.engineering-kit/handoffs/T-1.md'])

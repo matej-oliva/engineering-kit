@@ -45,7 +45,8 @@ handoff, is named like an instruction file (`AGENTS`, `CLAUDE`, `GEMINI`,
 `copilot-instructions`, `README`, or any file in `instructions.clients`),
 compared by the part before the first dot and without case, so
 `CLAUDE.local.md` is covered too: agents read such files as rules. The
-record folders are never a folder an agent client reads rules from.
+record folders must never be a folder an agent client reads rules or
+settings from, such as `.claude` or `.github`; no check enforces that yet.
 
 | Field | Meaning | Required from state |
 | --- | --- | --- |
@@ -57,7 +58,7 @@ record folders are never a folder an agent client reads rules from.
 | `requirement` | `{"revision", "problem", "decision_owner", "excluded": [...], "acceptance": [{"id", "example"}], "acceptance_boundary"}`. Optional `assumptions`: choices made without the decision owner, such as examples added beyond the request. | `accepted` |
 | `questions` | Optional: `[{"id", "question", "recommended", "answer"}]` for the decision owner. | |
 | `plan` | Optional: `{"risks", "recovery", "increments", "evidence"}`; `evidence` maps acceptance examples to the checks and boundaries that will show them. | |
-| `candidate` | `{"revision", "base"}`: the exact state under review and the revision its work started from. Optional `integrated`: `[{"revision", "evidence"}]` for revisions, such as the merge that landed it, that equal the candidate except in process files: task records and handoffs, recognised by their content and named after their task, directly in the folders the candidate's own `project.json` names; `.engineering-kit/project.json` and the lock; and what the lock's release installs or removes: kit files, integration files and one entry block per instruction file. A lock that changed is checked against the published release at the source the candidate's lock names; a changed source, a kit adopted or removed after the candidate, or a release that cannot be fetched leaves the result `UNKNOWN`. `tools/kit.py integrated` produces that evidence. | `candidate` |
+| `candidate` | `{"revision", "base"}`: the exact state under review and the revision its work started from. Optional `integrated`: `[{"revision", "evidence"}]` for revisions, such as the merge that landed it, that equal the candidate except in process files: task records and handoffs, recognised by their content and named after their task and not like an instruction file, directly in the folders the candidate's own `project.json` names; `.engineering-kit/project.json` and the lock; and what the lock's release installs or removes: kit files, integration files and one entry block per instruction file. A lock that changed is checked against the published release at the source the candidate's lock names; a changed source, a kit adopted or removed after the candidate, or a release that cannot be fetched leaves the result `UNKNOWN`. `tools/kit.py integrated` produces that evidence. | `candidate` |
 | `checks` | `[{"id", "revision", "result", "evidence"}]`. `result` is `pass`, `fail`, `skipped` or `unknown`. Each required check has a result for the candidate by `candidate` and passes by `reviewed`. | `candidate` |
 | `not_applicable` | `[{"check", "reason"}]` for required checks that do not apply. | |
 | `reproduction` | `{"check", "base", "base_result": "fail", "candidate_result": "pass", "evidence"}` when the profile requires it. `check` is the test or command that shows the defect; `base` equals `candidate.base`, run with the new test added and the code unchanged. | `reviewed` |

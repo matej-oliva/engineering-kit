@@ -3,7 +3,7 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
-## 0.1.1, 2026-10-20, pilot release
+## 0.1.1, 2026-10-21, pilot release
 
 Lessons from the first pilots. Contract version 1, unchanged. After
 updating, run `kit.py check`: it now refuses a few malformed records that
