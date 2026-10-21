@@ -1229,6 +1229,49 @@ class Distribution(unittest.TestCase):
         refused = subprocess.run([*installed, 'update', '9.9.9', '--root', str(root)], capture_output=True, text=True)
         self.assertEqual(refused.returncode, 1)
 
+    def test_update_without_a_version_moves_to_the_newest_release(self):
+        root = self.consumer()
+        self.adopt(root)
+        self.second_release()                       # 0.2.0
+        self.release('0.10.0', lambda source: edit(source / 'procedures' / 'review.md', 'is never the author.',
+                                                   'is never the author (0.10.0).'))
+        self.release('0.9.0')                       # tagged last, but older than 0.10.0
+        sh('tag', 'not-a-release', cwd=self.source)
+        installed = [sys.executable, str(root / '.engineering-kit' / 'kit' / 'tools' / 'kit.py')]
+
+        def kit(*args):
+            return subprocess.run([*installed, *args, '--root', str(root)], capture_output=True, text=True)
+        preview = kit('update')
+        self.assertEqual(preview.returncode, 0, preview.stdout + preview.stderr)
+        self.assertIn('0.10.0', preview.stdout)
+        self.assertEqual(ku.load_lock(root)['version'], '0.1.0', 'a preview writes nothing')
+        applied = kit('update', '--apply')
+        self.assertEqual(applied.returncode, 0, applied.stdout + applied.stderr)
+        self.assertEqual(ku.load_lock(root)['version'], '0.10.0')
+        again = kit('update')
+        self.assertEqual(again.returncode, 0, again.stdout + again.stderr)
+        self.assertIn('already at the newest release, 0.10.0', again.stdout)
+
+    def test_update_without_a_version_never_moves_back(self):
+        root = self.consumer()
+        self.second_release()
+        self.adopt(root, '0.2.0')
+        sh('tag', '-d', 'v0.2.0', cwd=self.source)  # the newest remaining release is older than this one
+        installed = [sys.executable, str(root / '.engineering-kit' / 'kit' / 'tools' / 'kit.py')]
+        result = subprocess.run([*installed, 'update', '--apply', '--root', str(root)], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn('already at the newest release', result.stdout)
+        self.assertEqual(ku.load_lock(root)['version'], '0.2.0')
+
+    def test_adopting_from_a_source_alone_installs_its_newest_release(self):
+        self.second_release()
+        root = self.consumer()
+        tool = [sys.executable, str(self.source / 'tools' / 'kit.py')]
+        result = subprocess.run([*tool, 'adopt', str(self.source), '--root', str(root), '--apply'],
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(ku.load_lock(root)['version'], '0.2.0')
+
 
 if __name__ == '__main__':
     unittest.main()

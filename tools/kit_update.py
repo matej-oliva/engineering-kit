@@ -715,6 +715,22 @@ def change(root: Path, source: str, version: str | None, *, adopting: bool = Fal
         return 0, lines
 
 
+def version_key(version: str) -> tuple[int, int, int]:
+    return tuple(int(part) for part in VERSION.fullmatch(version).groups())
+
+
+def newest_release(source: str) -> str:
+    """The highest vMAJOR.MINOR.PATCH tag at SOURCE, compared as numbers; other tags are ignored."""
+    if not kit.text(source) or source.lstrip().startswith('-'):
+        raise KitError(f'refusing the source {source!r}: it must be a repository address or path')
+    listed = git('-c', 'protocol.ext.allow=never', 'ls-remote', '--tags', '--refs', '--', source).decode()
+    versions = [ref.rsplit('/', 1)[1][1:] for ref in (line.split('\t')[-1] for line in listed.splitlines())
+                if ref.startswith('refs/tags/v') and VERSION.fullmatch(ref.rsplit('/', 1)[1])]
+    if not versions:
+        raise KitError(f'{source} has no release tags vMAJOR.MINOR.PATCH')
+    return max(versions, key=version_key)
+
+
 def own_release() -> tuple[str, str]:
     """The repository and release this tool was cloned at, so adopting needs neither typed."""
     kit_root = Path(__file__).resolve().parents[1]
@@ -871,13 +887,19 @@ def cli(args) -> int:
             lock = load_lock(root)
             if args.command == 'adopt':
                 source, version = args.source, args.version
-                if (source is None) != (version is None):
-                    raise KitError('give both SOURCE and VERSION, or neither to install the release this '
-                                   'tool was cloned at')
                 if source is None:
                     source, version = own_release()
+                elif version is None:
+                    version = newest_release(source)
             elif args.command == 'update':
                 source, version = args.source or (lock or {}).get('source', ''), args.version
+                if version is None and lock:
+                    version = newest_release(source)
+                    if version_key(version) <= version_key(lock['version']):
+                        newer = '' if version == lock['version'] else f'; the newest at the source is {version}'
+                        print(f'Nothing to update: this project is already at the newest release, '
+                              f'{lock["version"]}{newer}.')
+                        return 0
             elif args.command == 'rollback':
                 source, version = (lock or {}).get('source', ''), previous_version(root)
             else:
