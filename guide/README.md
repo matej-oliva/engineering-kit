@@ -21,8 +21,9 @@ profile, the risks and how to recover. **Implement** produces one exact
 candidate revision and runs its checks. **Review** has someone other than
 the author approve that revision. **Release** applies it with authority and
 observes it where acceptance is judged. **Maintain** closes the task with its
-documentation and lessons. A defect starts with a reproduction, and work that
-stops early leaves a handoff the next person resumes from. The task record's
+documentation and lessons. A defect is accepted as a task like any other,
+and its implementation starts with a reproduction; work that stops early
+leaves a handoff the next person resumes from. The task record's
 `state` field follows the same order: `proposed`, `accepted`, `in_progress`,
 `candidate`, `reviewed`, `released`, `verified`, `closed`.
 
