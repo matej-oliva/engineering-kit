@@ -53,8 +53,8 @@
   "context_bytes": {
     "entry block, read in every session": 473,
     "contract, read to plan, review or release": 6840,
-    "one procedure, on average, read for its stage": 2080,
-    "all skill names and descriptions, read in every session": 2905
+    "one procedure, on average, read for its stage": 2094,
+    "all skill names and descriptions, read in every session": 2898
   },
   "observed": [
     {

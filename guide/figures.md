@@ -19,7 +19,7 @@ check nobody protects; every release is published only when all of them are
 caught. The first release had no deliberate faults yet.
 
 <!-- figures:releases -->
-| Release | Date | Tests | Deliberate faults caught | Files installed |
+| Release | Date | Tests | Deliberate faults, all caught before release | Files installed |
 | --- | --- | --- | --- | --- |
 | 0.1.0 | 2026-10-20 | 62 | 0 | 35 |
 | 0.1.1 | 2026-10-21 | 79 | 63 | 36 |
@@ -57,8 +57,8 @@ plan, review or release, and a procedure only for its stage.
 | --- | --- |
 | Entry block, read in every session | 473 |
 | Contract, read to plan, review or release | 6840 |
-| One procedure, on average, read for its stage | 2080 |
-| All skill names and descriptions, read in every session | 2905 |
+| One procedure, on average, read for its stage | 2094 |
+| All skill names and descriptions, read in every session | 2898 |
 <!-- /figures:context -->
 
 ## The full test suite on hosted Windows
@@ -79,10 +79,10 @@ nearby commits, not one change in isolation.
 <!-- figures:observed -->
 | Measurement | Seconds | Source |
 | --- | --- | --- |
-| One Git process per file, Python 3.11 | 1712 | native run 39682094280, job windows-2025 / Python 3.11, step Suite, 2026-10-22 |
-| One Git process per file, Python 3.14 | 1263 | native run 39682094280, job windows-2025 / Python 3.14, step Suite, 2026-10-22 |
-| One batch read per release, Python 3.11 | 633 | native run 39690264562, job windows-2025 / Python 3.11, step Suite, 2026-10-22 |
-| One batch read per release, Python 3.14 | 582 | native run 39690264562, job windows-2025 / Python 3.14, step Suite, 2026-10-22 |
+| Before, at 5a7049e, Python 3.11 | 1712 | native run 39682094280 at commit 5a7049e, 2026-10-21, step Suite of job windows-2025 / Python 3.11; one of 116 tests failed |
+| Before, at 5a7049e, Python 3.14 | 1263 | native run 39682094280 at commit 5a7049e, 2026-10-21, step Suite of job windows-2025 / Python 3.14; one of 116 tests failed |
+| After, at 6291ebb, Python 3.11 | 633 | native run 39690264562 at commit 6291ebb, 2026-10-21, step Suite of job windows-2025 / Python 3.11; all 117 tests passed |
+| After, at 6291ebb, Python 3.14 | 582 | native run 39690264562 at commit 6291ebb, 2026-10-21, step Suite of job windows-2025 / Python 3.14; all 117 tests passed |
 <!-- /figures:observed -->
 
 ## Tested environments

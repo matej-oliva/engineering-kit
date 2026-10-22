@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 380" width="900" height="380" role="img" aria-labelledby="title desc" font-family="Helvetica, Arial, sans-serif">
   <title id="title">Automated checks behind each release</title>
-  <desc id="desc">Grouped bars per release, 0.1.0: 62 tests and 0 deliberate faults caught; 0.1.1: 79 tests and 63 deliberate faults caught; 1.0.0: 79 tests and 63 deliberate faults caught; 1.0.1: 84 tests and 67 deliberate faults caught; 1.1.0: 97 tests and 76 deliberate faults caught; 1.2.0: 117 tests and 84 deliberate faults caught; 1.2.1: 121 tests and 86 deliberate faults caught.</desc>
+  <desc id="desc">Grouped bars per release, 0.1.0: 62 tests and 0 deliberate faults; 0.1.1: 79 tests and 63 deliberate faults; 1.0.0: 79 tests and 63 deliberate faults; 1.0.1: 84 tests and 67 deliberate faults; 1.1.0: 97 tests and 76 deliberate faults; 1.2.0: 117 tests and 84 deliberate faults; 1.2.1: 121 tests and 86 deliberate faults.</desc>
   <rect width="900" height="380" fill="#ffffff"/>
   <text x="70" y="30" font-size="17" text-anchor="start" fill="#111827" font-weight="bold">Automated checks behind each release</text>
   <line x1="70" y1="320" x2="880" y2="320" stroke="#4b5563"/>
@@ -52,6 +52,6 @@
   <rect x="70" y="42" width="12" height="12" fill="#1d4ed8"/>
   <text x="88" y="53" font-size="13" text-anchor="start" fill="#111827" font-weight="normal">tests</text>
   <rect x="140" y="42" width="12" height="12" fill="#15803d"/>
-  <text x="158" y="53" font-size="13" text-anchor="start" fill="#111827" font-weight="normal">deliberate faults caught</text>
+  <text x="158" y="53" font-size="13" text-anchor="start" fill="#111827" font-weight="normal">deliberate faults, all caught before release</text>
   <text x="880" y="364" font-size="12" text-anchor="end" fill="#4b5563" font-weight="normal">count per release</text>
 </svg>

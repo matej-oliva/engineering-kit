@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 274" width="900" height="274" role="img" aria-labelledby="title desc" font-family="Helvetica, Arial, sans-serif">
   <title id="title">What an agent reads, and when</title>
-  <desc id="desc">Horizontal bars in bytes: entry block, read in every session: 473 bytes; contract, read to plan, review or release: 6840 bytes; one procedure, on average, read for its stage: 2080 bytes; all skill names and descriptions, read in every session: 2905 bytes.</desc>
+  <desc id="desc">Horizontal bars in bytes: entry block, read in every session: 473 bytes; contract, read to plan, review or release: 6840 bytes; one procedure, on average, read for its stage: 2094 bytes; all skill names and descriptions, read in every session: 2898 bytes.</desc>
   <rect width="900" height="274" fill="#ffffff"/>
   <text x="20" y="30" font-size="17" text-anchor="start" fill="#111827" font-weight="bold">What an agent reads, and when</text>
   <text x="348" y="80" font-size="13" text-anchor="end" fill="#111827" font-weight="normal">entry block, read in every session</text>
@@ -10,9 +10,9 @@
   <rect x="360" y="110" width="420.0" height="24" fill="#1d4ed8"/>
   <text x="788.0" y="127" font-size="13" text-anchor="start" fill="#111827" font-weight="normal">6 840 bytes</text>
   <text x="348" y="172" font-size="13" text-anchor="end" fill="#111827" font-weight="normal">one procedure, on average, read for its stage</text>
-  <rect x="360" y="156" width="127.7" height="24" fill="#1d4ed8"/>
-  <text x="495.719298245614" y="173" font-size="13" text-anchor="start" fill="#111827" font-weight="normal">2 080 bytes</text>
+  <rect x="360" y="156" width="128.6" height="24" fill="#1d4ed8"/>
+  <text x="496.57894736842104" y="173" font-size="13" text-anchor="start" fill="#111827" font-weight="normal">2 094 bytes</text>
   <text x="348" y="218" font-size="13" text-anchor="end" fill="#111827" font-weight="normal">all skill names and descriptions, read in every session</text>
-  <rect x="360" y="202" width="178.4" height="24" fill="#1d4ed8"/>
-  <text x="546.3771929824561" y="219" font-size="13" text-anchor="start" fill="#111827" font-weight="normal">2 905 bytes</text>
+  <rect x="360" y="202" width="177.9" height="24" fill="#1d4ed8"/>
+  <text x="545.9473684210526" y="219" font-size="13" text-anchor="start" fill="#111827" font-weight="normal">2 898 bytes</text>
 </svg>
