@@ -138,7 +138,7 @@ def bars(series: list[tuple[str, str, list[int]]], labels: list[str], title: str
 
 
 def hbars(rows: list[tuple[str, int]], title: str, desc: str, unit: str, colour: str = BLUE) -> str:
-    width, row, left, top = 900, 46, 330, 60
+    width, row, left, top = 900, 46, 360, 60
     height = top + row * len(rows) + 30
     longest = max(value for _, value in rows)
     scale = (width - left - 120) / longest

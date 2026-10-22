@@ -47,7 +47,7 @@
       "date": "2026-10-22",
       "tests": 121,
       "mutants": 86,
-      "installed_files": 76
+      "installed_files": 80
     }
   ],
   "context_bytes": {

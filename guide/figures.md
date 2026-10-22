@@ -27,7 +27,7 @@ caught. The first release had no deliberate faults yet.
 | 1.0.1 | 2026-10-21 | 84 | 67 | 37 |
 | 1.1.0 | 2026-10-21 | 97 | 76 | 50 |
 | 1.2.0 | 2026-10-22 | 117 | 84 | 63 |
-| 1.2.1 | 2026-10-22 | 121 | 86 | 76 |
+| 1.2.1 | 2026-10-22 | 121 | 86 | 80 |
 <!-- /figures:releases -->
 
 ## What each release installs
@@ -37,8 +37,9 @@ project, rising as procedures, skills, the short command and this guide
 were added](images/chart-files.svg)
 
 In words: the installed copy grew from the core contract, procedures and
-checker to include agent skills in 1.1.0, then the short command and this
-guide in 1.2.0. Everything installed lives under `.engineering-kit/kit/`.
+checker to include agent skills in 1.1.0, the short command and the first
+guide in 1.2.0, and this complete documentation with its diagrams and
+charts in 1.2.1. Everything installed lives under `.engineering-kit/kit/`.
 
 ## What an agent reads, and when
 

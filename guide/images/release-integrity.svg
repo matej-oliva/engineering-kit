@@ -26,7 +26,7 @@
     <text x="840" y="96" font-size="12">published once,</text>
     <text x="840" y="112" font-size="12">never moved</text>
 
-    <text x="20" y="196" text-anchor="start" font-size="16" font-weight="bold">Installing and updating</text>
+    <text x="940" y="196" text-anchor="end" font-size="16" font-weight="bold">Installing and updating</text>
     <rect x="20" y="210" width="200" height="96" rx="10" fill="#fde2e2" stroke="#b91c1c" stroke-width="2"/>
     <text x="120" y="238" font-weight="bold">Refuse links</text>
     <text x="120" y="260" font-size="12">a tag with a symbolic link</text>

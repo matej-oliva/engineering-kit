@@ -44,13 +44,13 @@
     <path d="M402,236 C440,236 440,335 468,335" marker-end="url(#arrow)"/>
     <line x1="690" y1="80" x2="738" y2="80" marker-end="url(#arrow)"/>
     <line x1="840" y1="170" x2="840" y2="122" marker-end="url(#arrow)"/>
-    <path d="M95,170 C95,120 300,100 300,110 C300,300 700,300 738,215" stroke="#7e22ce" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+    <path d="M95,240 L95,282 L840,282 L840,252" stroke="#7e22ce" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
   </g>
   <g font-size="13" fill="#111827">
     <text x="440" y="140" text-anchor="middle">points to</text>
     <text x="714" y="72" text-anchor="middle">names</text>
     <text x="848" y="152">points back</text>
-    <text x="560" y="275" fill="#7e22ce">with skills, the agent opens the right one directly</text>
+    <text x="110" y="276" fill="#7e22ce">with skills, the agent opens the right one directly</text>
     <text x="20" y="405" font-style="italic">Where the project's rules and the kit differ, the stricter applies.</text>
   </g>
 </svg>
