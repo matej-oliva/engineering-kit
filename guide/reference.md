@@ -1,9 +1,10 @@
 # Technical reference
 
-[Guide](README.md) · How the kit is built and how each part behaves, for
-people who maintain a project's setup, review the kit or want to know
-exactly what it does to a repository. Formats are specified field by field
-in [`RECORDS.md`](../RECORDS.md); the rules in [`CONTRACT.md`](../CONTRACT.md).
+[Guide](README.md) · Terms are explained in the [glossary](glossary.md). How
+the kit is built and how each part behaves, for people who maintain a
+project's setup, review the kit or want to know exactly what it does to a
+repository. Formats are specified field by field in
+[`RECORDS.md`](../RECORDS.md); the rules in [`CONTRACT.md`](../CONTRACT.md).
 
 ## Architecture
 
@@ -41,8 +42,8 @@ Both programs use only the Python standard library (3.11 or later) and the
 
 Run from the project root as `python3 kit COMMAND` with the `launcher`
 integration, or as `python3 .engineering-kit/kit/tools/kit.py COMMAND`.
-Every command accepts `--root FOLDER`. Exit status 0 is success, 1 a
-refusal with its reason, 2 a mistyped command.
+Every command except `check-contribution` accepts `--root FOLDER`. Exit
+status 0 is success, 1 a refusal with its reason, 2 a mistyped command.
 
 | Command | Arguments and options | Writes |
 | --- | --- | --- |
@@ -107,12 +108,14 @@ project now; and **theirs**, as the new release ships it.
 | New in the release, the project has a different file | Stop: "an unmanaged file is in the way" |
 | Yours equals theirs | Nothing to do |
 | Dropped by the release, yours unchanged | Deleted |
+| Dropped by the release, already deleted by you | Nothing to do |
 | Dropped by the release, yours changed | Stop: "changed locally but dropped by the kit" |
 | Deleted by you, still in the release | Stop: "deleted locally but still provided by the kit" |
 | Yours unchanged, the release changed it | Updated |
 | You changed it, the release did not | Your version kept |
 | Both changed, different lines | Merged line by line |
 | Both changed, the same lines | Stop: "local and kit changes overlap" |
+| A folder or something else that is not a file stands where a file goes | Stop: it names the path to move first |
 
 A stop writes nothing; `--resolve PATH=kit` or `PATH=local` settles one
 file. The entry block is replaced inside its markers while every byte

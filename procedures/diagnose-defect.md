@@ -1,7 +1,9 @@
 # Diagnose a defect
 
-Use when software behaves incorrectly. Diagnosis alone authorizes no fix and
-no retry of an effect. Adapted from ideas in `mattpocock/skills` and
+Use when software behaves incorrectly. A reported defect is a task like any
+other: record and accept it with `procedures/understand.md`, using a
+profile that requires reproduction, then diagnose it here. Diagnosis alone
+authorizes no fix and no retry of an effect. Adapted from ideas in `mattpocock/skills` and
 `backnotprop/pstack`, both MIT licensed; see `THIRD_PARTY_NOTICES.md`.
 
 1. **Capture the symptom before a theory**: expected and actual behaviour,

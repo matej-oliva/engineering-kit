@@ -35,7 +35,10 @@ def tests_in(revision: str) -> int:
     """Test cases the suite at REVISION defines, without running them."""
     with tempfile.TemporaryDirectory(prefix='kit-figures-') as directory:
         with tarfile.open(fileobj=io.BytesIO(git('archive', '--format=tar', revision))) as bundle:
-            bundle.extractall(directory, filter='data')
+            try:
+                bundle.extractall(directory, filter='data')
+            except TypeError:  # Python before 3.11.4; the archive is the kit's own commit
+                bundle.extractall(directory)
         code = ('import sys, unittest; sys.path.insert(0, "tests"); '
                 'print(unittest.defaultTestLoader.discover("tests", top_level_dir="tests").countTestCases())')
         done = subprocess.run([sys.executable, '-B', '-c', code], cwd=directory, capture_output=True, text=True,
@@ -77,14 +80,15 @@ def measure(label: str) -> dict:
                          'tests': tests_in(revision), 'mutants': mutants_in(revision),
                          'installed_files': installed_files(revision)})
     procedures = [p for p in git('ls-tree', '--name-only', 'HEAD', 'procedures/').decode().split() if p]
-    skills = KIT / 'integrations' / 'agent-skills' / 'skills'
+    skills = [p for p in git('ls-tree', '-r', '--name-only', 'HEAD', 'integrations/agent-skills/skills/').decode().split()
+              if p.endswith('/SKILL.md')]
     context = {
         'entry block, read in every session': size('HEAD', 'templates/entry-block.md'),
         'contract, read to plan, review or release': size('HEAD', 'CONTRACT.md'),
         'one procedure, on average, read for its stage': round(sum(size('HEAD', p) for p in procedures)
                                                                 / len(procedures)),
         'all skill names and descriptions, read in every session': sum(
-            len(path.read_text(encoding='utf-8').split('---')[1].encode()) for path in skills.glob('*/SKILL.md')),
+            len(git('show', f'HEAD:{path}').decode().split('---')[1].encode()) for path in skills),
     }
     observed = json.loads(DATA.read_text(encoding='utf-8')).get('observed', []) if DATA.exists() else []
     return {'releases': releases, 'context_bytes': context, 'observed': observed}
@@ -158,9 +162,9 @@ def charts(data: dict) -> dict[str, str]:
     files = [r['installed_files'] for r in releases]
     out = {
         'chart-checks.svg': bars(
-            [('tests', BLUE, tests), ('deliberate faults caught', GREEN, mutants)], labels,
+            [('tests', BLUE, tests), ('deliberate faults, all caught before release', GREEN, mutants)], labels,
             'Automated checks behind each release',
-            'Grouped bars per release, ' + '; '.join(f'{v}: {t} tests and {m} deliberate faults caught'
+            'Grouped bars per release, ' + '; '.join(f'{v}: {t} tests and {m} deliberate faults'
                                                        for v, t, m in zip(labels, tests, mutants)) + '.',
             'count per release'),
         'chart-files.svg': bars(
@@ -186,7 +190,7 @@ PAGE = KIT / 'guide' / 'figures.md'
 
 def tables(data: dict) -> dict[str, str]:
     """The figures page's tables, so its text holds the same numbers as its charts."""
-    releases = ['| Release | Date | Tests | Deliberate faults caught | Files installed |',
+    releases = ['| Release | Date | Tests | Deliberate faults, all caught before release | Files installed |',
                 '| --- | --- | --- | --- | --- |']
     releases += [f'| {r["version"]} | {r["date"]} | {r["tests"]} | {r["mutants"]} | {r["installed_files"]} |'
                  for r in data['releases']]
@@ -200,6 +204,8 @@ def tables(data: dict) -> dict[str, str]:
 
 def page_with_tables(page: str, data: dict) -> str:
     for name, table in tables(data).items():
+        if page.count(f'<!-- figures:{name} -->') != 1 or page.count(f'<!-- /figures:{name} -->') != 1:
+            raise SystemExit(f'figures.md needs exactly one <!-- figures:{name} --> marker pair')
         page = re.sub(rf'<!-- figures:{name} -->\n.*?<!-- /figures:{name} -->',
                       lambda _: f'<!-- figures:{name} -->\n{table}\n<!-- /figures:{name} -->', page, flags=re.S)
     return page
@@ -221,6 +227,7 @@ def main(argv: list[str]) -> int:
         stale = [name for name, content in charts(data).items()
                  if not (IMAGES / name).is_file() or (IMAGES / name).read_text(encoding='utf-8') != content]
         stale += ['figures.md'] if page_with_tables(page, data) != page else []
+        stale += [p.name + ' (no data draws it)' for p in IMAGES.glob('chart-*.svg') if p.name not in charts(data)]
         print('Charts and tables match their data.' if not stale
               else 'These differ from their data: ' + ', '.join(stale))
         return 1 if stale else 0

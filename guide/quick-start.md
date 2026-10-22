@@ -31,8 +31,10 @@ py $HOME\engineering-kit\tools\kit.py adopt --with launcher --with agent-skills 
 release tag listed there. To install the newest release without looking up
 its number, give the address to `adopt`: `adopt KIT_ADDRESS --apply`.
 
-The first `adopt` only previews. Read the list: it adds the
-`.engineering-kit/` folder, a short marked block in `AGENTS.md`, the `kit`
+The first `adopt` only previews, and ends with a line such as
+`plan 3f2a9c1e5d7b8a40`. Adding `--plan 3f2a9c1e5d7b8a40` to the second
+command applies exactly that preview and nothing else. Read the list: it
+adds the `.engineering-kit/` folder, a short marked block in `AGENTS.md`, the `kit`
 launcher at the root and one skill per procedure. Your own text in
 `AGENTS.md` stays byte for byte. Add `--with claude-code`, `--with copilot`
 or `--with gemini` for the instruction files those agents read.

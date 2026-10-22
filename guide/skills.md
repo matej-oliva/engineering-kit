@@ -35,13 +35,13 @@ when editing rules for agents. Two concern the kit itself:
 
 | Skill | In plain words | The agent uses it when |
 | --- | --- | --- |
-| `kit-understand` | Pins down what is really asked before anything is built | A new task or feature request arrives; a bug report starts with `kit-diagnose-defect` instead |
+| `kit-understand` | Pins down what is really asked before anything is built | A new task, feature request or bug report arrives; for a bug, `kit-diagnose-defect` follows |
 | `kit-design` | Plans the work: how much evidence it needs, its risks, how to recover, small steps | A task is accepted and before any code, or when asked to plan |
 | `kit-implement` | Changes the code within the task, with checks recorded against one exact version | Writing or changing code, tests or configuration |
 | `kit-review` | Has someone else check that exact version against what was asked | A change is ready for review, before merging, or to review someone's work |
 | `kit-release` | Ships the reviewed version and confirms it where success is judged, with a way back | Deploying, publishing or shipping, or before calling a task verified |
 | `kit-maintain` | Closes the task cleanly and turns lessons into improvements | Finishing a task, after an incident, or deciding an upgrade |
-| `kit-diagnose-defect` | Reproduces a bug, finds its cause and fixes it with a test that failed first | Something behaves wrongly or a test fails unexpectedly |
+| `kit-diagnose-defect` | Reproduces a bug, finds its cause and fixes it with a test that failed first | Something behaves wrongly or a test fails unexpectedly, once the bug is recorded as a task |
 | `kit-change-preflight` | Prepares a risky change outside the code: target, backup, rollback, approval | Before a deployment, data migration, permission change or deletion |
 | `kit-handoff` | Leaves, or picks up, a note so the next session continues correctly | Stopping before a task is done, near a time or context limit, or resuming |
 | `kit-write-instructions` | Writes rules for agents that are short, clear and checkable | Editing `AGENTS.md`, `CLAUDE.md`, a skill or a procedure |

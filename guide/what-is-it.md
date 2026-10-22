@@ -66,7 +66,7 @@ throwaway script it adds more care than the script needs.
 ## What it is not
 
 - **Not a framework or a library.** Your code does not import it. It is a
-  folder of text files and one small Python program.
+  folder of text files and a small Python tool.
 - **Not a build or deployment tool.** It never runs your tests or deploys
   anything. It reads the records your work leaves.
 - **Not tied to one tool.** It works with any programming language, any Git
@@ -83,12 +83,13 @@ throwaway script it adds more care than the script needs.
 | Procedures | 12 step-by-step guides, one per kind of work | [What agents are told](agents.md) |
 | Skills | The same 12 procedures, packaged so agents load the right one by themselves | [Skills](skills.md) |
 | Records | One JSON file per task, one Markdown handoff per stopped task | [How it fits together](how-it-fits.md) |
-| Checker and updater | `kit.py`, one small Python program with no dependencies | [Technical reference](reference.md) |
+| Checker and updater | `kit.py` and `kit_update.py`, a small Python tool with no dependencies | [Technical reference](reference.md) |
 | Integrations | Optional connections to agents, Git hosts and a short `kit` command | [Customize](customize.md) |
 | This guide | What you are reading, installed in every project | [Guide](README.md) |
 
 ## How to start
 
 1. [Quick start](quick-start.md): install it in a project in a few minutes.
+   Any unfamiliar word is in the [glossary](glossary.md).
 2. [Everyday use](everyday.md): the handful of commands you will use.
 3. [Facts and figures](figures.md): how it is tested, in numbers.

@@ -59,27 +59,27 @@
   "observed": [
     {
       "chart": "chart-windows.svg",
-      "label": "one Git process per file, Python 3.11",
+      "label": "before, at 5a7049e, Python 3.11",
       "value": 1712,
-      "source": "native run 39682094280, job windows-2025 / Python 3.11, step Suite, 2026-10-22"
+      "source": "native run 39682094280 at commit 5a7049e, 2026-10-21, step Suite of job windows-2025 / Python 3.11; one of 116 tests failed"
     },
     {
       "chart": "chart-windows.svg",
-      "label": "one Git process per file, Python 3.14",
+      "label": "before, at 5a7049e, Python 3.14",
       "value": 1263,
-      "source": "native run 39682094280, job windows-2025 / Python 3.14, step Suite, 2026-10-22"
+      "source": "native run 39682094280 at commit 5a7049e, 2026-10-21, step Suite of job windows-2025 / Python 3.14; one of 116 tests failed"
     },
     {
       "chart": "chart-windows.svg",
-      "label": "one batch read per release, Python 3.11",
+      "label": "after, at 6291ebb, Python 3.11",
       "value": 633,
-      "source": "native run 39690264562, job windows-2025 / Python 3.11, step Suite, 2026-10-22"
+      "source": "native run 39690264562 at commit 6291ebb, 2026-10-21, step Suite of job windows-2025 / Python 3.11; all 117 tests passed"
     },
     {
       "chart": "chart-windows.svg",
-      "label": "one batch read per release, Python 3.14",
+      "label": "after, at 6291ebb, Python 3.14",
       "value": 582,
-      "source": "native run 39690264562, job windows-2025 / Python 3.14, step Suite, 2026-10-22"
+      "source": "native run 39690264562 at commit 6291ebb, 2026-10-21, step Suite of job windows-2025 / Python 3.14; all 117 tests passed"
     }
   ]
 }

@@ -12,7 +12,7 @@ name the hosted run they come from.
 deliberate faults the tests caught, both rising with each
 release](images/chart-checks.svg)
 
-In words: every release carries more automated tests, and more
+In words: the releases carry more and more automated tests, and more
 **deliberate faults**: copies of the kit with one safety check broken on
 purpose, which the tests must catch. A fault the tests miss would show a
 check nobody protects; every release is published only when all of them are
@@ -63,15 +63,18 @@ plan, review or release, and a procedure only for its stage.
 
 ## The full test suite on hosted Windows
 
-![Horizontal bars in seconds showing the suite taking 1712 and 1263 seconds
-when releases were read one Git process per file, and 633 and 582 seconds
-with one batch read per release](images/chart-windows.svg)
+![Horizontal bars in seconds: the suite took 1712 and 1263 seconds at commit
+5a7049e, and 633 and 582 seconds at commit 6291ebb](images/chart-windows.svg)
 
 In words: starting a program is slow on Windows, and reading a release used
-to start one Git process per file. Reading each release through one process
-cut the full test suite on hosted Windows to between a third and a half of
-its time. The
-same change makes real updates faster there.
+to start one Git process per file. Between these two hosted runs, three
+changes landed: each release is now read through one Git process, Git's
+background maintenance is switched off in the tests' scratch repositories,
+and two test faults were fixed. Together they cut the full suite on hosted
+Windows to between a third and a half of its time; the one-process read is
+the change expected to matter most, and it also makes real updates faster
+there. The earlier run also had one failing test, so this compares two
+nearby commits, not one change in isolation.
 
 <!-- figures:observed -->
 | Measurement | Seconds | Source |
