@@ -596,7 +596,7 @@ class Distribution(unittest.TestCase):
         self.set_integrations(root, {'agents-md': {'grant': ['writes-instructions']},
                                      'launcher': {'grant': ['writes-launcher']}})
         self.adopt(root)
-        self.release('0.2.0', lambda source: shutil.rmtree(source / 'integrations' / 'launcher'))
+        self.release('0.2.0', lambda source: remove_tree(source / 'integrations' / 'launcher'))
         status, report = self.run_change(root, '0.2.0')
         self.assertEqual(status, 1)
         self.assertIn('integration launcher is not in release 0.2.0; to use that release, remove "launcher" '
@@ -608,7 +608,7 @@ class Distribution(unittest.TestCase):
         self.set_integrations(root, {'agents-md': {'grant': ['writes-instructions']},
                                      'launcher': {'grant': ['writes-launcher']}})
         self.adopt(root)
-        self.release('0.2.0', lambda source: shutil.rmtree(source / 'integrations' / 'launcher'))
+        self.release('0.2.0', lambda source: remove_tree(source / 'integrations' / 'launcher'))
         status, report = self.run_change(root, '0.2.0')
         self.assertEqual(status, 1)
         self.assertNotIn('\nplan ', report)
@@ -730,7 +730,7 @@ class Distribution(unittest.TestCase):
         self.adopt(root)
         outside = self.temp / 'elsewhere'
         outside.mkdir()
-        shutil.rmtree(root / '.engineering-kit' / 'kit' / 'procedures')
+        remove_tree(root / '.engineering-kit' / 'kit' / 'procedures')
         (root / '.engineering-kit' / 'kit' / 'procedures').symlink_to(outside)
         journal = root / ku.JOURNAL
         journal.mkdir()
