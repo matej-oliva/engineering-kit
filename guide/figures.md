@@ -19,6 +19,15 @@ check nobody protects; every release is published only when all of them are
 caught. The first release had no deliberate faults yet.
 
 <!-- figures:releases -->
+| Release | Date | Tests | Deliberate faults caught | Files installed |
+| --- | --- | --- | --- | --- |
+| 0.1.0 | 2026-10-20 | 62 | 0 | 35 |
+| 0.1.1 | 2026-10-21 | 79 | 63 | 36 |
+| 1.0.0 | 2026-10-21 | 79 | 63 | 37 |
+| 1.0.1 | 2026-10-21 | 84 | 67 | 37 |
+| 1.1.0 | 2026-10-21 | 97 | 76 | 50 |
+| 1.2.0 | 2026-10-22 | 117 | 84 | 63 |
+| 1.2.1 | 2026-10-22 | 121 | 86 | 76 |
 <!-- /figures:releases -->
 
 ## What each release installs
@@ -43,6 +52,12 @@ the skill descriptions are read every time. The contract is read only to
 plan, review or release, and a procedure only for its stage.
 
 <!-- figures:context -->
+| What the agent reads | Bytes |
+| --- | --- |
+| Entry block, read in every session | 473 |
+| Contract, read to plan, review or release | 6840 |
+| One procedure, on average, read for its stage | 2080 |
+| All skill names and descriptions, read in every session | 2905 |
 <!-- /figures:context -->
 
 ## The full test suite on hosted Windows
@@ -53,10 +68,17 @@ with one batch read per release](images/chart-windows.svg)
 
 In words: starting a program is slow on Windows, and reading a release used
 to start one Git process per file. Reading each release through one process
-cut the full test suite on hosted Windows to about a third of its time. The
+cut the full test suite on hosted Windows to between a third and a half of
+its time. The
 same change makes real updates faster there.
 
 <!-- figures:observed -->
+| Measurement | Seconds | Source |
+| --- | --- | --- |
+| One Git process per file, Python 3.11 | 1712 | native run 39682094280, job windows-2025 / Python 3.11, step Suite, 2026-10-22 |
+| One Git process per file, Python 3.14 | 1263 | native run 39682094280, job windows-2025 / Python 3.14, step Suite, 2026-10-22 |
+| One batch read per release, Python 3.11 | 633 | native run 39690264562, job windows-2025 / Python 3.11, step Suite, 2026-10-22 |
+| One batch read per release, Python 3.14 | 582 | native run 39690264562, job windows-2025 / Python 3.14, step Suite, 2026-10-22 |
 <!-- /figures:observed -->
 
 ## Tested environments

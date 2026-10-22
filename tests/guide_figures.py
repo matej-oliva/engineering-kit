@@ -116,7 +116,7 @@ def bars(series: list[tuple[str, str, list[int]]], labels: list[str], title: str
     bar = min(36, (group - 20) / len(series))
     body = [text(left, 30, title, 17, 'start', weight='bold'),
             f'<line x1="{left}" y1="{bottom}" x2="{width - 20}" y2="{bottom}" stroke="{MUTED}"/>']
-    for step in range(0, int(top_value * 1.1) + 1, max(1, round(top_value / 4, -1) or 1)):
+    for step in range(0, int(top_value * 1.1) + 1, max(1, int(round(top_value / 4, -1)))):
         y = bottom - step * scale
         body += [f'<line x1="{left}" y1="{y:.1f}" x2="{width - 20}" y2="{y:.1f}" stroke="#e5e7eb"/>',
                  text(left - 8, y + 4, step, 12, 'end', MUTED)]
