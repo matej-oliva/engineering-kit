@@ -56,9 +56,9 @@ plan, review or release, and a procedure only for its stage.
 | What the agent reads | Bytes |
 | --- | --- |
 | Entry block, read in every session | 473 |
-| Contract, read to plan, review or release | 6840 |
+| Contract, read to plan, review or release | 6875 |
 | One procedure, on average, read for its stage | 2094 |
-| All skill names and descriptions, read in every session | 2898 |
+| All skill names and descriptions, read in every session | 2937 |
 <!-- /figures:context -->
 
 ## The full test suite on hosted Windows
