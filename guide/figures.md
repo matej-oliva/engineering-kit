@@ -1,0 +1,71 @@
+# Facts and figures
+
+[Guide](README.md) · Measured numbers only. Each chart is drawn from
+[`data/figures.json`](data/figures.json) by the kit's own script, and the
+table under it holds the same numbers, so you can read them without the
+picture. Release numbers come from each release's tagged files; timings
+name the hosted run they come from.
+
+## Checks behind each release
+
+![Grouped bars per release showing the number of automated tests and of
+deliberate faults the tests caught, both rising with each
+release](images/chart-checks.svg)
+
+In words: every release carries more automated tests, and more
+**deliberate faults**: copies of the kit with one safety check broken on
+purpose, which the tests must catch. A fault the tests miss would show a
+check nobody protects; every release is published only when all of them are
+caught. The first release had no deliberate faults yet.
+
+<!-- figures:releases -->
+<!-- /figures:releases -->
+
+## What each release installs
+
+![Bars per release showing how many files each release installs into a
+project, rising as procedures, skills, the short command and this guide
+were added](images/chart-files.svg)
+
+In words: the installed copy grew from the core contract, procedures and
+checker to include agent skills in 1.1.0, then the short command and this
+guide in 1.2.0. Everything installed lives under `.engineering-kit/kit/`.
+
+## What an agent reads, and when
+
+![Horizontal bars in bytes for the entry block read in every session, the
+contract read to plan, review or release, one procedure on average, and the
+skill descriptions read in every session](images/chart-context.svg)
+
+In words: an agent's working memory is limited, so the kit keeps what is
+read in every session small. The entry block and, when skills are enabled,
+the skill descriptions are read every time. The contract is read only to
+plan, review or release, and a procedure only for its stage.
+
+<!-- figures:context -->
+<!-- /figures:context -->
+
+## The full test suite on hosted Windows
+
+![Horizontal bars in seconds showing the suite taking 1712 and 1263 seconds
+when releases were read one Git process per file, and 633 and 582 seconds
+with one batch read per release](images/chart-windows.svg)
+
+In words: starting a program is slow on Windows, and reading a release used
+to start one Git process per file. Reading each release through one process
+cut the full test suite on hosted Windows to about a third of its time. The
+same change makes real updates faster there.
+
+<!-- figures:observed -->
+<!-- /figures:observed -->
+
+## Tested environments
+
+| System | Python | Git | Tested |
+| --- | --- | --- | --- |
+| Linux on ARM64 | 3.12, 3.14 | 2.53 | The suite, deliberate faults, release rehearsals, pilot projects |
+| Windows Server 2025, x64, hosted | 3.11, 3.14 | 2.56 | The suite and the release lifecycle before and after each release |
+| macOS 15, Apple silicon, hosted | 3.11, 3.14 | 2.55 | The suite and the release lifecycle before and after each release |
+
+Desktop Windows and other systems have not been tested; see the
+[supported environments](../README.md#supported-environments).

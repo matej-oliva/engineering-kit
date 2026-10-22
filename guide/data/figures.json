@@ -1,0 +1,14 @@
+{
+  "releases": [],
+  "context_bytes": {},
+  "observed": [
+    {"chart": "chart-windows.svg", "label": "one Git process per file, Python 3.11", "value": 1712,
+     "source": "native run 39682094280, job windows-2025 / Python 3.11, step Suite, 2026-10-22"},
+    {"chart": "chart-windows.svg", "label": "one Git process per file, Python 3.14", "value": 1263,
+     "source": "native run 39682094280, job windows-2025 / Python 3.14, step Suite, 2026-10-22"},
+    {"chart": "chart-windows.svg", "label": "one batch read per release, Python 3.11", "value": 633,
+     "source": "native run 39690264562, job windows-2025 / Python 3.11, step Suite, 2026-10-22"},
+    {"chart": "chart-windows.svg", "label": "one batch read per release, Python 3.14", "value": 582,
+     "source": "native run 39690264562, job windows-2025 / Python 3.14, step Suite, 2026-10-22"}
+  ]
+}

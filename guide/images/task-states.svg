@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" width="960" height="300" role="img" aria-labelledby="title desc" font-family="Helvetica, Arial, sans-serif">
+  <title id="title">The states of a task</title>
+  <desc id="desc">Eight states in order: proposed, accepted, in_progress, candidate, reviewed, released, verified and closed. Each needs more evidence than the one before. A dashed shortcut goes from reviewed straight to verified when the task's profile has no release. Below, three other states, blocked, failed and cancelled, can end or pause a task from any state.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+    </marker>
+  </defs>
+  <rect width="960" height="300" fill="#ffffff"/>
+  <g font-size="13" fill="#111827" text-anchor="middle" font-family="Menlo, Consolas, monospace">
+    <rect x="15" y="90" width="100" height="44" rx="8" fill="#eef2f7" stroke="#4b5563" stroke-width="2"/><text x="65" y="117">proposed</text>
+    <rect x="133" y="90" width="100" height="44" rx="8" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/><text x="183" y="117">accepted</text>
+    <rect x="251" y="90" width="100" height="44" rx="8" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/><text x="301" y="117">in_progress</text>
+    <rect x="369" y="90" width="100" height="44" rx="8" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/><text x="419" y="117">candidate</text>
+    <rect x="487" y="90" width="100" height="44" rx="8" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/><text x="537" y="117">reviewed</text>
+    <rect x="605" y="90" width="100" height="44" rx="8" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/><text x="655" y="117">released</text>
+    <rect x="723" y="90" width="100" height="44" rx="8" fill="#e3f5e8" stroke="#15803d" stroke-width="2"/><text x="773" y="117">verified</text>
+    <rect x="841" y="90" width="100" height="44" rx="8" fill="#e3f5e8" stroke="#15803d" stroke-width="2"/><text x="891" y="117">closed</text>
+    <rect x="300" y="226" width="110" height="44" rx="8" fill="#fde2e2" stroke="#b91c1c" stroke-width="2"/><text x="355" y="253">blocked</text>
+    <rect x="425" y="226" width="110" height="44" rx="8" fill="#fde2e2" stroke="#b91c1c" stroke-width="2"/><text x="480" y="253">failed</text>
+    <rect x="550" y="226" width="110" height="44" rx="8" fill="#fde2e2" stroke="#b91c1c" stroke-width="2"/><text x="605" y="253">cancelled</text>
+  </g>
+  <g stroke="#1f2937" stroke-width="2" fill="none" marker-end="url(#arrow)">
+    <line x1="115" y1="112" x2="131" y2="112"/>
+    <line x1="233" y1="112" x2="249" y2="112"/>
+    <line x1="351" y1="112" x2="367" y2="112"/>
+    <line x1="469" y1="112" x2="485" y2="112"/>
+    <line x1="587" y1="112" x2="603" y2="112"/>
+    <line x1="705" y1="112" x2="721" y2="112"/>
+    <line x1="823" y1="112" x2="839" y2="112"/>
+    <path d="M537,90 C537,40 773,40 773,88" stroke-dasharray="6 4"/>
+  </g>
+  <g font-size="13" fill="#111827" text-anchor="middle">
+    <text x="655" y="36">no release in the profile</text>
+    <text x="480" y="190">from any state, a task can stop as</text>
+    <text x="480" y="160" fill="#4b5563">each state to the right needs more evidence</text>
+  </g>
+</svg>

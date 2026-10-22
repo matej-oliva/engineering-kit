@@ -41,6 +41,19 @@ class Guide(unittest.TestCase):
                     relative = PurePosixPath(resolved.relative_to(KIT).as_posix())
                     self.assertTrue(ku.payload(str(relative)), f'{page.name}: {target} is not installed')
 
+    def test_every_anchor_names_a_heading_in_its_page(self):
+        def slug(heading):  # how Markdown viewers name a heading's anchor
+            return re.sub(r'[^\w\- ]', '', heading.strip().lower()).replace(' ', '-')
+        for page in pages():
+            for _, _, target in links(page):
+                path, _, anchor = target.partition('#')
+                if not anchor:
+                    continue
+                document = (page.parent / path).resolve() if path else page
+                headings = re.findall(r'^#+ (.+)$', document.read_text(encoding='utf-8'), re.M)
+                with self.subTest(page=page.name, target=target):
+                    self.assertIn(anchor, {slug(h) for h in headings})
+
     def test_every_page_is_reachable_from_the_index_and_links_back(self):
         index = {target for _, _, target in links(GUIDE / 'README.md')}
         for page in pages():
@@ -83,6 +96,11 @@ class Guide(unittest.TestCase):
         for value in re.findall(r'--rights (\S+)', text) + re.findall(r'`(licensed:\w+)`', text):
             with self.subTest(value):
                 self.assertIsNotNone(ku.RIGHTS.fullmatch(value), 'contribute would refuse it')
+
+    def test_charts_and_tables_are_drawn_from_the_figures_data(self):
+        done = subprocess.run([sys.executable, str(KIT / 'tests' / 'guide_figures.py'), 'check'],
+                              capture_output=True, text=True)
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
 
     def test_diagrams_are_accessible_and_self_contained(self):
         for svg in sorted((GUIDE / 'images').glob('*.svg')):

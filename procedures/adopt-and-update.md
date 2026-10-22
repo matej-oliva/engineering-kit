@@ -23,7 +23,9 @@ other change. Every command previews by default and writes only with
 5. **Fill in `project.json`**: scope, checks, profiles, boundaries and their
    meaning, authority and integrations. Grant an integration's permissions
    only after reading its manifest; discovering an integration grants
-   nothing. Run `update VERSION --apply` to install newly enabled ones.
+   nothing. To install newly enabled ones, run `update VERSION --apply`
+   naming the installed release; `update --apply` without a version does
+   the same and also moves to the newest release.
 6. Done when `tools/kit.py check` passes and the change is reviewed and
    committed.
 

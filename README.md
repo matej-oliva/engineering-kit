@@ -6,7 +6,7 @@ verified delivery and maintenance, and what evidence each step leaves. Each
 project keeps its own language, framework, design system, agent client, Git
 host, deployment platform and permissions.
 
-Status: version 1.2.0, contract version 1.
+Status: version 1.2.1, contract version 1.
 See `CHANGELOG.md` and `MAINTAINING.md`. MIT licence; see `LICENSE`.
 
 People start with the [guide](guide/README.md): what the kit does, a quick
@@ -63,9 +63,9 @@ project's root. It installs the release it was cloned at, from the address
 it was cloned from:
 
 ```sh
-git clone --depth 1 --branch v1.2.0 KIT_ADDRESS ~/engineering-kit-1.2.0
-python3 ~/engineering-kit-1.2.0/tools/kit.py adopt --with launcher --with agent-skills           # preview
-python3 ~/engineering-kit-1.2.0/tools/kit.py adopt --with launcher --with agent-skills --apply   # write
+git clone --depth 1 --branch v1.2.1 KIT_ADDRESS ~/engineering-kit-1.2.1
+python3 ~/engineering-kit-1.2.1/tools/kit.py adopt --with launcher --with agent-skills           # preview
+python3 ~/engineering-kit-1.2.1/tools/kit.py adopt --with launcher --with agent-skills --apply   # write
 ```
 
 `--with` names the instruction files your agents read, beyond `AGENTS.md`:

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" width="960" height="360" role="img" aria-labelledby="title desc" font-family="Helvetica, Arial, sans-serif">
+  <title id="title">The kit in one picture</title>
+  <desc id="desc">A request on the left enters six stages in a row: understand, design, implement, review, release and maintain. On the right come two results: a change verified where it matters, and a task record saying how. Below, the checker reads the task record and refuses any claim without evidence. Above, agents learn the stages from the installed instructions and people from this guide.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+    </marker>
+  </defs>
+  <rect width="960" height="360" fill="#ffffff"/>
+  <g font-size="15" fill="#111827" text-anchor="middle">
+    <rect x="20" y="140" width="110" height="70" rx="10" fill="#fff4d6" stroke="#b45309" stroke-width="2"/>
+    <text x="75" y="171" font-weight="bold">A request</text>
+    <text x="75" y="192" font-size="13">"add a feature"</text>
+
+    <rect x="160" y="120" width="520" height="110" rx="14" fill="#f3f6fb" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="420" y="144" font-weight="bold">Six stages, each leaving evidence</text>
+    <g font-size="13">
+      <rect x="175" y="160" width="75" height="50" rx="8" fill="#e0ecff" stroke="#1d4ed8"/><text x="212" y="190">Understand</text>
+      <rect x="258" y="160" width="75" height="50" rx="8" fill="#e0ecff" stroke="#1d4ed8"/><text x="295" y="190">Design</text>
+      <rect x="341" y="160" width="75" height="50" rx="8" fill="#e0ecff" stroke="#1d4ed8"/><text x="378" y="190">Implement</text>
+      <rect x="424" y="160" width="75" height="50" rx="8" fill="#e0ecff" stroke="#1d4ed8"/><text x="461" y="190">Review</text>
+      <rect x="507" y="160" width="75" height="50" rx="8" fill="#e0ecff" stroke="#1d4ed8"/><text x="544" y="190">Release</text>
+      <rect x="590" y="160" width="75" height="50" rx="8" fill="#e0ecff" stroke="#1d4ed8"/><text x="627" y="190">Maintain</text>
+    </g>
+
+    <rect x="720" y="100" width="220" height="62" rx="10" fill="#e3f5e8" stroke="#15803d" stroke-width="2"/>
+    <text x="830" y="127" font-weight="bold">A verified change</text>
+    <text x="830" y="148" font-size="13">observed where it matters</text>
+    <rect x="720" y="188" width="220" height="62" rx="10" fill="#e3f5e8" stroke="#15803d" stroke-width="2"/>
+    <text x="830" y="215" font-weight="bold">A task record</text>
+    <text x="830" y="236" font-size="13">what was asked, checked, approved</text>
+
+    <rect x="590" y="290" width="350" height="56" rx="10" fill="#fde2e2" stroke="#b91c1c" stroke-width="2"/>
+    <text x="765" y="314" font-weight="bold">The checker</text>
+    <text x="765" y="334" font-size="13">refuses any claim without evidence</text>
+
+    <rect x="160" y="18" width="520" height="60" rx="10" fill="#eef2f7" stroke="#4b5563" stroke-width="2"/>
+    <text x="420" y="43" font-weight="bold">Instructions</text>
+    <text x="420" y="64" font-size="13">agents read the contract, procedures and skills; people read this guide</text>
+  </g>
+  <g stroke="#1f2937" stroke-width="2" fill="none" marker-end="url(#arrow)">
+    <line x1="130" y1="175" x2="158" y2="175"/>
+    <line x1="680" y1="160" x2="718" y2="135"/>
+    <line x1="680" y1="190" x2="718" y2="215"/>
+    <line x1="420" y1="78" x2="420" y2="118"/>
+    <line x1="830" y1="250" x2="830" y2="288"/>
+  </g>
+  <g font-size="13" fill="#111827">
+    <text x="842" y="274">reads</text>
+    <text x="430" y="104">guide</text>
+  </g>
+</svg>

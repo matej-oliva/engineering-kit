@@ -602,6 +602,24 @@ class Distribution(unittest.TestCase):
         self.assertIn('integration launcher is not in release 0.2.0; to use that release, remove "launcher" '
                       'from integrations in .engineering-kit/project.json', report)
 
+    def test_a_refused_plan_offers_no_plan_to_apply(self):
+        root = self.consumer()
+        self.adopt(root)
+        self.set_integrations(root, {'agents-md': {'grant': ['writes-instructions']},
+                                     'launcher': {'grant': ['writes-launcher']}})
+        self.adopt(root)
+        self.release('0.2.0', lambda source: shutil.rmtree(source / 'integrations' / 'launcher'))
+        status, report = self.run_change(root, '0.2.0')
+        self.assertEqual(status, 1)
+        self.assertNotIn('\nplan ', report)
+
+    def test_the_removal_preview_lists_the_lock(self):
+        root = self.consumer()
+        self.adopt(root)
+        status, report = self.run_change(root, None)
+        self.assertEqual(status, 0, report)
+        self.assertIn(f'delete     {ku.LOCK}', report)
+
     def test_the_next_step_after_adopting_names_the_command_the_project_has(self):
         with_launcher, without = self.consumer('with'), self.consumer('without')
         _, report = self.run_change(with_launcher, '0.1.0', apply_now=True, with_integrations=['launcher'])

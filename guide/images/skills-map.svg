@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 380" width="960" height="380" role="img" aria-labelledby="title desc" font-family="Helvetica, Arial, sans-serif">
+  <title id="title">Where each skill fits</title>
+  <desc id="desc">Top row: the six stages of a task in order, Understand, Design, Implement, Review, Release and Maintain, each with its skill below it: kit-understand, kit-design, kit-implement, kit-review, kit-release and kit-maintain. Middle row: four skills used whenever the situation arises: kit-diagnose-defect for a bug, kit-change-preflight before a risky step, kit-handoff when stopping or resuming, and kit-write-instructions when editing rules for agents. Bottom row: two skills about the kit itself: kit-adopt-and-update and kit-contribute.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+    </marker>
+  </defs>
+  <rect width="960" height="380" fill="#ffffff"/>
+  <g font-size="14" fill="#111827" text-anchor="middle">
+    <text x="20" y="28" text-anchor="start" font-size="16" font-weight="bold">Along a task</text>
+    <rect x="20" y="40" width="140" height="70" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="90" y="68" font-weight="bold">Understand</text>
+    <text x="90" y="92" font-size="12" font-family="Menlo, Consolas, monospace">kit-understand</text>
+    <rect x="176" y="40" width="140" height="70" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="246" y="68" font-weight="bold">Design</text>
+    <text x="246" y="92" font-size="12" font-family="Menlo, Consolas, monospace">kit-design</text>
+    <rect x="332" y="40" width="140" height="70" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="402" y="68" font-weight="bold">Implement</text>
+    <text x="402" y="92" font-size="12" font-family="Menlo, Consolas, monospace">kit-implement</text>
+    <rect x="488" y="40" width="140" height="70" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="558" y="68" font-weight="bold">Review</text>
+    <text x="558" y="92" font-size="12" font-family="Menlo, Consolas, monospace">kit-review</text>
+    <rect x="644" y="40" width="140" height="70" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="714" y="68" font-weight="bold">Release</text>
+    <text x="714" y="92" font-size="12" font-family="Menlo, Consolas, monospace">kit-release</text>
+    <rect x="800" y="40" width="140" height="70" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="870" y="68" font-weight="bold">Maintain</text>
+    <text x="870" y="92" font-size="12" font-family="Menlo, Consolas, monospace">kit-maintain</text>
+
+    <text x="20" y="158" text-anchor="start" font-size="16" font-weight="bold">Whenever the situation arises</text>
+    <rect x="20" y="170" width="215" height="80" rx="10" fill="#fff4d6" stroke="#b45309" stroke-width="2"/>
+    <text x="127" y="196" font-weight="bold">A bug</text>
+    <text x="127" y="216" font-size="12" font-family="Menlo, Consolas, monospace">kit-diagnose-defect</text>
+    <text x="127" y="236" font-size="12">reproduce, then fix</text>
+    <rect x="255" y="170" width="215" height="80" rx="10" fill="#fff4d6" stroke="#b45309" stroke-width="2"/>
+    <text x="362" y="196" font-weight="bold">A risky step</text>
+    <text x="362" y="216" font-size="12" font-family="Menlo, Consolas, monospace">kit-change-preflight</text>
+    <text x="362" y="236" font-size="12">target, backup, rollback</text>
+    <rect x="490" y="170" width="215" height="80" rx="10" fill="#fff4d6" stroke="#b45309" stroke-width="2"/>
+    <text x="597" y="196" font-weight="bold">Stopping or resuming</text>
+    <text x="597" y="216" font-size="12" font-family="Menlo, Consolas, monospace">kit-handoff</text>
+    <text x="597" y="236" font-size="12">state and one next action</text>
+    <rect x="725" y="170" width="215" height="80" rx="10" fill="#fff4d6" stroke="#b45309" stroke-width="2"/>
+    <text x="832" y="196" font-weight="bold">Rules for agents</text>
+    <text x="832" y="216" font-size="12" font-family="Menlo, Consolas, monospace">kit-write-instructions</text>
+    <text x="832" y="236" font-size="12">short, clear, checkable</text>
+
+    <text x="20" y="292" text-anchor="start" font-size="16" font-weight="bold">About the kit itself</text>
+    <rect x="20" y="304" width="450" height="60" rx="10" fill="#e3f5e8" stroke="#15803d" stroke-width="2"/>
+    <text x="245" y="330" font-size="12" font-family="Menlo, Consolas, monospace">kit-adopt-and-update</text>
+    <text x="245" y="350" font-size="12">install, update, roll back or remove the kit</text>
+    <rect x="490" y="304" width="450" height="60" rx="10" fill="#e3f5e8" stroke="#15803d" stroke-width="2"/>
+    <text x="715" y="330" font-size="12" font-family="Menlo, Consolas, monospace">kit-contribute</text>
+    <text x="715" y="350" font-size="12">send a lesson back to the kit</text>
+  </g>
+  <g stroke="#1f2937" stroke-width="2" marker-end="url(#arrow)">
+    <line x1="160" y1="75" x2="174" y2="75"/>
+    <line x1="316" y1="75" x2="330" y2="75"/>
+    <line x1="472" y1="75" x2="486" y2="75"/>
+    <line x1="628" y1="75" x2="642" y2="75"/>
+    <line x1="784" y1="75" x2="798" y2="75"/>
+  </g>
+</svg>

@@ -39,7 +39,10 @@ a handoff or a contribution. Who decides goes in `authority.roles`, below.
 
 `adopt --with NAME` enables an integration in a new `project.json` and
 grants what it declares. In an existing project, add it under
-`integrations` with its permissions and run `python3 kit update --apply`:
+`integrations` with its permissions and run `python3 kit update VERSION
+--apply`, naming the release you have installed (`python3 kit status`
+shows it). Without a version, `python3 kit update --apply` installs it too,
+and also moves to the newest release:
 
 ```json
 "integrations": {

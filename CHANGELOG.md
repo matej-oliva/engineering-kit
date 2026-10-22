@@ -3,6 +3,27 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
+## 1.2.1, 2026-10-22
+
+Contract version 1, unchanged. Nothing to do after updating.
+
+- The guide becomes the kit's complete documentation, for readers with no
+  context: what the kit is and what you gain, every instruction agents
+  receive in plain words, the twelve skills mapped onto the lifecycle, a
+  technical reference covering architecture, commands, formats, task
+  states, the update rules, recovery, release integrity, security and
+  quality, measured facts and figures, and a glossary. Six new diagrams and
+  four charts, each with a text alternative and an explanation in words.
+  The charts and their tables are drawn from `guide/data/figures.json` by
+  `tests/guide_figures.py`, and a test refuses any that differ from it.
+- A refused change no longer prints a plan digest, which could not be
+  applied anyway.
+- The removal preview lists `.engineering-kit/lock.json`, which removal
+  deletes.
+- `procedures/adopt-and-update.md` and the guide agree on how to install a
+  newly granted integration: name the installed release to stay on it, or
+  give no version to also move to the newest release.
+
 ## 1.2.0, 2026-10-22
 
 Contract version 1, unchanged. To update from 1.1.0 run

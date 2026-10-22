@@ -735,13 +735,15 @@ def change(root: Path, source: str, version: str | None, *, adopting: bool = Fal
         heading = (f'{lock["version"] if lock else "not adopted"} -> '
                    f'{target.version if target else "removed"} from {source}')
         digest = plan_digest(actions, target.version if target else None)
-        lines = [heading, *granted, *describe(actions, problems, root, show_diff), f'plan {digest}']
+        shown = actions + ([Action(LOCK, 'delete')] if not target and lock else [])  # removal deletes the lock
+        lines = [heading, *granted, *describe(shown, problems, root, show_diff)]
         conflicts = [a for a in actions if a.kind == 'conflict']
         if conflicts:
             lines.append('Stopped: resolve each conflict by editing the local file, or rerun with '
                          '--resolve PATH=kit or --resolve PATH=local. Nothing was written.')
         if problems or conflicts:
-            return 1, lines
+            return 1, lines  # no plan line: a refused plan cannot be applied
+        lines.append(f'plan {digest}')
         if not apply_now:
             lines.append('Preview only; rerun with --apply to write these changes.')
             return 0, lines

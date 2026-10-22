@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 400" width="960" height="400" role="img" aria-labelledby="title desc" font-family="Helvetica, Arial, sans-serif">
+  <title id="title">How a release is protected</title>
+  <desc id="desc">Publishing, top row: the committed files a project receives are hashed one by one; the digests go into RELEASE.json, which has its own digest over the list; the commit holding it is tagged, and a published tag never changes. Installing, bottom row: the kit refuses a tag with a link or submodule, checks that the manifest lists exactly the files present, checks every file's SHA-256 against the manifest and the manifest's own digest, and records the commit and digest in lock.json. Later updates and rollbacks refuse a tag whose commit or digest differs from what the lock recorded.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+    </marker>
+  </defs>
+  <rect width="960" height="400" fill="#ffffff"/>
+  <g font-size="14" fill="#111827" text-anchor="middle">
+    <text x="20" y="30" text-anchor="start" font-size="16" font-weight="bold">Publishing</text>
+    <rect x="20" y="44" width="200" height="80" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="120" y="74" font-weight="bold">Committed files</text>
+    <text x="120" y="96" font-size="12">exactly what a project</text>
+    <text x="120" y="112" font-size="12">will receive</text>
+    <rect x="260" y="44" width="200" height="80" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="360" y="74" font-weight="bold">SHA-256 of each</text>
+    <text x="360" y="96" font-size="12">a fingerprint that changes</text>
+    <text x="360" y="112" font-size="12">if one byte changes</text>
+    <rect x="500" y="44" width="200" height="80" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="600" y="74" font-weight="bold" font-family="Menlo, Consolas, monospace" font-size="13">RELEASE.json</text>
+    <text x="600" y="96" font-size="12">every digest, plus one</text>
+    <text x="600" y="112" font-size="12">digest over the whole list</text>
+    <rect x="740" y="44" width="200" height="80" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="840" y="74" font-weight="bold">Tag vX.Y.Z</text>
+    <text x="840" y="96" font-size="12">published once,</text>
+    <text x="840" y="112" font-size="12">never moved</text>
+
+    <text x="20" y="196" text-anchor="start" font-size="16" font-weight="bold">Installing and updating</text>
+    <rect x="20" y="210" width="200" height="96" rx="10" fill="#fde2e2" stroke="#b91c1c" stroke-width="2"/>
+    <text x="120" y="238" font-weight="bold">Refuse links</text>
+    <text x="120" y="260" font-size="12">a tag with a symbolic link</text>
+    <text x="120" y="276" font-size="12">or submodule anywhere</text>
+    <rect x="260" y="210" width="200" height="96" rx="10" fill="#fde2e2" stroke="#b91c1c" stroke-width="2"/>
+    <text x="360" y="238" font-weight="bold">Same file list</text>
+    <text x="360" y="260" font-size="12">the manifest lists exactly</text>
+    <text x="360" y="276" font-size="12">the files present</text>
+    <rect x="500" y="210" width="200" height="96" rx="10" fill="#fde2e2" stroke="#b91c1c" stroke-width="2"/>
+    <text x="600" y="238" font-weight="bold">Every digest</text>
+    <text x="600" y="260" font-size="12">each file, then the</text>
+    <text x="600" y="276" font-size="12">manifest's own digest</text>
+    <rect x="740" y="210" width="200" height="96" rx="10" fill="#e3f5e8" stroke="#15803d" stroke-width="2"/>
+    <text x="840" y="238" font-weight="bold" font-family="Menlo, Consolas, monospace" font-size="13">lock.json</text>
+    <text x="840" y="260" font-size="12">records commit and digest;</text>
+    <text x="840" y="276" font-size="12">a moved tag is refused later</text>
+  </g>
+  <g stroke="#1f2937" stroke-width="2" fill="none" marker-end="url(#arrow)">
+    <line x1="220" y1="84" x2="258" y2="84"/>
+    <line x1="460" y1="84" x2="498" y2="84"/>
+    <line x1="700" y1="84" x2="738" y2="84"/>
+    <path d="M840,124 C840,160 120,160 120,208"/>
+    <line x1="220" y1="258" x2="258" y2="258"/>
+    <line x1="460" y1="258" x2="498" y2="258"/>
+    <line x1="700" y1="258" x2="738" y2="258"/>
+  </g>
+  <g font-size="13" fill="#111827">
+    <text x="20" y="350">Any failed check stops the install before a single file is written in the project.</text>
+    <text x="20" y="374">A fix is never made by changing a published tag: it ships as a new release.</text>
+  </g>
+</svg>
