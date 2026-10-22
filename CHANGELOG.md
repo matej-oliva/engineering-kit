@@ -16,6 +16,9 @@ Contract version 1, unchanged. Nothing to do after updating.
   four charts, each with a text alternative and an explanation in words.
   The charts and their tables are drawn from `guide/data/figures.json` by
   `tests/guide_figures.py`, and a test refuses any that differ from it.
+- A reported bug is recorded and accepted as a task first, then diagnosed:
+  `procedures/diagnose-defect.md`, the contract's overview and the
+  `kit-understand` and `kit-diagnose-defect` skills now say so alike.
 - A refused change no longer prints a plan digest, which could not be
   applied anyway.
 - The removal preview lists `.engineering-kit/lock.json`, which removal

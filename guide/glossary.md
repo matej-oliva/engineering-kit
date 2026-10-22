@@ -46,6 +46,6 @@
 | Skill | A small file an agent loads by itself when a request matches its description; the kit offers one per procedure. |
 | SPDX identifier | The standard short name of a licence, such as `MIT`, used in `licensed:MIT`. |
 | Staging | A copy of the live system used to try a change before production. |
-| Stricter applies | Where the project's own instructions and the kit's contract disagree, the one that demands more wins. If it is unclear which demands more, ask the decision owner. |
+| Stricter applies | Where the project's own instructions and the kit's contract disagree, the one that demands more wins. |
 | Task record | One JSON file per task holding its requirement, plan, candidate, checks, reviews, effects, release and verification. |
 | Verification | Evidence that the result works at the acceptance boundary, recorded with the version it observed. |

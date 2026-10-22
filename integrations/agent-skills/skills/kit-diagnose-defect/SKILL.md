@@ -1,6 +1,6 @@
 ---
 name: kit-diagnose-defect
-description: Reproduce a defect, rank its possible causes and fix it with a check that failed first. Use when software behaves incorrectly, a test fails unexpectedly or a bug is reported.
+description: Reproduce a defect, rank its possible causes and fix it with a check that failed first. Use once a reported bug is recorded as a task, or when software behaves incorrectly or a test fails unexpectedly during work.
 ---
 
 Follow `.engineering-kit/kit/procedures/diagnose-defect.md` step by step. It is the single source

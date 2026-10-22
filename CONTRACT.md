@@ -57,8 +57,9 @@ Work that stops before the task reaches its acceptance boundary leaves a
 handoff (`procedures/handoff.md`). Taking up, updating and improving the kit
 itself follows `procedures/adopt-and-update.md` and
 `procedures/contribute.md`.
-A defect starts with `procedures/diagnose-defect.md`. A change with effects
-outside the repository is prepared with `procedures/change-preflight.md`.
+A defect is accepted like any task, then diagnosed with
+`procedures/diagnose-defect.md`. A change with effects outside the
+repository is prepared with `procedures/change-preflight.md`.
 
 ## Rules
 
