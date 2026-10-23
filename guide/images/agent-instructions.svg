@@ -35,8 +35,8 @@
 
     <rect x="740" y="170" width="200" height="80" rx="10" fill="#f3e8ff" stroke="#7e22ce" stroke-width="2"/>
     <text x="840" y="200" font-weight="bold">13 skills</text>
-    <text x="840" y="222" font-size="13">optional, one per procedure,</text>
-    <text x="840" y="238" font-size="13">loaded when work matches</text>
+    <text x="840" y="222" font-size="13">12 match the work;</text>
+    <text x="840" y="238" font-size="13">interview starts by name</text>
   </g>
   <g stroke="#1f2937" stroke-width="2" fill="none">
     <line x1="170" y1="205" x2="208" y2="205" marker-end="url(#arrow)"/>
