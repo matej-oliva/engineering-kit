@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" width="960" height="420" role="img" aria-labelledby="title desc" font-family="Helvetica, Arial, sans-serif">
   <title id="title">How an agent finds its instructions</title>
-  <desc id="desc">The agent starts by reading its usual instruction file, such as AGENTS.md. Inside it, the kit's entry block points to two places: the contract with its 18 rules, and project.json with the project's own facts, checks, authority and rules. The contract names one procedure for each stage, twelve in all. When the agent-skills integration is enabled, the agent also sees twelve skills, one per procedure, and opens the matching one directly; each skill points back at its procedure. Where the project's rules and the kit differ, the stricter applies.</desc>
+  <desc id="desc">The agent starts by reading its usual instruction file, such as AGENTS.md. The kit's entry block points to the contract and project.json. Thirteen procedures include twelve automatically selected skills and an interview invoked explicitly by name. Each skill points to its procedure. Where project rules and kit rules differ, the stricter applies.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
@@ -29,12 +29,12 @@
     <text x="580" y="358" font-size="13">authority and own rules</text>
 
     <rect x="740" y="40" width="200" height="80" rx="10" fill="#e0ecff" stroke="#1d4ed8" stroke-width="2"/>
-    <text x="840" y="70" font-weight="bold">12 procedures</text>
+    <text x="840" y="70" font-weight="bold">13 procedures</text>
     <text x="840" y="92" font-size="13">step lists, one per</text>
     <text x="840" y="108" font-size="13">kind of work</text>
 
     <rect x="740" y="170" width="200" height="80" rx="10" fill="#f3e8ff" stroke="#7e22ce" stroke-width="2"/>
-    <text x="840" y="200" font-weight="bold">12 skills</text>
+    <text x="840" y="200" font-weight="bold">13 skills</text>
     <text x="840" y="222" font-size="13">optional, one per procedure,</text>
     <text x="840" y="238" font-size="13">loaded when work matches</text>
   </g>

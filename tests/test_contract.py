@@ -131,7 +131,11 @@ class ContractConsistency(unittest.TestCase):
                 text = (folder / 'skills' / name / 'SKILL.md').read_text(encoding='utf-8')
                 front, body = re.fullmatch(r'---\n(.*?)\n---\n(.*)', text, re.S).groups()
                 fields = dict(line.split(': ', 1) for line in front.splitlines())
-                self.assertEqual(set(fields), {'name', 'description'})
+                expected = {'name', 'description'}
+                if stem == 'grill-me':
+                    expected.add('disable-model-invocation')
+                    self.assertEqual(fields['disable-model-invocation'], 'true')
+                self.assertEqual(set(fields), expected)
                 self.assertEqual(fields['name'], name)
                 self.assertRegex(name, r'^[a-z0-9]+(-[a-z0-9]+)*$')
                 self.assertLessEqual(len(name), 64)
@@ -141,7 +145,8 @@ class ContractConsistency(unittest.TestCase):
                 self.assertLess(len(body), 600, 'a skill points at its procedure instead of copying it')
         targets = {entry['target'] for entry in json.loads((folder / 'integration.json').read_text())['files']}
         self.assertEqual(targets, {f'{root}/{skill}/SKILL.md' for skill in skills
-                                   for root in ('.agents/skills', '.claude/skills')})
+                                   for root in ('.agents/skills', '.claude/skills')} |
+                         {'.agents/skills/kit-grill-me/agents/openai.yaml'})
 
 
 class Portability(unittest.TestCase):

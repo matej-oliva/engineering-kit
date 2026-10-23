@@ -1,0 +1,21 @@
+{
+  "kit": "contribution/1",
+  "project": "home-server",
+  "source_revision": "89dc77982b1c94ff53ce57d1eff36cf71ef021b0",
+  "kit_version": "not installed; direct contribution against 3c8a17a",
+  "files": [
+    "procedures/grill-me.md",
+    "integrations/agent-skills/skills/kit-grill-me/SKILL.md",
+    "integrations/agent-skills/skills/kit-grill-me/agents/openai.yaml",
+    "integrations/agent-skills/integration.json",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "status": "proposal",
+  "need": "Users need an explicitly requested interview to resolve a plan's decisions without starting implementation or imposing an interview on ordinary work.",
+  "evidence": "The source change recorded one headless run each for three providers. This contribution adds a consumer installation and removal regression that first failed because the interview was absent, then passed with both skill copies and explicit invocation metadata installed.",
+  "limits": "The generic kit version has not been exercised in live clients or adopted by another project. Metadata support varies by client; the procedure and skill retain an explicit-request guard. Home-server does not install the kit, so this direct contribution does not use an installed-release export.",
+  "rights": "licensed:MIT",
+  "owner": "matej-oliva",
+  "attribution": "Adapted from Matt Pocock's grill-me and grilling skills in mattpocock/skills at 5beb35b0. The upstream LICENSE at that revision was retrieved and verified on 2026-10-23. Its copyright and permission notice are preserved in THIRD_PARTY_NOTICES.md. This is third-party-derived material, not solely owner-authored.",
+  "sanitization": "Removed home-server tool names, scheduler references, registry commands and operational paths. No credentials, private account data, employer or client material is included."
+}

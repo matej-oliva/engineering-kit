@@ -1,0 +1,6 @@
+interface:
+  display_name: "Grill Me"
+  short_description: "Explore a plan through numbered question rounds"
+  default_prompt: "Use $kit-grill-me to interview me about my plan."
+policy:
+  allow_implicit_invocation: false

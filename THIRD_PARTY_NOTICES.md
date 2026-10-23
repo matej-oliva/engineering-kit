@@ -6,6 +6,7 @@ terms are kept.
 
 | Source | Revision reviewed | Licence | Used in |
 | --- | --- | --- | --- |
+| `github.com/mattpocock/skills` | `5beb35b0` | MIT, notice below | `procedures/grill-me.md` (adapted interview) |
 | `github.com/mattpocock/skills` | `49dd158d` | MIT, notice below | `procedures/diagnose-defect.md`, `procedures/write-instructions.md` |
 | `github.com/backnotprop/pstack` | `6f131f1` | MIT, notice below | `procedures/diagnose-defect.md` (testing the premise), `procedures/change-preflight.md` (the evidence ladder) |
 | `github.com/multica-ai/andrej-karpathy-skills` | `2c606141` | Declared MIT in its README and plugin manifest; it ships no licence file | Ideas only, reworded in `procedures/implement.md` (surgical changes, nothing speculative). No text is copied |
