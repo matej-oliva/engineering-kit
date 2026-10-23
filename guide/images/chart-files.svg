@@ -1,40 +1,43 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 380" width="900" height="380" role="img" aria-labelledby="title desc" font-family="Helvetica, Arial, sans-serif">
   <title id="title">What each release installs</title>
-  <desc id="desc">Bars per release, 0.1.0: 35 files; 0.1.1: 36 files; 1.0.0: 37 files; 1.0.1: 37 files; 1.1.0: 50 files; 1.2.0: 63 files; 1.2.1: 80 files.</desc>
+  <desc id="desc">Bars per release, 0.1.0: 35 files; 0.1.1: 36 files; 1.0.0: 37 files; 1.0.1: 37 files; 1.1.0: 50 files; 1.2.0: 63 files; 1.2.1: 80 files; 1.3.0: 83 files.</desc>
   <rect width="900" height="380" fill="#ffffff"/>
   <text x="70" y="30" font-size="17" text-anchor="start" fill="#111827" font-weight="bold">What each release installs</text>
   <line x1="70" y1="320" x2="880" y2="320" stroke="#4b5563"/>
   <line x1="70" y1="320.0" x2="880" y2="320.0" stroke="#e5e7eb"/>
   <text x="62" y="324.0" font-size="12" text-anchor="end" fill="#4b5563" font-weight="normal">0</text>
-  <line x1="70" y1="260.9" x2="880" y2="260.9" stroke="#e5e7eb"/>
-  <text x="62" y="264.9090909090909" font-size="12" text-anchor="end" fill="#4b5563" font-weight="normal">20</text>
-  <line x1="70" y1="201.8" x2="880" y2="201.8" stroke="#e5e7eb"/>
-  <text x="62" y="205.8181818181818" font-size="12" text-anchor="end" fill="#4b5563" font-weight="normal">40</text>
-  <line x1="70" y1="142.7" x2="880" y2="142.7" stroke="#e5e7eb"/>
-  <text x="62" y="146.72727272727272" font-size="12" text-anchor="end" fill="#4b5563" font-weight="normal">60</text>
-  <line x1="70" y1="83.6" x2="880" y2="83.6" stroke="#e5e7eb"/>
-  <text x="62" y="87.63636363636363" font-size="12" text-anchor="end" fill="#4b5563" font-weight="normal">80</text>
-  <rect x="109.1" y="216.6" width="32.0" height="103.4" fill="#b45309"/>
-  <text x="125.14285714285714" y="210.5909090909091" font-size="12" text-anchor="middle" fill="#111827" font-weight="normal">35</text>
-  <text x="127.14285714285714" y="340" font-size="13" text-anchor="middle" fill="#111827" font-weight="normal">0.1.0</text>
-  <rect x="223.4" y="213.6" width="32.0" height="106.4" fill="#b45309"/>
-  <text x="239.42857142857142" y="207.63636363636363" font-size="12" text-anchor="middle" fill="#111827" font-weight="normal">36</text>
-  <text x="241.42857142857142" y="340" font-size="13" text-anchor="middle" fill="#111827" font-weight="normal">0.1.1</text>
-  <rect x="337.7" y="210.7" width="32.0" height="109.3" fill="#b45309"/>
-  <text x="353.7142857142857" y="204.6818181818182" font-size="12" text-anchor="middle" fill="#111827" font-weight="normal">37</text>
-  <text x="355.7142857142857" y="340" font-size="13" text-anchor="middle" fill="#111827" font-weight="normal">1.0.0</text>
-  <rect x="452.0" y="210.7" width="32.0" height="109.3" fill="#b45309"/>
-  <text x="468.00000000000006" y="204.6818181818182" font-size="12" text-anchor="middle" fill="#111827" font-weight="normal">37</text>
-  <text x="470.00000000000006" y="340" font-size="13" text-anchor="middle" fill="#111827" font-weight="normal">1.0.1</text>
-  <rect x="566.3" y="172.3" width="32.0" height="147.7" fill="#b45309"/>
-  <text x="582.2857142857142" y="166.27272727272728" font-size="12" text-anchor="middle" fill="#111827" font-weight="normal">50</text>
-  <text x="584.2857142857142" y="340" font-size="13" text-anchor="middle" fill="#111827" font-weight="normal">1.1.0</text>
-  <rect x="680.6" y="133.9" width="32.0" height="186.1" fill="#b45309"/>
-  <text x="696.5714285714286" y="127.86363636363637" font-size="12" text-anchor="middle" fill="#111827" font-weight="normal">63</text>
-  <text x="698.5714285714286" y="340" font-size="13" text-anchor="middle" fill="#111827" font-weight="normal">1.2.0</text>
-  <rect x="794.9" y="83.6" width="32.0" height="236.4" fill="#b45309"/>
-  <text x="810.8571428571429" y="77.63636363636363" font-size="12" text-anchor="middle" fill="#111827" font-weight="normal">80</text>
-  <text x="812.8571428571429" y="340" font-size="13" text-anchor="middle" fill="#111827" font-weight="normal">1.2.1</text>
+  <line x1="70" y1="263.0" x2="880" y2="263.0" stroke="#e5e7eb"/>
+  <text x="62" y="267.0449069003286" font-size="12" text-anchor="end" fill="#4b5563" font-weight="normal">20</text>
+  <line x1="70" y1="206.1" x2="880" y2="206.1" stroke="#e5e7eb"/>
+  <text x="62" y="210.0898138006572" font-size="12" text-anchor="end" fill="#4b5563" font-weight="normal">40</text>
+  <line x1="70" y1="149.1" x2="880" y2="149.1" stroke="#e5e7eb"/>
+  <text x="62" y="153.13472070098578" font-size="12" text-anchor="end" fill="#4b5563" font-weight="normal">60</text>
+  <line x1="70" y1="92.2" x2="880" y2="92.2" stroke="#e5e7eb"/>
+  <text x="62" y="96.1796276013144" font-size="12" text-anchor="end" fill="#4b5563" font-weight="normal">80</text>
+  <rect x="102.0" y="220.3" width="32.0" height="99.7" fill="#b45309"/>
+  <text x="118.0" y="214.32858707557506" font-size="12" text-anchor="middle" fill="#111827" font-weight="normal">35</text>
+  <text x="120.0" y="340" font-size="13" text-anchor="middle" fill="#111827" font-weight="normal">0.1.0</text>
+  <rect x="202.0" y="217.5" width="32.0" height="102.5" fill="#b45309"/>
+  <text x="218.0" y="211.48083242059147" font-size="12" text-anchor="middle" fill="#111827" font-weight="normal">36</text>
+  <text x="220.0" y="340" font-size="13" text-anchor="middle" fill="#111827" font-weight="normal">0.1.1</text>
+  <rect x="302.0" y="214.6" width="32.0" height="105.4" fill="#b45309"/>
+  <text x="318.0" y="208.6330777656079" font-size="12" text-anchor="middle" fill="#111827" font-weight="normal">37</text>
+  <text x="320.0" y="340" font-size="13" text-anchor="middle" fill="#111827" font-weight="normal">1.0.0</text>
+  <rect x="402.0" y="214.6" width="32.0" height="105.4" fill="#b45309"/>
+  <text x="418.0" y="208.6330777656079" font-size="12" text-anchor="middle" fill="#111827" font-weight="normal">37</text>
+  <text x="420.0" y="340" font-size="13" text-anchor="middle" fill="#111827" font-weight="normal">1.0.1</text>
+  <rect x="502.0" y="177.6" width="32.0" height="142.4" fill="#b45309"/>
+  <text x="518.0" y="171.6122672508215" font-size="12" text-anchor="middle" fill="#111827" font-weight="normal">50</text>
+  <text x="520.0" y="340" font-size="13" text-anchor="middle" fill="#111827" font-weight="normal">1.1.0</text>
+  <rect x="602.0" y="140.6" width="32.0" height="179.4" fill="#b45309"/>
+  <text x="618.0" y="134.59145673603507" font-size="12" text-anchor="middle" fill="#111827" font-weight="normal">63</text>
+  <text x="620.0" y="340" font-size="13" text-anchor="middle" fill="#111827" font-weight="normal">1.2.0</text>
+  <rect x="702.0" y="92.2" width="32.0" height="227.8" fill="#b45309"/>
+  <text x="718.0" y="86.1796276013144" font-size="12" text-anchor="middle" fill="#111827" font-weight="normal">80</text>
+  <text x="720.0" y="340" font-size="13" text-anchor="middle" fill="#111827" font-weight="normal">1.2.1</text>
+  <rect x="802.0" y="83.6" width="32.0" height="236.4" fill="#b45309"/>
+  <text x="818.0" y="77.63636363636368" font-size="12" text-anchor="middle" fill="#111827" font-weight="normal">83</text>
+  <text x="820.0" y="340" font-size="13" text-anchor="middle" fill="#111827" font-weight="normal">1.3.0</text>
   <rect x="70" y="42" width="12" height="12" fill="#b45309"/>
   <text x="88" y="53" font-size="13" text-anchor="start" fill="#111827" font-weight="normal">files installed in a project</text>
   <text x="880" y="364" font-size="12" text-anchor="end" fill="#4b5563" font-weight="normal">files under .engineering-kit/kit/</text>

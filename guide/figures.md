@@ -28,6 +28,7 @@ caught. The first release had no deliberate faults yet.
 | 1.1.0 | 2026-10-21 | 97 | 76 | 50 |
 | 1.2.0 | 2026-10-22 | 117 | 84 | 63 |
 | 1.2.1 | 2026-10-22 | 121 | 86 | 80 |
+| 1.3.0 | 2026-10-23 | 123 | 88 | 83 |
 <!-- /figures:releases -->
 
 ## What each release installs
@@ -57,8 +58,8 @@ plan, review or release, and a procedure only for its stage.
 | --- | --- |
 | Entry block, read in every session | 473 |
 | Contract, read to plan, review or release | 6875 |
-| One procedure, on average, read for its stage | 2094 |
-| All skill names and descriptions, read in every session | 2937 |
+| One procedure, on average, read for its stage | 2093 |
+| All skill metadata, before client invocation filtering | 3225 |
 <!-- /figures:context -->
 
 ## The full test suite on hosted Windows
