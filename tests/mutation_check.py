@@ -18,6 +18,12 @@ KIT = Path(__file__).resolve().parents[1]
 
 # (label, file under tools/, exact original text, replacement)
 MUTANTS = [
+    ('the interview allows automatic model invocation',
+     'integrations/agent-skills/skills/kit-grill-me/SKILL.md',
+     'disable-model-invocation: true', 'disable-model-invocation: false'),
+    ('the interview allows implicit invocation in its companion policy',
+     'integrations/agent-skills/skills/kit-grill-me/agents/openai.yaml',
+     'allow_implicit_invocation: false', 'allow_implicit_invocation: true'),
     ('a release hashes the working copy, not what Git stores', 'kit_update.py',
      "contents = dict(zip(blobs, read_blobs(list(blobs.values()), root)))",
      "contents = {name: (root / name).read_bytes() for name in blobs}"),

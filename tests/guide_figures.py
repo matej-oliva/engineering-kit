@@ -87,7 +87,7 @@ def measure(label: str) -> dict:
         'contract, read to plan, review or release': size('HEAD', 'CONTRACT.md'),
         'one procedure, on average, read for its stage': round(sum(size('HEAD', p) for p in procedures)
                                                                 / len(procedures)),
-        'all skill names and descriptions, read in every session': sum(
+        'all skill metadata, before client invocation filtering': sum(
             len(git('show', f'HEAD:{path}').decode().split('---')[1].encode()) for path in skills),
     }
     observed = json.loads(DATA.read_text(encoding='utf-8')).get('observed', []) if DATA.exists() else []
