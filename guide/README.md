@@ -43,7 +43,7 @@ leaves a handoff the next person resumes from. The task record's
 | If you want to know | Read |
 | --- | --- |
 | every instruction agents receive, in plain words | [What agents are told](agents.md) |
-| the twelve skills and when agents use them | [Skills](skills.md) |
+| the thirteen skills and when agents use them | [Skills](skills.md) |
 
 ## How it works
 

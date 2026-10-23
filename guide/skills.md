@@ -1,7 +1,7 @@
 # Skills
 
 [Guide](README.md) · A **skill** is a small file that an agent loads by
-itself when your request matches its description. The kit offers twelve, one
+itself when your request matches its description. The kit offers thirteen, one
 for each procedure. They are optional: enable them with the `agent-skills`
 integration.
 
@@ -9,8 +9,8 @@ integration.
 
 Without skills, an agent must notice the entry block, open the contract and
 choose the right procedure itself. With skills, the agent sees a one-line
-description of each of the twelve at the start of a session, near 2.9 kB in
-total, and opens the one that fits as soon as you ask for something. Ask
+description of the twelve automatic skills at the start of a session and
+opens the one that fits as soon as you ask for something. Ask
 "the checkout shows the wrong total" and it opens `kit-diagnose-defect`;
 ask "deploy this" and it opens `kit-change-preflight`, then `kit-release`.
 
@@ -31,7 +31,10 @@ step, `kit-handoff` when stopping or resuming, and `kit-write-instructions`
 when editing rules for agents. Two concern the kit itself:
 `kit-adopt-and-update` and `kit-contribute`.
 
-## All twelve skills
+The additional `kit-grill-me` interview starts only when you ask for it by
+name. The lifecycle diagram above shows the twelve automatic skills.
+
+## All thirteen skills
 
 | Skill | In plain words | The agent uses it when |
 | --- | --- | --- |
@@ -47,6 +50,18 @@ when editing rules for agents. Two concern the kit itself:
 | `kit-write-instructions` | Writes rules for agents that are short, clear and checkable | Editing `AGENTS.md`, `CLAUDE.md`, a skill or a procedure |
 | `kit-adopt-and-update` | Installs, updates, rolls back or removes the kit, previewing first | Installing the kit, moving to a newer release, or giving it up |
 | `kit-contribute` | Sends a useful lesson back to the kit with its evidence and rights | Something learned here would help other projects |
+| `kit-grill-me` | Explores an idea in numbered rounds with recommended answers | You explicitly ask for `kit-grill-me` or `grill-me` |
+
+Ask for `kit-grill-me` followed by your idea. Use your client's skill picker
+or explicit invocation syntax when available.
+The interview looks up facts, asks independent questions together, and
+confirms decisions and unresolved items at the end. It writes no files and
+does not implement the result. Ask separately to act on it.
+
+The skill carries `disable-model-invocation: true`; its companion metadata sets
+`allow_implicit_invocation: false`. Its body also requires an explicit
+request for clients that do not enforce those fields. This portable kit
+version has installation tests, but has not been exercised in live clients.
 
 ## Where the files are
 
@@ -56,6 +71,9 @@ different folders: `.agents/skills/kit-NAME/SKILL.md` and
 one paragraph pointing at `.engineering-kit/kit/procedures/NAME.md`. Updates
 replace them with the next release's versions, and removing the kit removes
 them.
+
+The interview also installs `.agents/skills/kit-grill-me/agents/openai.yaml`
+for the explicit invocation policy. Removal includes that file.
 
 To enable them in an existing project, add
 `"agent-skills": {"grant": ["writes-skills"]}` under `integrations` in

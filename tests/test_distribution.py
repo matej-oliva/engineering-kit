@@ -682,6 +682,11 @@ class Distribution(unittest.TestCase):
         self.assertEqual(status, 0, report)
         procedures = sorted(p.stem for p in (root / '.engineering-kit' / 'kit' / 'procedures').glob('*.md'))
         for folder in ('.agents/skills', '.claude/skills'):
+            interview = root / folder / 'kit-grill-me'
+            self.assertIn('disable-model-invocation: true', (interview / 'SKILL.md').read_text())
+        policy = root / '.agents/skills/kit-grill-me/agents/openai.yaml'
+        self.assertIn('allow_implicit_invocation: false', policy.read_text())
+        for folder in ('.agents/skills', '.claude/skills'):
             for stem in procedures:
                 skill = (root / folder / f'kit-{stem}' / 'SKILL.md').read_text(encoding='utf-8')
                 self.assertIn(f'name: kit-{stem}\n', skill)

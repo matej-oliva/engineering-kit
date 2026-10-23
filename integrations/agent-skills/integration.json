@@ -19,6 +19,21 @@
   "blocks": [],
   "files": [
     {
+      "source": "skills/kit-grill-me/SKILL.md",
+      "target": ".agents/skills/kit-grill-me/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-grill-me/SKILL.md",
+      "target": ".claude/skills/kit-grill-me/SKILL.md",
+      "permission": "writes-skills"
+    },
+    {
+      "source": "skills/kit-grill-me/agents/openai.yaml",
+      "target": ".agents/skills/kit-grill-me/agents/openai.yaml",
+      "permission": "writes-skills"
+    },
+    {
       "source": "skills/kit-adopt-and-update/SKILL.md",
       "target": ".agents/skills/kit-adopt-and-update/SKILL.md",
       "permission": "writes-skills"

@@ -3,6 +3,15 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
+## Unreleased
+
+Contract version 1, unchanged. The optional `agent-skills` integration adds
+`kit-grill-me` on update. Invoke it by name for a conversation-only interview
+in numbered rounds. Manual invocation metadata ships with it; clients that
+do not enforce that metadata must follow its body guard.
+No interview starts automatically, and implementing its result needs a
+separate request. Matt Pocock's MIT attribution and notice are retained.
+
 ## 1.2.1, 2026-10-22
 
 Contract version 1, unchanged. Nothing to do after updating.

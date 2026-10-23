@@ -35,7 +35,7 @@
 | Merge | Bringing a reviewed change into the project's main line of work. |
 | Permission | What an integration declares it may write. A project grants it in `project.json`. |
 | Plan digest | A short code that identifies a previewed change; `--plan` applies only that exact change. |
-| Procedure | One of twelve step lists, such as "Diagnose a defect", each ending in a result someone can check. |
+| Procedure | One of thirteen step lists, such as "Diagnose a defect", each ending in a result someone can check. |
 | Process files | Task records, handoffs, `project.json` and the lock: files that describe the work, not the product. A merge may change them without changing what was reviewed. |
 | Profile | A kind of work defined by the project, such as `change` or `defect`, that sets the required checks and whether review and release apply. |
 | Project configuration | `.engineering-kit/project.json`: the project's own facts, checks, profiles, boundaries, authority and rules. |
