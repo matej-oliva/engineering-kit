@@ -42,7 +42,23 @@ Use while changing the repository for an accepted task. Set `state` to
 7. **Record each check** with the revision it ran on and its result. A
    skipped, unknown or failed check is recorded as such, never as a pass
    (rule `CHECKS`).
-8. **Hand off if you stop** before acceptance (`procedures/handoff.md`).
+8. **Reuse a check result only when its key covers how it ran.** A cache
+   or gate that skips a check because its inputs are unchanged must count
+   the environment as an input. Run such checks without variables that
+   change what their tools do, and remove whole families by prefix, since
+   a list of names misses the next one: the dynamic loader (`LD_*`),
+   version control (`GIT_*`, then set only the isolation you need, such as
+   `GIT_CONFIG_GLOBAL=/dev/null` and `GIT_CONFIG_NOSYSTEM=1`), exported
+   shell functions (`BASH_FUNC_*`) and package manager settings
+   (`npm_config_*`), plus named proxy, shell startup, archive, TLS and
+   interpreter mode variables. Fail closed: while any of them is still
+   present when the key is computed, compute no key, so nothing is reused
+   or stored. A variable you must keep, such as `NODE_OPTIONS`, prevents
+   reuse while it is set. Hash the kept variables that change results,
+   such as `PATH`, the locale and `TZ`, into the key, and name those left
+   out, such as `HOME`: a check that reads one is never reused. This step
+   is a proposal from one project.
+9. **Hand off if you stop** before acceptance (`procedures/handoff.md`).
 
 Done when the task passes `tools/kit.py check-task FILE` in state
 `candidate` and its required checks are recorded against that revision.

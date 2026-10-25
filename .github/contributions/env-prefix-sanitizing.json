@@ -1,0 +1,16 @@
+{
+  "kit": "contribution/1",
+  "project": "home-server",
+  "source_revision": "a3e7b963ff0729fe92fbe8923cac4f0910f5c795",
+  "kit_version": "not installed; direct contribution against 94bb9b5",
+  "files": [
+    "procedures/implement.md"
+  ],
+  "status": "proposal",
+  "need": "A gate that reuses check results keyed by their inputs reports a stale pass when a variable in the environment changes what the checked tools do and the key does not cover it. A list of variable names to remove misses the next member of a family.",
+  "evidence": "Four rounds of independent review of the source gate's environment sanitizer each found a variable that slipped past its name-by-name list: an exported shell function replacing an archive command, a runtime option variable reaching web checks, a dynamic loader audit variable and a version control template directory. Each became a regression test that failed before the fix. The source now strips the loader, version control, exported shell function and package manager families by prefix, computes no key while one remains, and hashes the path, locale and time zone into the key.",
+  "limits": "Observed in one project's gate on one platform. The family list is a starting point for POSIX shells, Git, Node and Python toolchains, not a complete inventory. The kit itself reuses no check results, so the lesson is guidance with no kit check. Home-server does not install the kit, so this direct contribution does not use an installed-release export.",
+  "rights": "owner-authored",
+  "owner": "matej-oliva",
+  "sanitization": "Removed project paths, host and account names, tool and task names, and the source's own variable lists beyond the generic families. No credentials, private data, employer, client or third-party material is included."
+}
