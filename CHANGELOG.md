@@ -3,6 +3,14 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
+## Unreleased
+
+Contract version 1, unchanged. Nothing to do after updating.
+`procedures/implement.md` gains a proposed step for gates that reuse check
+results: strip tool-changing variables by family prefix (`LD_*`, `GIT_*`,
+`BASH_FUNC_*`, `npm_config_*`) rather than by name, compute no key while
+one remains, and hash the kept variables that change results into the key.
+
 ## 1.3.0, 2026-10-23
 
 Contract version 1, unchanged. The optional `agent-skills` integration adds
