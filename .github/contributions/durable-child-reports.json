@@ -1,0 +1,18 @@
+{
+  "kit": "contribution/1",
+  "project": "home-server",
+  "source_revision": "d7990df9378b02aed47847ae7a08f73c375aff73",
+  "kit_version": "not installed; direct contribution against 4e8a797",
+  "files": [
+    "procedures/handoff.md",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "status": "proposal",
+  "need": "A delegated worker's last message can be an interim delivery status or a later notification acknowledgement, so a coordinator can lose the substantive report or wait for a report that will not arrive.",
+  "evidence": "One project's read-only investigation found that the worker completion notice woke its coordinator immediately, but carried an interim shipping status. The coordinator acknowledged it and waited until the next morning. The project now requires named report files and has a tested metadata reader distinguishing task completion, later worker turns and parent wake timing.",
+  "limits": "Observed in one project. This contribution is guidance: the kit neither orchestrates workers nor checks report quality, and no new mechanical enforcement is claimed. The generic guidance has not been adopted by another project. The source project does not install the kit, so this is a direct contribution rather than an installed-release export.",
+  "rights": "owner-authored",
+  "owner": "matej-oliva",
+  "sanitization": "Removed host names, task and thread identities, source-specific tools and paths, and message contents. No credentials, private account data, employer, client or third-party material is included."
+}

@@ -11,6 +11,11 @@ results: strip tool-changing variables by family prefix (`LD_*`, `GIT_*`,
 `BASH_FUNC_*`, `npm_config_*`) rather than by name, compute no key while
 one remains, and hash the kept variables that change results into the key.
 
+`procedures/handoff.md` gains proposed guidance for authorized delegated
+work: save full reports outside temporary checkouts, update them after late
+notifications, and reconcile worker state with saved reports on resume.
+No orchestration capability or new checker requirement is added.
+
 ## 1.3.0, 2026-10-23
 
 Contract version 1, unchanged. The optional `agent-skills` integration adds
