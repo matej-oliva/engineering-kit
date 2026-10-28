@@ -22,6 +22,24 @@ working day.
    the handoff names that place.
 5. Done when `tools/kit.py check` passes (rule `HANDOFF`).
 
+## Delegated work
+
+When delegation is already authorized, name a report file in each worker's
+brief and retain its location with the worker's identity. Choose a location
+that survives removal of the worker's temporary checkout. Ask the worker to
+write its full result there before its final message, including revisions,
+checks, findings and open gates. If delivery is still running, mark it
+pending. A later notification updates the same file and repeats the full
+report; it must not replace the result with a short acknowledgement.
+
+On every resume or notification, inspect worker state and read the saved
+report. Task completion and a later turn in the worker's conversation can
+differ. A last message or a promised future notification is insufficient
+evidence of delivery. Verify pending results at their recorded source, then
+copy the substantive outcome and open gates into the task's durable handoff
+before removing temporary files. This guidance is a proposal from one
+project; the kit does not orchestrate workers or enforce report quality.
+
 ## Resume
 
 1. Read the handoff, then the task record, then run `tools/kit.py check`.
