@@ -3,7 +3,7 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
-## Unreleased
+## 1.4.0, 2026-10-31
 
 Contract version 1, unchanged. Nothing to do after updating.
 `procedures/implement.md` gains a proposed step for gates that reuse check
