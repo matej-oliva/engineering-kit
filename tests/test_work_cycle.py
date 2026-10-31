@@ -200,6 +200,14 @@ class Delivery(Fixture):
         self.assertEqual(git('branch', '--format=%(refname:short)', cwd=remote), 'main')
         self.assertEqual(self.calls(), [])
 
+    def test_uncommitted_changes_are_refused_before_the_checks(self):
+        root, remote = self.repository(tasks=[task('T1')], url='https://github.com/acme/billing.git')
+        self.branch_with(root, 'src/a.py')
+        (root / 'src' / 'a.py').write_text('not committed\n', encoding='utf-8')
+        with self.assertRaisesRegex(cycle.CycleError, 'uncommitted'):
+            self.deliver(root)
+        self.assertEqual(git('branch', '--format=%(refname:short)', cwd=remote), 'main')
+
     def test_a_failed_check_stops_before_the_push(self):
         root, remote = self.repository(tasks=[task('T1')], url='https://github.com/acme/billing.git')
         project = json.loads((root / '.engineering-kit' / 'project.json').read_text(encoding='utf-8'))
@@ -370,7 +378,8 @@ class Runner(Fixture):
         for moment in (MONDAY + timedelta(days=5), MONDAY.replace(hour=16, minute=45)):
             with self.subTest(moment):
                 printed = []
-                self.assertEqual(cycle.serve(self.home, clock=lambda: moment, out=printed.append), 0)
+                self.assertEqual(cycle.serve(self.home, clock=lambda: moment, sleep=lambda _: self.fail('slept'),
+                                             out=printed.append), 0)
                 self.assertIn('the runner stops', printed[0])
         self.assertEqual(self.calls(), [])
 

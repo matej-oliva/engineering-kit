@@ -247,7 +247,9 @@ def next_task(home: Path, config: dict, moment: datetime) -> dict | None:
 PROMPT = """You are working unattended on task {task} in {repository}.
 
 - Your working folder is a fresh worktree on branch {branch}, made from {base}.
-- The task record is {task_file}; the project's kit files are in {root}.
+- The task record is {task_file}; the project's kit files are in {root}, and the
+  kit's procedures in {root}/.engineering-kit/kit/procedures. Records and
+  handoffs live there, not in this worktree.
 - Follow the kit's procedures for the task's current state, and the project's own
   instructions. Ask no questions: if the next step needs a person, record the question in
   the task, set "next_actor" to "owner" and stop.
@@ -495,6 +497,8 @@ def deliver(root: Path, worktree: Path, task_id: str | None, title: str | None, 
         raise CycleError('HEAD is not on a branch; deliver from the task branch')
     if branch in protected(root, settings):
         raise CycleError(f'{branch} is a protected branch; deliver from a task branch')
+    if git(worktree, 'status', '--porcelain'):  # the checks would examine a state the push leaves out
+        raise CycleError('the worktree has uncommitted changes; commit or remove them before delivering')
     task = None
     if task_id:
         task = next((t for t in map(lambda p: read_json(p, {}), task_files(root, project)) if t.get('id') == task_id),

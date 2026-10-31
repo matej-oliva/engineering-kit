@@ -170,6 +170,15 @@ Any client that sends the same JSON payload (`tool_input.command`) and reads
 exit status 2 as a refusal can use the same command. It allows what it
 cannot read; the pre-push guard still refuses protected pushes.
 
+In a repository you share, the runner's worktrees hold only committed
+files, so neither `.kit-cycle/` nor `.claude/settings.local.json` is there.
+Register the edit guard in the client's user settings instead
+(`~/.claude/settings.json` for Claude Code), with the absolute path of the
+registered checkout's script, such as
+`py C:/src/billing/.kit-cycle/cycle.py guard-edit`. The prompt the runner
+writes names the kit files and procedures in the registered checkout. The
+pre-push guard needs nothing: every worktree shares the checkout's hooks.
+
 ## Removing it
 
 Stop the runner, run `cycle.py guards remove`, remove the integration from

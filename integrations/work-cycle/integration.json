@@ -23,6 +23,6 @@
     {"source": "skills/kit-first-run/SKILL.md", "target": ".agents/skills/kit-first-run/SKILL.md", "permission": "writes-skills"},
     {"source": "skills/kit-first-run/SKILL.md", "target": ".claude/skills/kit-first-run/SKILL.md", "permission": "writes-skills"}
   ],
-  "tested": "none: the tests run every command against disposable repositories with stand-in review tools and agents on Linux, Windows and macOS; no real host, agent client or work repository has used it.",
+  "tested": "none: the tests run every command against disposable repositories with stand-in review tools and agents, on Linux in October 2026, and the native workflow runs them on Windows and macOS; no real host, agent client or work repository has used it.",
   "manual": "Keep task records by hand, start agent sessions yourself in a new worktree, push task branches and open requests in the host's web page, and protect the default branch in the host's settings."
 }

@@ -210,6 +210,8 @@ MUTANTS = [
      "    if branch in protected(root, settings):\n        raise CycleError(f'{branch} is a protected branch",
      "    if False:\n        raise CycleError(f'{branch} is a protected branch"),
     ('delivery pushes the default branch', CYCLE, "f'HEAD:refs/heads/{branch}']", "f'HEAD:refs/heads/{base}']"),
+    ('delivery checks a state it does not push', CYCLE,
+     "    if git(worktree, 'status', '--porcelain'):", '    if False:'),
     ('delivery pushes after a failed check', CYCLE,
      "            if not passed:\n                record['outcome'] = 'checks_failed'",
      "            if False:\n                record['outcome'] = 'checks_failed'"),
