@@ -126,7 +126,10 @@ default branch, and runs the agent command there with a time limit that
 ends before the window does. When the agent stops without a handoff, the
 runner writes one that says the outcome is unknown. It records each run in
 `runs/` in its home folder and stops when the window closes, or after one
-task with `--once`. While the laptop sleeps the runner pauses with it.
+task with `--once`. Each task runs at most once per runner session: a task
+the agent leaves ready, or a run that failed or timed out, waits for the
+next start, so a failing agent command cannot repeat all day. While the
+laptop sleeps the runner pauses with it.
 
 - `cycle.py queue` shows the queue and claims.
 - `cycle.py claim ID` keeps the runner off a task you work on yourself for
@@ -145,8 +148,9 @@ python3 .kit-cycle/cycle.py deliver --task ID
 It runs the task profile's checks that have commands, refuses a protected
 branch, pushes the branch and opens a pull or merge request whose title
 starts with its class: `[routine]`, `[sensitive]` or `[owner-only]`, from
-the `paths` patterns. On GitHub and GitLab it also adds the class as a
-label when the label can be set. Each delivery is recorded under the
+the `paths` patterns. It also adds the class as a label when the label
+can be set: GitHub and GitLab after opening the request, Azure DevOps as it
+opens it, opening it without the label when that fails. Each delivery is recorded under the
 repository's Git folder in `kit-cycle/deliveries/`, never in a commit.
 
 ## 7. Guards
@@ -159,7 +163,9 @@ elsewhere and prints the line to add to that hook instead.
 The edit guard runs before each shell command an agent client starts. It
 refuses in-place stream edits (`sed -i`, `perl -i`), commands that bypass
 Git hooks, force pushes and pushes to a protected branch. For Claude Code,
-add it to `.claude/settings.local.json`, which stays on your machine:
+add it to `.claude/settings.local.json`, which stays on your machine. The
+example is for Windows; in WSL2, macOS and Linux write `python3` instead
+of `py`:
 
 ```json
 {"hooks": {"PreToolUse": [{"matcher": "Bash", "hooks": [

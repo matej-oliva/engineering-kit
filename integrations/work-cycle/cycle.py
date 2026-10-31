@@ -237,8 +237,11 @@ def refresh_queue(home: Path, config: dict, moment: datetime) -> list[dict]:
     return kept
 
 
-def next_task(home: Path, config: dict, moment: datetime) -> dict | None:
+def next_task(home: Path, config: dict, moment: datetime, done: set | frozenset = frozenset()) -> dict | None:
+    """The first queued task that nobody claims and that has not run in this session (DONE)."""
     for item in refresh_queue(home, config, moment):
+        if (item['repository'], item['task']) in done:
+            continue
         if not claimed(home, item['repository'], item['task'], moment):
             return item
     return None
@@ -385,11 +388,14 @@ The task runner stopped this run because {reason}. Its outcome is unknown.
 
 
 def serve(home: Path, *, once: bool = False, clock=now_local, sleep=time.sleep, out=print) -> int:
-    """Take tasks in queue order while the window is open; stop when it closes."""
+    """Take tasks in queue order while the window is open; stop when it closes. Each task runs at
+    most once per session: a run starts from the default branch, so repeating a task that is still
+    ready could not build on the last run and would repeat a failing agent all day."""
     config = load_runner(home)
     window = config['window']
     minimum = timedelta(minutes=config.get('minimum_minutes', 20))
     runs = 0
+    done = set()
     while True:
         moment = clock()
         end = window_end(window, moment)
@@ -401,7 +407,7 @@ def serve(home: Path, *, once: bool = False, clock=now_local, sleep=time.sleep, 
             out(f'Less than {config.get("minimum_minutes", 20)} minutes remain before {window["end"]}; '
                 f'the runner stops. {runs} task runs.')
             return 0
-        item = next_task(home, config, moment)
+        item = next_task(home, config, moment, done)
         if item is None:
             if once:
                 out('No task is ready; the runner stops.')
@@ -410,6 +416,7 @@ def serve(home: Path, *, once: bool = False, clock=now_local, sleep=time.sleep, 
             continue
         out(f'{moment:%H:%M} {item["repository"]} {item["task"]}: starting')
         record = run_one(home, config, item, moment, end)
+        done.add((item['repository'], item['task']))
         runs += 1
         out(f'{clock():%H:%M} {item["repository"]} {item["task"]}: {record["outcome"]}'
             + (f' ({record["reason"]})' if record.get('reason') else ''))
@@ -570,9 +577,11 @@ def describe(task: dict | None, record: dict) -> str:
 
 def open_request(kind: str, tool: str, host: str, cwd: Path, base: str, branch: str, title: str, body: str,
                  level: str, record: dict) -> dict:
-    """Open a review request; the class goes in the title on every host and as a label where the
-    host's tool can add one after creation, so a missing label never stops delivery."""
+    """Open a review request; the class goes in the title on every host and as a label, so a missing
+    label never stops delivery. GitHub and GitLab add the label after creation; Azure DevOps sets it
+    as it creates the request, and creates the request without it when that fails."""
     environment = dict(os.environ)
+    label = None
     if kind == 'github':
         if host != 'github.com':
             environment['GH_HOST'] = host
@@ -586,8 +595,11 @@ def open_request(kind: str, tool: str, host: str, cwd: Path, base: str, branch: 
     else:
         create = [tool, 'repos', 'pr', 'create', '--source-branch', branch, '--target-branch', base,
                   '--title', title, '--description', body, '--detect', 'true', '--output', 'json']
-        label = None  # the class stays in the title
-    made = subprocess.run(create, cwd=cwd, env=environment, capture_output=True, text=True)
+    made = subprocess.run(create + ([] if label else ['--labels', level]), cwd=cwd, env=environment,
+                          capture_output=True, text=True)
+    labelled = made
+    if made.returncode and not label:
+        made = subprocess.run(create, cwd=cwd, env=environment, capture_output=True, text=True)
     result = {'tool': Path(tool).name, 'opened': made.returncode == 0,
               'output': (made.stdout + made.stderr).strip()[-1000:]}
     if made.returncode:
@@ -595,9 +607,7 @@ def open_request(kind: str, tool: str, host: str, cwd: Path, base: str, branch: 
         return result
     if label:
         labelled = subprocess.run(label, cwd=cwd, env=environment, capture_output=True, text=True)
-        result['label'] = level if labelled.returncode == 0 else f'not set: {labelled.stderr.strip()[-300:]}'
-    else:
-        result['label'] = 'in the title only'
+    result['label'] = level if labelled.returncode == 0 else f'not set: {labelled.stderr.strip()[-300:]}'
     return result
 
 

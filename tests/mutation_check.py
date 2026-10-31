@@ -229,6 +229,11 @@ MUTANTS = [
      "limit = timedelta(minutes=config['agent'].get('timeout_minutes', 120))"),
     ('a run that leaves no handoff stays without one', CYCLE,
      '        if not wrote:\n            write_handoff(', '        if False:\n            write_handoff('),
+    ('the runner repeats a task in the same session', CYCLE,
+     "        if (item['repository'], item['task']) in done:\n            continue",
+     "        if False:\n            continue"),
+    ('Azure DevOps requests carry no label', CYCLE,
+     "create + ([] if label else ['--labels', level])", 'create'),
     ('the runner starts a task just before the window closes', CYCLE,
      '        if end - moment < minimum:', '        if False:'),
 ]

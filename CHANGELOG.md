@@ -18,7 +18,8 @@ files in Git's local exclude file. Its task runner is a foreground loop, not
 an operating-system scheduler entry: it serves every registered repository
 through one first-in, first-out queue during a working-hours window, claims
 each task, runs the configured agent command in a fresh worktree, leaves a
-handoff and stops by itself. Its delivery command runs the task's checks,
+handoff and stops by itself; it runs each task at most once per session.
+Its delivery command runs the task's checks,
 pushes the task branch and opens a pull or merge request with `gh`, `glab`
 or `az`, labelled routine, sensitive or owner-only from the changed paths;
 without the tool it records the compare address. It never merges and never

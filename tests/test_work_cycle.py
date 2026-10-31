@@ -249,8 +249,9 @@ class Delivery(Fixture):
                 first = self.calls()[0]
                 self.assertEqual(first['argv'][1:1 + len(expected)], expected)
                 self.assertEqual(first['host'], host)
-                if 'repos' in expected:
-                    self.assertEqual(record['request']['label'], 'in the title only')
+                if 'repos' in expected:  # Azure DevOps sets labels as it creates the request
+                    self.assertEqual(first['argv'][-2:], ['--labels', 'routine'])
+                    self.assertEqual(record['request']['label'], 'routine')
                     self.assertEqual(len(self.calls()), 1)
 
     def test_a_label_that_cannot_be_set_still_leaves_the_request_open(self):
@@ -260,6 +261,15 @@ class Delivery(Fixture):
             record = self.deliver(root)
         self.assertEqual(record['outcome'], 'opened')
         self.assertTrue(record['request']['label'].startswith('not set'))
+        root, _ = self.repository('azure', tasks=[task('T1')], url='https://dev.azure.com/acme/Payments/_git/billing')
+        self.branch_with(root, 'src/a.py')
+        self.log.unlink()
+        with mock.patch.dict(os.environ, FAKE_FAIL='--labels'):
+            record = self.deliver(root)
+        self.assertEqual(record['outcome'], 'opened')
+        self.assertTrue(record['request']['label'].startswith('not set'))
+        labelled, plain = self.calls()
+        self.assertEqual(plain['argv'], labelled['argv'][:-2])
 
     def test_an_unknown_host_is_refused_before_checks_or_push(self):
         root, remote = self.repository(tasks=[task('T1')], url='https://code.example.invalid/team/billing.git')
@@ -354,6 +364,19 @@ class Runner(Fixture):
         handoff = (root / '.engineering-kit' / 'handoffs' / 'T1.md').read_text(encoding='utf-8')
         self.assertEqual(kit.check_handoff(handoff, {'T1': 'in_progress'}, 'T1.md'), [])
         self.assertIn('outcome is unknown', handoff)
+
+    def test_a_task_that_stays_ready_runs_once_per_session(self):
+        root, _ = self.repository(tasks=[task('T1', state='in_progress')])
+        self.runner(root)
+        moments = iter([MONDAY, MONDAY + timedelta(minutes=1), MONDAY + timedelta(minutes=2),
+                        MONDAY.replace(hour=17, minute=1)])
+        waits = []
+        with mock.patch.dict(os.environ, FAKE_AGENT='silent'):  # exits at once and leaves the task ready
+            status = cycle.serve(self.home, clock=lambda: next(moments), sleep=waits.append, out=lambda _: None)
+        self.assertEqual(status, 0)
+        self.assertEqual(len(self.calls()), 1)
+        self.assertEqual(len(list((self.home / 'worktrees').iterdir())), 1)
+        self.assertEqual(waits, [600.0])
 
     def test_the_time_limit_stops_the_agent(self):
         root, _ = self.repository(tasks=[task('T1')])
