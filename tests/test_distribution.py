@@ -675,6 +675,23 @@ class Distribution(unittest.TestCase):
         self.assertNotEqual(missing.returncode, 0)
         self.assertIn('not installed', missing.stderr)
 
+    def test_work_cycle_installs_its_tools_with_every_permission_shown_and_leaves_on_removal(self):
+        root = self.consumer()
+        status, report = self.run_change(root, '0.1.0', apply_now=True, with_integrations=['work-cycle'])
+        self.assertEqual(status, 0, report)
+        self.assertIn('grant      work-cycle: writes-cycle-tools, writes-skills, runs-agent-commands, '
+                      'pushes-branches, opens-review-requests', report)
+        for path in ('.kit-cycle/cycle.py', '.kit-cycle/first-run.md', '.kit-cycle/guide.md',
+                     '.agents/skills/kit-first-run/SKILL.md', '.claude/skills/kit-first-run/SKILL.md'):
+            self.assertTrue((root / path).is_file(), path)
+        listed = subprocess.run([sys.executable, '.kit-cycle/cycle.py', '--help'], cwd=root, capture_output=True,
+                                text=True)
+        self.assertEqual(listed.returncode, 0, listed.stderr)
+        self.assertIn('deliver', listed.stdout)
+        status, report = self.run_change(root, None, apply_now=True)
+        self.assertEqual(status, 0, report)
+        self.assertFalse((root / '.kit-cycle').exists())
+
     def test_agent_skills_install_beside_the_project_skills_and_leave_on_removal(self):
         own = '.claude/skills/deploy/SKILL.md'
         root = self.consumer(files={own: '---\nname: deploy\ndescription: Ours.\n---\n'})

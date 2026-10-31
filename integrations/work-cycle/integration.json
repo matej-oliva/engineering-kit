@@ -1,0 +1,28 @@
+{
+  "kit": "integration/1",
+  "name": "work-cycle",
+  "summary": "A development cycle for every repository on one machine: a first run that writes the backlog as task records, a foreground task runner that serves registered repositories through one first-in, first-out queue during working hours, delivery that pushes a task branch and opens a labelled pull or merge request that a person merges, and edit and pre-push guards.",
+  "contract": [1],
+  "capabilities": ["backlog-first-run", "task-runner", "review-request-delivery", "push-guard", "edit-guard", "local-exclude"],
+  "runtime": "Python 3.11 or later and Git, on Windows, WSL2, macOS or Linux; gh, glab or az for opening requests, each optional",
+  "permissions": ["writes-cycle-tools", "writes-skills", "runs-agent-commands", "pushes-branches", "opens-review-requests"],
+  "inputs": [
+    "Task records and handoffs in the folders project.json names",
+    "The cycle object and the checks in project.json",
+    "runner.json in the runner's home folder"
+  ],
+  "evidence": [
+    "A run record per task run in the runner's home folder",
+    "A delivery record per delivery in the repository's Git folder"
+  ],
+  "blocks": [],
+  "files": [
+    {"source": "cycle.py", "target": ".kit-cycle/cycle.py", "permission": "writes-cycle-tools"},
+    {"source": "first-run.md", "target": ".kit-cycle/first-run.md", "permission": "writes-cycle-tools"},
+    {"source": "guide.md", "target": ".kit-cycle/guide.md", "permission": "writes-cycle-tools"},
+    {"source": "skills/kit-first-run/SKILL.md", "target": ".agents/skills/kit-first-run/SKILL.md", "permission": "writes-skills"},
+    {"source": "skills/kit-first-run/SKILL.md", "target": ".claude/skills/kit-first-run/SKILL.md", "permission": "writes-skills"}
+  ],
+  "tested": "none: the tests run every command against disposable repositories with stand-in review tools and agents on Linux, Windows and macOS; no real host, agent client or work repository has used it.",
+  "manual": "Keep task records by hand, start agent sessions yourself in a new worktree, push task branches and open requests in the host's web page, and protect the default branch in the host's settings."
+}

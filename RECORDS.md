@@ -115,7 +115,11 @@ file; `review-template` adds a template to a hosting service's review form;
 `ci-workflow` adds automation that runs on the hosting service when code is
 pushed; `writes-skills` adds skill files that agent clients load when their
 description matches the work; `writes-launcher` adds the `kit` command at
-the project root. An integration that declares a permission the project has not
+the project root; `writes-cycle-tools` adds a script and its procedures in
+`.kit-cycle/`; `runs-agent-commands` lets that script start the agent
+command a person configures, unattended; `pushes-branches` lets it push
+task branches, never a default or protected one; `opens-review-requests`
+lets it open pull or merge requests, which it never merges. An integration that declares a permission the project has not
 granted is not installed, and a release that adds a permission stops the
 update until the project grants it. Permissions are declarations shown in
 the preview, not a sandbox: review a release's files before granting.

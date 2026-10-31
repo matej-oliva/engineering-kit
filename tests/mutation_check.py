@@ -15,6 +15,7 @@ import sys
 import tempfile
 
 KIT = Path(__file__).resolve().parents[1]
+CYCLE = 'integrations/work-cycle/cycle.py'
 
 # (label, file under tools/, exact original text, replacement)
 MUTANTS = [
@@ -205,6 +206,29 @@ MUTANTS = [
     ('checking a lock leaves compiled files', 'kit.py',
      '    sys.dont_write_bytecode = True  # leave no compiled files inside a project\'s kit folder\n    import kit_update',
      '    import kit_update'),
+    ('delivery accepts a protected branch', CYCLE,
+     "    if branch in protected(root, settings):\n        raise CycleError(f'{branch} is a protected branch",
+     "    if False:\n        raise CycleError(f'{branch} is a protected branch"),
+    ('delivery pushes the default branch', CYCLE, "f'HEAD:refs/heads/{branch}']", "f'HEAD:refs/heads/{base}']"),
+    ('delivery pushes after a failed check', CYCLE,
+     "            if not passed:\n                record['outcome'] = 'checks_failed'",
+     "            if False:\n                record['outcome'] = 'checks_failed'"),
+    ('the pre-push guard lets a protected branch through', CYCLE,
+     "and parts[2][len('refs/heads/'):] in names:", 'and False:'),
+    ('the guards install beside a configured hooks path', CYCLE,
+     "    if configured:\n        raise CycleError(f'core.hooksPath", "    if False:\n        raise CycleError(f'core.hooksPath"),
+    ('the edit guard allows in-place stream edits', CYCLE, "if program in ('sed', 'perl') and", 'if False and'),
+    ('a task that becomes ready jumps the queue', CYCLE,
+     "            kept.append({'repository': key[0]", "            kept.insert(0, {'repository': key[0]"),
+    ('the runner takes a claimed task', CYCLE,
+     "        if not claimed(home, item['repository'], item['task'], moment):", '        if True:'),
+    ('a run may outlast the window', CYCLE,
+     "limit = min(timedelta(minutes=config['agent'].get('timeout_minutes', 120)), deadline - moment)",
+     "limit = timedelta(minutes=config['agent'].get('timeout_minutes', 120))"),
+    ('a run that leaves no handoff stays without one', CYCLE,
+     '        if not wrote:\n            write_handoff(', '        if False:\n            write_handoff('),
+    ('the runner starts a task just before the window closes', CYCLE,
+     '        if end - moment < minimum:', '        if False:'),
 ]
 
 
