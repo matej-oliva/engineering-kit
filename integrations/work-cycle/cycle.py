@@ -33,6 +33,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 from urllib.parse import quote
 
@@ -582,24 +583,29 @@ def open_request(kind: str, tool: str, host: str, cwd: Path, base: str, branch: 
     as it creates the request, and creates the request without it when that fails."""
     environment = dict(os.environ)
     label = None
-    if kind == 'github':
-        if host != 'github.com':
-            environment['GH_HOST'] = host
-        create = [tool, 'pr', 'create', '--base', base, '--head', branch, '--title', title, '--body', body]
-        label = [tool, 'pr', 'edit', branch, '--add-label', level]
-    elif kind == 'gitlab':
-        environment['GITLAB_HOST'] = host
-        create = [tool, 'mr', 'create', '--source-branch', branch, '--target-branch', base, '--title', title,
-                  '--description', body, '--yes']
-        label = [tool, 'mr', 'update', branch, '--label', level]
-    else:
-        create = [tool, 'repos', 'pr', 'create', '--source-branch', branch, '--target-branch', base,
-                  '--title', title, '--description', body, '--detect', 'true', '--output', 'json']
-    made = subprocess.run(create + ([] if label else ['--labels', level]), cwd=cwd, env=environment,
-                          capture_output=True, text=True)
-    labelled = made
-    if made.returncode and not label:
-        made = subprocess.run(create, cwd=cwd, env=environment, capture_output=True, text=True)
+    with tempfile.TemporaryDirectory(prefix='kit-cycle-') as texts:
+        if kind == 'github':
+            if host != 'github.com':
+                environment['GH_HOST'] = host
+            create = [tool, 'pr', 'create', '--base', base, '--head', branch, '--title', title, '--body', body]
+            label = [tool, 'pr', 'edit', branch, '--add-label', level]
+        elif kind == 'gitlab':
+            environment['GITLAB_HOST'] = host
+            create = [tool, 'mr', 'create', '--source-branch', branch, '--target-branch', base, '--title', title,
+                      '--description', body, '--yes']
+            label = [tool, 'mr', 'update', branch, '--label', level]
+        else:  # az is az.cmd on Windows, whose cmd.exe ends at a line break and reads & | % ^, so the text
+            title_file, body_file = Path(texts, 'title'), Path(texts, 'description')  # goes in files az reads
+            title_file.write_text(title, encoding='utf-8')
+            body_file.write_text(body, encoding='utf-8')
+            create = [tool, 'repos', 'pr', 'create', '--source-branch', branch, '--target-branch', base,
+                      '--title', f'@{title_file}', '--description', f'@{body_file}', '--detect', 'true',
+                      '--output', 'json']
+        made = subprocess.run(create + ([] if label else ['--labels', level]), cwd=cwd, env=environment,
+                              capture_output=True, text=True)
+        labelled = made
+        if made.returncode and not label:
+            made = subprocess.run(create, cwd=cwd, env=environment, capture_output=True, text=True)
     result = {'tool': Path(tool).name, 'opened': made.returncode == 0,
               'output': (made.stdout + made.stderr).strip()[-1000:]}
     if made.returncode:

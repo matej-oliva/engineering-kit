@@ -150,7 +150,9 @@ branch, pushes the branch and opens a pull or merge request whose title
 starts with its class: `[routine]`, `[sensitive]` or `[owner-only]`, from
 the `paths` patterns. It also adds the class as a label when the label
 can be set: GitHub and GitLab after opening the request, Azure DevOps as it
-opens it, opening it without the label when that fails. Each delivery is recorded under the
+opens it, opening it without the label when that fails. `az` reads the
+title and description from files, because on Windows it is a batch file
+whose command line cannot hold line breaks or characters such as `&`. Each delivery is recorded under the
 repository's Git folder in `kit-cycle/deliveries/`, never in a commit.
 
 ## 7. Guards

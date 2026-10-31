@@ -28,8 +28,14 @@ ZONE = timezone(timedelta(hours=1))
 MONDAY = datetime(2026, 11, 2, 10, 0, tzinfo=ZONE)  # inside the default window
 FAKE_TOOL = '''
 import json, os, sys
+def read(argument):  # az reads an argument starting with @ from that file, as azure-cli 2.91 does
+    if argument.startswith('@') and os.path.isfile(argument[1:]):
+        with open(argument[1:], encoding='utf-8') as file:
+            return file.read()
+    return argument
 with open(os.environ['FAKE_LOG'], 'a', encoding='utf-8') as log:
     log.write(json.dumps({'argv': [os.path.basename(sys.argv[0])] + sys.argv[1:],
+                          'read': [read(argument) for argument in sys.argv[1:]],
                           'host': os.environ.get('GH_HOST') or os.environ.get('GITLAB_HOST')}) + '\\n')
 if os.environ.get('FAKE_FAIL') and os.environ['FAKE_FAIL'] in sys.argv:
     sys.exit(1)
@@ -253,6 +259,22 @@ class Delivery(Fixture):
                     self.assertEqual(first['argv'][-2:], ['--labels', 'routine'])
                     self.assertEqual(record['request']['label'], 'routine')
                     self.assertEqual(len(self.calls()), 1)
+
+    def test_azure_devops_text_stays_off_the_command_line(self):
+        # az is az.cmd on Windows: cmd.exe ends the command at a line break and reads & | < > ^ %
+        item = dict(task('T1'), title='Pay A & B at 100% | now')
+        root, _ = self.repository(tasks=[item], url='https://dev.azure.com/acme/Payments/_git/billing')
+        self.branch_with(root, 'src/a.py')
+        record = self.deliver(root)
+        self.assertEqual(record['outcome'], 'opened')
+        (call,) = self.calls()
+        for argument in call['argv']:
+            self.assertNotRegex(argument, r'[\r\n&|<>^%"]')
+        read = dict(zip(call['argv'][1:], call['read']))
+        title, description = (read[call['argv'][call['argv'].index(o) + 1]] for o in ('--title', '--description'))
+        self.assertEqual(title, '[routine] Pay A & B at 100% | now')
+        self.assertTrue(description.startswith('Change class: routine.\n\nTask: T1, Pay A & B'), description)
+        self.assertEqual(call['argv'][-2:], ['--labels', 'routine'])
 
     def test_a_label_that_cannot_be_set_still_leaves_the_request_open(self):
         root, _ = self.repository(tasks=[task('T1')], url='https://github.com/acme/billing.git')

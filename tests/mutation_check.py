@@ -234,6 +234,8 @@ MUTANTS = [
      "        if False:\n            continue"),
     ('Azure DevOps requests carry no label', CYCLE,
      "create + ([] if label else ['--labels', level])", 'create'),
+    ('Azure DevOps text reaches the command line', CYCLE,
+     "'--title', f'@{title_file}', '--description', f'@{body_file}'", "'--title', title, '--description', body"),
     ('the runner starts a task just before the window closes', CYCLE,
      '        if end - moment < minimum:', '        if False:'),
 ]
