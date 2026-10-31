@@ -55,12 +55,19 @@
       "tests": 123,
       "mutants": 88,
       "installed_files": 83
+    },
+    {
+      "version": "1.4.0",
+      "date": "2026-10-31",
+      "tests": 147,
+      "mutants": 102,
+      "installed_files": 88
     }
   ],
   "context_bytes": {
     "entry block, read in every session": 473,
     "contract, read to plan, review or release": 6875,
-    "one procedure, on average, read for its stage": 2093,
+    "one procedure, on average, read for its stage": 2179,
     "all skill metadata, before client invocation filtering": 3225
   },
   "observed": [
