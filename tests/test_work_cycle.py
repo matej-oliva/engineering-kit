@@ -162,6 +162,14 @@ class Delivery(Fixture):
                                                values['base'], values['branch'], 'title', 'body', 'routine', {})
                         run.assert_not_called()
 
+    def test_azure_unsafe_arguments_are_refused_before_the_branch_is_pushed(self):
+        root, remote = self.repository(tasks=[task('T1')], url='https://dev.azure.com/acme/Payments/_git/billing')
+        self.branch_with(root, 'src/a.py', branch='kit/a&b')
+        with self.assertRaisesRegex(cycle.CycleError, 'unsafe Azure branch'):
+            self.deliver(root)
+        self.assertEqual(git('branch', '--list', 'kit/*', cwd=remote), '')
+        self.assertEqual(self.calls(), [])
+
     def test_missing_profile_check_is_a_cli_refusal(self):
         root, _ = self.repository(tasks=[task('T1')], url='https://github.com/acme/billing.git')
         self.branch_with(root, 'src/a.py')
@@ -493,12 +501,26 @@ class Guards(Fixture):
         # This is a convenience guard, not a shell parser or security boundary.
         for command in ('env sed -i s/a/b/ x', 'command perl -pi -e s/a/b/ x'):
             self.assertEqual(cycle.guard_edit(command, set()), [])
-        self.assertIn('cannot read', (KIT / 'integrations/work-cycle/guide.md').read_text(encoding='utf-8'))
+        guide = (KIT / 'integrations/work-cycle/guide.md').read_text(encoding='utf-8')
+        self.assertIn('cannot read, including commands behind `env` or `command` wrappers', guide)
         self.assertTrue(cycle.guard_edit('/usr/bin/sed -i s/a/b/ x', set()))
 
     def test_perl_module_options_are_not_in_place_edits(self):
         for command in ('perl -Mstrict -e 1', 'perl -Mlib=lib -e 1'):
             self.assertEqual(cycle.guard_edit(command, set()), [])
+
+    def test_perl_switches_that_take_a_value_are_not_in_place_edits(self):
+        for command in ('perl -Ilib -e 1', 'perl -mstrict -e 1', 'perl -mList::Util -e 1', 'perl -I lib -e 1',
+                        'perl -Mstrict -Ilib -e 1', 'perl -wMstrict -e 1', 'perl -pe s/a/b/ x'):
+            with self.subTest(command=command):
+                self.assertEqual(cycle.guard_edit(command, set()), [])
+
+    def test_perl_in_place_switches_after_numeric_options_are_refused(self):
+        for command in ('perl -0777pi -e s/a/b/ x', 'perl -0pi -e s/a/b/ x', 'perl -l012pi -e 1 x',
+                        'perl -Mstrict -0777pi -e 1 x', 'perl -pi.bak -Mstrict x', 'perl -i -pe 1 x',
+                        'perl -wni -e 1 x'):
+            with self.subTest(command=command):
+                self.assertTrue(cycle.guard_edit(command, set()))
 
     def test_the_pre_push_guard_refuses_protected_branches_from_every_worktree(self):
         root, remote = self.repository(cycle_settings={'protected': ['release']})

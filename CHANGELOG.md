@@ -6,13 +6,23 @@ and whether the contract changed. Newest first.
 ## 1.4.1, 2026-11-02
 
 Contract version 1, unchanged. Nothing to do after updating.
-The work-cycle edit guard accepts Perl module options such as `-Mstrict`
-and `-Mlib` while still refusing in-place edits. A profile with a missing
-check and a malformed claim now produce a refusal instead of a traceback.
-The optional work-cycle `az` adapter refuses branch names, base names and temporary
-paths containing line breaks or cmd.exe metacharacters before calling az.
+The README status line, its clone example and the work-cycle adoption
+commands named 1.4.0; they now name this release, and a test compares them
+with the newest heading here.
+The work-cycle edit guard no longer takes the value of a Perl switch such
+as `-Mstrict`, `-Ilib` or `-mList::Util` for an in-place edit, and it now
+refuses `-i` after `-0777`, `-0` or `-l012`, as in `perl -0777pi`. A profile
+that names a missing check and a claim with an invalid expiry now produce a
+refusal instead of a traceback; other malformed `project.json` shapes still
+do not.
+The optional work-cycle `az` adapter refuses branch names, base names and
+temporary paths containing line breaks or `& | < > ^ % "` before the checks
+and the push, so a refused delivery leaves no pushed branch. Parentheses and
+`!` are not refused.
 The edit guard remains fail-open for shell syntax it cannot read, including
-`env` and `command` wrappers; it is not a security boundary.
+`env` and `command` wrappers, `sudo`, quoted program names and
+`PERL5OPT`; it is not a security boundary. The work-cycle guide lists
+these limits.
 
 ## 1.4.0, 2026-10-31
 

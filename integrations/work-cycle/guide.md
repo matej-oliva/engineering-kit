@@ -76,8 +76,8 @@ pushes the branch and records a compare address you open by hand.
 Clone a release as the kit's README shows and adopt with the integration:
 
 ```sh
-python3 ~/engineering-kit-1.4.0/tools/kit.py adopt --with launcher --with agent-skills --with work-cycle
-python3 ~/engineering-kit-1.4.0/tools/kit.py adopt --with launcher --with agent-skills --with work-cycle --apply
+python3 ~/engineering-kit-1.4.1/tools/kit.py adopt --with launcher --with agent-skills --with work-cycle
+python3 ~/engineering-kit-1.4.1/tools/kit.py adopt --with launcher --with agent-skills --with work-cycle --apply
 ```
 
 A project that already uses the kit adds `"work-cycle": {"grant": [...]}`
@@ -178,14 +178,24 @@ Any client that sends the same JSON payload (`tool_input.command`) and reads
 exit status 2 as a refusal can use the same command. It allows what it
 cannot read, including commands behind `env` or `command` wrappers; this
 is not a shell parser or a security boundary. Direct path-prefixed commands
-such as `/usr/bin/sed -i` are recognized. Perl `-Mstrict` and `-Mlib`
-module options are allowed. The pre-push guard still refuses protected pushes.
+such as `/usr/bin/sed -i` are recognized. Perl switches that take the rest
+of the word as a value, such as `-Mstrict`, `-Ilib` and `-mList::Util`, are
+allowed, and `-i` is still found after `-0777`, `-0` or `-l012`. The
+pre-push guard still refuses protected pushes. Known limits, not defects:
+the guard does not read variable prefixes, `sudo`, `time`, quoted program
+names, subshells, `find -exec`, `sed.exe`, `PERL5OPT`, abbreviated long
+options or a single `&`, and it can wrongly refuse a command whose quoted
+text contains a word such as `-i`.
 
 A profile that names a missing check or a claim with an invalid expiry
 produces a refusal. Correct the project configuration or claim before retrying.
-Azure DevOps request creation refuses base names, branch names and temporary
+Other malformed shapes in `project.json`, such as `"required_checks": null`,
+still end in a traceback instead of a refusal.
+Azure DevOps delivery refuses base names, branch names and temporary
 paths containing line breaks or cmd.exe characters (`& | < > ^ % "`) before
-calling az. Use a name and temporary directory without these characters.
+the checks and the push, and again before calling az. Parentheses and `!`
+are not refused; whether az.cmd mishandles them has not been tried on
+Windows. Use a name and temporary directory without these characters.
 
 In a repository you share, the runner's worktrees hold only committed
 files, so neither `.kit-cycle/` nor `.claude/settings.local.json` is there.

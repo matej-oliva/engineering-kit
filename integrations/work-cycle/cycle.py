@@ -534,6 +534,9 @@ def deliver(root: Path, worktree: Path, task_id: str | None, title: str | None, 
             raise CycleError(f'cannot tell which service hosts {host}; set "host" under "cycle" in project.json '
                              'to github, gitlab or azure')
         record.update(host=host, kind=kind, compare=compare_url(kind, host, path, base, branch))
+        tool = shutil.which(TOOLS[kind])
+        if kind == 'azure' and tool:  # refuse before the checks and the push, not after the branch is out
+            check_azure_arguments(base, branch, tempfile.gettempdir())
         for name, command in required_checks(project, task):
             if not command:
                 record['checks'].append({'id': name, 'result': 'unknown', 'evidence': 'performed by hand'})
@@ -560,7 +563,6 @@ def deliver(root: Path, worktree: Path, task_id: str | None, title: str | None, 
             return record
         heading = f'[{level}] ' + (title or (task or {}).get('title') or git(worktree, 'log', '-1', '--format=%s'))
         text = body or describe(task, record)
-        tool = shutil.which(TOOLS[kind])
         if tool is None:
             record.update(outcome='manual', reason=f'{TOOLS[kind]} is not installed; open the request by hand '
                                                    'at the compare address')
@@ -587,6 +589,12 @@ def describe(task: dict | None, record: dict) -> str:
     return '\n'.join(lines)
 
 
+def check_azure_arguments(base: str, branch: str, texts: str) -> None:
+    for name, value in (('base', base), ('branch', branch), ('temporary path', texts)):
+        if re.search(r'[\r\n&|<>^%"]', value):
+            raise CycleError(f'unsafe Azure {name}: line breaks and cmd.exe characters are refused')
+
+
 def open_request(kind: str, tool: str, host: str, cwd: Path, base: str, branch: str, title: str, body: str,
                  level: str, record: dict) -> dict:
     """Open a review request; the class goes in the title on every host and as a label, so a missing
@@ -606,10 +614,9 @@ def open_request(kind: str, tool: str, host: str, cwd: Path, base: str, branch: 
                       '--description', body, '--yes']
             label = [tool, 'mr', 'update', branch, '--label', level]
         else:  # az is az.cmd on Windows, whose cmd.exe ends at a line break and reads & | % ^, so the text
-            for name, value in (('base', base), ('branch', branch), ('temporary path', texts)):
-                if re.search(r'[\r\n&|<>^%"]', value):
-                    raise CycleError(f'unsafe Azure {name}: line breaks and cmd.exe characters are refused')
-            title_file, body_file = Path(texts, 'title'), Path(texts, 'description')  # goes in files az reads
+            # goes in files az reads and the names it takes are checked
+            check_azure_arguments(base, branch, texts)
+            title_file, body_file = Path(texts, 'title'), Path(texts, 'description')
             title_file.write_text(title, encoding='utf-8')
             body_file.write_text(body, encoding='utf-8')
             create = [tool, 'repos', 'pr', 'create', '--source-branch', branch, '--target-branch', base,
@@ -655,6 +662,22 @@ def guard_push(root: Path, remote: str, lines: list[str]) -> list[str]:
 SHELL_SPLIT = re.compile(r'&&|\|\||[;|\n]')
 
 
+def perl_edits_in_place(word: str) -> bool:
+    """Whether a word of Perl switches holds -i. Walking the letters skips what a switch consumes: -M, -m, -I
+    and a few others take the rest of the word as a value; digits after -0 or -l are skipped as letters."""
+    if not word.startswith('-') or word.startswith('--'):
+        return False
+    position = 1
+    while position < len(word):
+        letter = word[position]
+        position += 1
+        if letter == 'i':
+            return True
+        if letter in 'MmIFxVdDeEC':
+            return False
+    return False
+
+
 def guard_edit(command: str, protected_names: set[str]) -> list[str]:
     """Refusals for an agent's shell command: in-place stream edits, bypassed hooks and pushes to a
     protected branch. A command that cannot be read is allowed; the pre-push guard still applies."""
@@ -664,9 +687,11 @@ def guard_edit(command: str, protected_names: set[str]) -> list[str]:
         if not words:
             continue
         program = PurePosixPath(words[0]).name
-        # Perl -M consumes the rest as a module name, not more option letters.
-        options = r'-[a-zA-LN-Z]*i\S*' if program == 'perl' else r'-[a-zA-Z]*i\S*|--in-place\S*'
-        if program in ('sed', 'perl') and any(re.fullmatch(options, w) for w in words[1:]):
+        if program == 'perl':
+            in_place = any(perl_edits_in_place(w) for w in words[1:])
+        else:
+            in_place = program == 'sed' and any(re.fullmatch(r'-[a-zA-Z]*i\S*|--in-place\S*', w) for w in words[1:])
+        if in_place:
             refused.append(f'{program} -i rewrites files in place; use the agent\'s edit tool')
         if program == 'git':
             if 'core.hooksPath' in part or '--no-verify' in words:
