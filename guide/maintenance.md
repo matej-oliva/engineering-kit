@@ -25,17 +25,17 @@ have installed. Edits you make to it are merged like edits to any kit file,
 but a project's own notes belong in `project.json` or its own
 documentation instead.
 
-## Moving to this release, 1.4.0
+## Moving to this release, 1.4.1
 
 Each release rewrites this section for itself; the changelog keeps what
 every earlier release asked.
 
-From 1.3.0, 1.2.1 or 1.2.0, `python3 kit update --apply` is enough, or without the launcher
+From 1.4.0, 1.3.0, 1.2.1 or 1.2.0, `python3 kit update --apply` is enough, or without the launcher
 `python3 .engineering-kit/kit/tools/kit.py update --apply`. From 1.1.0 the
 long form does the same. From 1.0.1, 1.0.0 or a pilot release, name the
-version once: `python3 .engineering-kit/kit/tools/kit.py update 1.4.0
+version once: `python3 .engineering-kit/kit/tools/kit.py update 1.4.1
 --apply`. The contract is unchanged and nothing else is required. This
-release adds the optional `work-cycle` integration, which installs nothing
+release fixes the optional `work-cycle` integration, which installs nothing
 until you enable it with its five permissions, as
 [Customize](customize.md) lists; its setup guide is `.kit-cycle/guide.md`
 once installed. Coming from 1.2.1 or earlier with `agent-skills` enabled,

@@ -148,6 +148,34 @@ class Fixture(unittest.TestCase):
 
 
 class Delivery(Fixture):
+    def test_azure_unsafe_arguments_never_reach_the_tool(self):
+        for character in '\r\n&|<>^%"':
+            for field in ('base', 'branch', 'texts'):
+                with self.subTest(character=character, field=field):
+                    values = dict(base='main', branch='kit/T1', texts=str(self.temp))
+                    values[field] += character + 'unsafe'
+                    with mock.patch.object(cycle.tempfile, 'TemporaryDirectory') as directory, \
+                            mock.patch.object(cycle.subprocess, 'run') as run:
+                        directory.return_value.__enter__.return_value = values['texts']
+                        with self.assertRaisesRegex(cycle.CycleError, 'unsafe Azure'):
+                            cycle.open_request('azure', 'az', 'dev.azure.com', self.temp,
+                                               values['base'], values['branch'], 'title', 'body', 'routine', {})
+                        run.assert_not_called()
+
+    def test_missing_profile_check_is_a_cli_refusal(self):
+        root, _ = self.repository(tasks=[task('T1')], url='https://github.com/acme/billing.git')
+        self.branch_with(root, 'src/a.py')
+        project = cycle.project_config(root)
+        project['profiles']['change']['required_checks'].append('missing')
+        cycle.write_json(root / '.engineering-kit/project.json', project)
+        result = subprocess.run([sys.executable, str(root / '.kit-cycle/cycle.py'), 'deliver', '--task', 'T1'],
+                                cwd=root, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('refused:', result.stderr)
+        self.assertIn('missing', result.stderr)
+        self.assertNotIn('Traceback', result.stderr)
+        self.assertEqual(self.calls(), [])
+
     def branch_with(self, root, *paths, branch='kit/T1'):
         git('switch', '-q', '-c', branch, cwd=root)
         for path in paths:
@@ -318,6 +346,20 @@ class Delivery(Fixture):
 
 
 class Runner(Fixture):
+    def test_malformed_claim_is_a_cli_refusal(self):
+        root, _ = self.repository(tasks=[task('T1')])
+        self.runner(root)
+        for value in ({}, [], {'until': 'bad'}, {'until': 1}, {'until': '2026-11-02T12:00:00'}):
+            with self.subTest(value=value):
+                cycle.write_json(cycle.claim_path(self.home, root.name, 'T1'), value)
+                result = subprocess.run([sys.executable, str(root / '.kit-cycle/cycle.py'),
+                                         '--home', str(self.home), 'queue'], cwd=root,
+                                        capture_output=True, text=True)
+                self.assertEqual(result.returncode, 1)
+                self.assertIn('refused:', result.stderr)
+                self.assertIn('claim', result.stderr)
+                self.assertNotIn('Traceback', result.stderr)
+
     def runner(self, *roots, command=None):
         for root in roots:
             cycle.register(self.home, root, None)
@@ -447,6 +489,17 @@ class Runner(Fixture):
 
 
 class Guards(Fixture):
+    def test_unread_shell_wrappers_remain_documented_as_fail_open(self):
+        # This is a convenience guard, not a shell parser or security boundary.
+        for command in ('env sed -i s/a/b/ x', 'command perl -pi -e s/a/b/ x'):
+            self.assertEqual(cycle.guard_edit(command, set()), [])
+        self.assertIn('cannot read', (KIT / 'integrations/work-cycle/guide.md').read_text(encoding='utf-8'))
+        self.assertTrue(cycle.guard_edit('/usr/bin/sed -i s/a/b/ x', set()))
+
+    def test_perl_module_options_are_not_in_place_edits(self):
+        for command in ('perl -Mstrict -e 1', 'perl -Mlib=lib -e 1'):
+            self.assertEqual(cycle.guard_edit(command, set()), [])
+
     def test_the_pre_push_guard_refuses_protected_branches_from_every_worktree(self):
         root, remote = self.repository(cycle_settings={'protected': ['release']})
         lines = cycle.install_guards(root)

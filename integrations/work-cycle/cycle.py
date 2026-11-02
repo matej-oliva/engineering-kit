@@ -201,8 +201,16 @@ def claim_path(home: Path, repository: str, task_id: str) -> Path:
 
 
 def claimed(home: Path, repository: str, task_id: str, moment: datetime) -> dict | None:
-    claim = read_json(claim_path(home, repository, task_id))
-    if claim and datetime.fromisoformat(claim['until']) > moment:
+    path = claim_path(home, repository, task_id)
+    claim = read_json(path)
+    if claim is None and not path.exists():
+        return None
+    try:
+        until = datetime.fromisoformat(claim['until'])
+        active = until > moment
+    except (KeyError, TypeError, ValueError) as error:
+        raise CycleError(f'malformed claim {path}: expected an until timestamp with a timezone') from error
+    if active:
         return claim
     return None
 
@@ -491,6 +499,9 @@ def required_checks(project: dict, task: dict | None) -> list[tuple[str, str | N
         names = profile.get('required_checks', [])
     else:
         names = list(checks)
+    for name in names:
+        if name not in checks:
+            raise CycleError(f'profile names missing check {name!r} in project.json')
     return [(name, checks[name].get('command')) for name in names]
 
 
@@ -595,6 +606,9 @@ def open_request(kind: str, tool: str, host: str, cwd: Path, base: str, branch: 
                       '--description', body, '--yes']
             label = [tool, 'mr', 'update', branch, '--label', level]
         else:  # az is az.cmd on Windows, whose cmd.exe ends at a line break and reads & | % ^, so the text
+            for name, value in (('base', base), ('branch', branch), ('temporary path', texts)):
+                if re.search(r'[\r\n&|<>^%"]', value):
+                    raise CycleError(f'unsafe Azure {name}: line breaks and cmd.exe characters are refused')
             title_file, body_file = Path(texts, 'title'), Path(texts, 'description')  # goes in files az reads
             title_file.write_text(title, encoding='utf-8')
             body_file.write_text(body, encoding='utf-8')
@@ -650,7 +664,9 @@ def guard_edit(command: str, protected_names: set[str]) -> list[str]:
         if not words:
             continue
         program = PurePosixPath(words[0]).name
-        if program in ('sed', 'perl') and any(re.fullmatch(r'-[a-zA-Z]*i\S*|--in-place\S*', w) for w in words[1:]):
+        # Perl -M consumes the rest as a module name, not more option letters.
+        options = r'-[a-zA-LN-Z]*i\S*' if program == 'perl' else r'-[a-zA-Z]*i\S*|--in-place\S*'
+        if program in ('sed', 'perl') and any(re.fullmatch(options, w) for w in words[1:]):
             refused.append(f'{program} -i rewrites files in place; use the agent\'s edit tool')
         if program == 'git':
             if 'core.hooksPath' in part or '--no-verify' in words:

@@ -3,6 +3,17 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
+## 1.4.1, 2026-11-02
+
+Contract version 1, unchanged. Nothing to do after updating.
+The work-cycle edit guard accepts Perl module options such as `-Mstrict`
+and `-Mlib` while still refusing in-place edits. A profile with a missing
+check and a malformed claim now produce a refusal instead of a traceback.
+The optional work-cycle `az` adapter refuses branch names, base names and temporary
+paths containing line breaks or cmd.exe metacharacters before calling az.
+The edit guard remains fail-open for shell syntax it cannot read, including
+`env` and `command` wrappers; it is not a security boundary.
+
 ## 1.4.0, 2026-10-31
 
 Contract version 1, unchanged. Nothing to do after updating.

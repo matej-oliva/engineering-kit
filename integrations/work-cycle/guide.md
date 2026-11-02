@@ -176,7 +176,16 @@ of `py`:
 
 Any client that sends the same JSON payload (`tool_input.command`) and reads
 exit status 2 as a refusal can use the same command. It allows what it
-cannot read; the pre-push guard still refuses protected pushes.
+cannot read, including commands behind `env` or `command` wrappers; this
+is not a shell parser or a security boundary. Direct path-prefixed commands
+such as `/usr/bin/sed -i` are recognized. Perl `-Mstrict` and `-Mlib`
+module options are allowed. The pre-push guard still refuses protected pushes.
+
+A profile that names a missing check or a claim with an invalid expiry
+produces a refusal. Correct the project configuration or claim before retrying.
+Azure DevOps request creation refuses base names, branch names and temporary
+paths containing line breaks or cmd.exe characters (`& | < > ^ % "`) before
+calling az. Use a name and temporary directory without these characters.
 
 In a repository you share, the runner's worktrees hold only committed
 files, so neither `.kit-cycle/` nor `.claude/settings.local.json` is there.
