@@ -62,6 +62,13 @@
       "tests": 148,
       "mutants": 103,
       "installed_files": 88
+    },
+    {
+      "version": "1.4.1",
+      "date": "2026-11-02",
+      "tests": 153,
+      "mutants": 108,
+      "installed_files": 88
     }
   ],
   "context_bytes": {

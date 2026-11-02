@@ -30,6 +30,7 @@ caught. The first release had no deliberate faults yet.
 | 1.2.1 | 2026-10-22 | 121 | 86 | 80 |
 | 1.3.0 | 2026-10-23 | 123 | 88 | 83 |
 | 1.4.0 | 2026-10-31 | 148 | 103 | 88 |
+| 1.4.1 | 2026-11-02 | 153 | 108 | 88 |
 <!-- /figures:releases -->
 
 ## What each release installs
