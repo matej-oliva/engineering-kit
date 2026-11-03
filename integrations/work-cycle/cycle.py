@@ -662,9 +662,14 @@ def guard_push(root: Path, remote: str, lines: list[str]) -> list[str]:
 SHELL_SPLIT = re.compile(r'&&|\|\||[;|\n]')
 
 
+PERL_FLAGS = 'acdfgnpsStTuUVwWX'  # switches after which the next letter is another switch
+
+
 def perl_edits_in_place(word: str) -> bool:
-    """Whether a word of Perl switches holds -i. Walking the letters skips what a switch consumes: -M, -m, -I
-    and a few others take the rest of the word as a value; digits after -0 or -l are skipped as letters."""
+    """Whether a word of Perl switches enables -i. The letters are walked as Perl reads them, and only the
+    letters listed in PERL_FLAGS and octal digits after -0 or -l let the walk go on. Everything else ends
+    it: a switch that takes the rest of the word (-M, -m, -I, -F, -x, -D, -e, -E, -C), -d and -V before
+    : or =, -h and -v, which exit, and any character that is not a switch at all."""
     if not word.startswith('-') or word.startswith('--'):
         return False
     position = 1
@@ -673,7 +678,9 @@ def perl_edits_in_place(word: str) -> bool:
         position += 1
         if letter == 'i':
             return True
-        if letter in 'MmIFxVdDeEC':
+        if letter in '0l':
+            position += re.match(r'[0-7]*', word[position:]).end()
+        elif letter not in PERL_FLAGS:
             return False
     return False
 

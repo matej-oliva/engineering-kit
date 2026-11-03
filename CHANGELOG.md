@@ -3,15 +3,18 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
-## 1.4.1, 2026-11-02
+## 1.4.1, 2026-11-03
 
 Contract version 1, unchanged. Nothing to do after updating.
 The README status line, its clone example and the work-cycle adoption
 commands named 1.4.0; they now name this release, and a test compares them
 with the newest heading here.
-The work-cycle edit guard no longer takes the value of a Perl switch such
-as `-Mstrict`, `-Ilib` or `-mList::Util` for an in-place edit, and it now
-refuses `-i` after `-0777`, `-0` or `-l012`, as in `perl -0777pi`. A profile
+The work-cycle edit guard now reads a Perl switch word the way Perl does,
+and a table made by running real Perl on every word of up to three
+characters that holds `i` pins it. It no longer takes the value of a switch
+such as `-Mstrict`, `-Ilib` or `-mList::Util` for an in-place edit, and it
+refuses `-i` after `-0777`, `-0`, `-l012`, `-d` and `-V`, as in
+`perl -0777pi` and `perl -dpi`. A profile
 that names a missing check and a claim with an invalid expiry now produce a
 refusal instead of a traceback; other malformed `project.json` shapes still
 do not.

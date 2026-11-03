@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 import importlib.util
+import itertools
 import json
 import os
 from pathlib import Path
@@ -168,6 +169,26 @@ class Delivery(Fixture):
         with self.assertRaisesRegex(cycle.CycleError, 'unsafe Azure branch'):
             self.deliver(root)
         self.assertEqual(git('branch', '--list', 'kit/*', cwd=remote), '')
+        self.assertEqual(self.calls(), [])
+
+    def test_azure_unsafe_temporary_path_is_refused_before_the_branch_is_pushed(self):
+        root, remote = self.repository(tasks=[task('T1')], url='https://dev.azure.com/acme/Payments/_git/billing')
+        self.branch_with(root, 'src/a.py')
+        with mock.patch.object(cycle.tempfile, 'gettempdir', return_value=str(self.temp) + '&unsafe'):
+            with self.assertRaisesRegex(cycle.CycleError, 'unsafe Azure temporary path'):
+                self.deliver(root)
+        self.assertEqual(git('branch', '--list', 'kit/*', cwd=remote), '')
+        self.assertEqual(self.calls(), [])
+
+    def test_azure_without_az_still_pushes_and_leaves_the_compare_address(self):
+        # Nothing reaches az, so the names need no refusal; delivery stays the manual path.
+        root, remote = self.repository(tasks=[task('T1')], url='https://dev.azure.com/acme/Payments/_git/billing')
+        self.branch_with(root, 'src/a.py', branch='kit/a&b')
+        real = cycle.shutil.which
+        with mock.patch.object(cycle.shutil, 'which', side_effect=lambda name, *a: None if name == 'az' else real(name, *a)):
+            record = self.deliver(root)
+        self.assertEqual(record['outcome'], 'manual')
+        self.assertEqual(git('rev-parse', 'kit/a&b', cwd=remote), git('rev-parse', 'HEAD', cwd=root))
         self.assertEqual(self.calls(), [])
 
     def test_missing_profile_check_is_a_cli_refusal(self):
@@ -509,18 +530,51 @@ class Guards(Fixture):
         for command in ('perl -Mstrict -e 1', 'perl -Mlib=lib -e 1'):
             self.assertEqual(cycle.guard_edit(command, set()), [])
 
-    def test_perl_switches_that_take_a_value_are_not_in_place_edits(self):
-        for command in ('perl -Ilib -e 1', 'perl -mstrict -e 1', 'perl -mList::Util -e 1', 'perl -I lib -e 1',
-                        'perl -Mstrict -Ilib -e 1', 'perl -wMstrict -e 1', 'perl -pe s/a/b/ x'):
-            with self.subTest(command=command):
-                self.assertEqual(cycle.guard_edit(command, set()), [])
+    # Commands the two independent reviews named, each run against real Perl 5.40.1 when it was found.
+    PERL_ALLOWED = {
+        'value switches': ('perl -Ilib -e 1', 'perl -I lib -e 1', 'perl -mstrict -e 1', 'perl -mList::Util -e 1',
+                           'perl -Mstrict -Ilib -e 1', 'perl -wMstrict -e 1', 'perl -Fi -e 1', 'perl -Ci -e 1',
+                           'perl -CSi -e 1', 'perl -e1', 'perl -pe s/a/b/ x', 'perl -d:Trace=i -e 1',
+                           'perl -V:i', 'perl -hi', 'perl -vi'),
+        'words after the script that are not switches': ('perl tool.pl -output=info', 'perl tool.pl -o=file.txt',
+                                                         'perl tool.pl -1i'),
+        'code that holds a minus sign': ("perl -e 'print -$i'", "perl -le 'print -\"hi\"'",
+                                         "perl -e 'print $x ->is_ok'", "perl -e 'print 2 -1*$i'"),
+    }
+    PERL_REFUSED = {
+        'in place after digits': ('perl -0777pi -e s/a/b/ x', 'perl -0pi -e s/a/b/ x', 'perl -00pi -e 1 x',
+                                  'perl -l012pi -e 1 x', 'perl -Mstrict -0777pi -e 1 x',
+                                  '/usr/bin/perl -0777pi -e 1 x', 'perl -gpi -e 1 x'),
+        'in place after d or V without a value': ('perl -Vpi -e s/a/b/ x', 'perl -dpi -e s/a/b/ x',
+                                                  'perl -di -p x', 'perl -dtpi -e 1 x'),
+        'plain in place': ('perl -pi.bak -Mstrict x', 'perl -i -pe 1 x', 'perl -wni -e 1 x', 'perl -pi -e 1 x'),
+        # Recorded limits in the guide: the guard does not know where a script's own words begin or read quotes.
+        'known false refusals': ('perl script.pl -file=x', "perl -le 'print 1 -i'"),
+    }
 
-    def test_perl_in_place_switches_after_numeric_options_are_refused(self):
-        for command in ('perl -0777pi -e s/a/b/ x', 'perl -0pi -e s/a/b/ x', 'perl -l012pi -e 1 x',
-                        'perl -Mstrict -0777pi -e 1 x', 'perl -pi.bak -Mstrict x', 'perl -i -pe 1 x',
-                        'perl -wni -e 1 x'):
-            with self.subTest(command=command):
-                self.assertTrue(cycle.guard_edit(command, set()))
+    def test_perl_commands_the_reviews_named_get_the_answer_real_perl_gives(self):
+        for group, commands in self.PERL_ALLOWED.items():
+            for command in commands:
+                with self.subTest(group=group, command=command):
+                    self.assertEqual(cycle.guard_edit(command, set()), [])
+        for group, commands in self.PERL_REFUSED.items():
+            for command in commands:
+                with self.subTest(group=group, command=command):
+                    self.assertTrue(cycle.guard_edit(command, set()))
+
+    def test_every_perl_switch_word_gets_the_answer_real_perl_gives(self):
+        # tests/perl_switches.json comes from tests/perl_switch_table.py, which runs every word of up to
+        # three characters that holds i against real Perl: a word is listed to refuse when Perl set $^I or
+        # rewrote a file with it, and to allow when it did neither. The guard is held to Perl, not to itself.
+        table = json.loads((KIT / 'tests' / 'perl_switches.json').read_text(encoding='utf-8'))
+        refuse, allow = table['refuse'].split(), table['allow'].split()
+        every = {''.join(letters) for size in (1, 2, 3) for letters in itertools.product(table['alphabet'], repeat=size)
+                 if 'i' in letters}
+        self.assertEqual(set(refuse) | set(allow), every)
+        self.assertEqual(set(refuse) & set(allow), set())
+        missed = [w for w in refuse if not cycle.guard_edit(f'perl -{w} -e 1 x', set())]
+        wrong = [w for w in allow if cycle.guard_edit(f'perl -{w} -e 1 x', set())]
+        self.assertEqual((missed, wrong), ([], []))
 
     def test_the_pre_push_guard_refuses_protected_branches_from_every_worktree(self):
         root, remote = self.repository(cycle_settings={'protected': ['release']})
