@@ -3,6 +3,15 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
+## Unreleased
+
+Contract version 1, unchanged. Nothing to do after updating.
+`procedures/handoff.md` gains proposed guidance for authorized delegated
+work: save full reports outside temporary checkouts, update them after late
+notifications, and reconcile worker state with saved reports on resume.
+The `kit-handoff` skill now also applies when delegating work.
+No orchestration capability or new checker requirement is added.
+
 ## 1.4.1, 2026-11-03
 
 Contract version 1, unchanged. Nothing to do after updating.

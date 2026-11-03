@@ -132,7 +132,7 @@ in `procedures/adopt-and-update.md`.
 
 Only the entry block is loaded into every agent session: about 0.5 kB. The
 contract is read when work is planned, reviewed or released: about 6.9 kB.
-A procedure is about 2.2 kB and is read only for its stage. With the
+A procedure is about 2.3 kB and is read only for its stage. With the
 `agent-skills` integration, clients that support skills also load each
 automatic skill's name and description, near 2.9 kB for the twelve, and open
 a skill, and so its procedure, only when the work matches it. The additional
