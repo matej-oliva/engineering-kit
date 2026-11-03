@@ -38,7 +38,7 @@ differ. A last message or a promised future notification is insufficient
 evidence of delivery. Verify pending results at their recorded source, then
 copy the substantive outcome and open gates into the task's durable handoff
 before removing temporary files. This guidance is a proposal from one
-project; the kit does not orchestrate workers or enforce report quality.
+project; no kit check enforces it or judges report quality.
 
 ## Resume
 

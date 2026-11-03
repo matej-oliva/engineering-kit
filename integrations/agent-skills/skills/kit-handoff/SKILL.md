@@ -1,6 +1,6 @@
 ---
 name: kit-handoff
-description: Write or resume a handoff so the next session continues from recorded state, evidence, open gates and one next action. Use when stopping before a task is accepted, near a context or time limit, or when continuing earlier work.
+description: Write or resume a handoff so the next session continues from recorded state, evidence, open gates and one next action. Use when stopping before a task is accepted, near a context or time limit, when continuing earlier work, or when delegating work to another agent.
 ---
 
 Follow `.engineering-kit/kit/procedures/handoff.md` step by step. It is the single source

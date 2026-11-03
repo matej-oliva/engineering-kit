@@ -172,6 +172,16 @@ class Portability(unittest.TestCase):
             with self.subTest(str(path.relative_to(KIT))):
                 ast.parse(path.read_text(encoding='utf-8'), feature_version=(3, 11))
 
+    def test_readme_and_adoption_guides_name_the_newest_release(self):
+        """The README status, its clone example and every adoption path follow the newest changelog heading."""
+        newest = re.search(r'^## (\d+\.\d+\.\d+), ', (KIT / 'CHANGELOG.md').read_text(encoding='utf-8'), re.M)[1]
+        readme = (KIT / 'README.md').read_text(encoding='utf-8')
+        self.assertIn(f'Status: version {newest}, contract version', readme)
+        for page in [KIT / 'README.md', *sorted((KIT / 'integrations').glob('*/guide.md'))]:
+            named = re.findall(r'--branch v(\d+\.\d+\.\d+)|engineering-kit-(\d+\.\d+\.\d+)', page.read_text(encoding='utf-8'))
+            with self.subTest(str(page.relative_to(KIT))):
+                self.assertEqual({v for pair in named for v in pair if v} - {newest}, set())
+
     def test_readme_context_sizes_are_current(self):
         readme = (KIT / 'README.md').read_text(encoding='utf-8')
         block, contract, procedure = (float(n) for n in re.findall(r'about (\d+\.\d) kB', readme))

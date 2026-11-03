@@ -36,6 +36,7 @@ a handoff or a contribution. Who decides goes in `authority.roles`, below.
 | `launcher` | the short `kit` command at the project root | `writes-launcher` |
 | `github` | a pull request template and a workflow that runs `check` | `review-template`, `ci-workflow` |
 | `gitlab` | a merge request template, and a pipeline file your own `.gitlab-ci.yml` must include before it runs | `review-template`, `ci-workflow` |
+| `work-cycle` | in `.kit-cycle/`: a task runner for working hours, delivery through review requests that a person merges, edit and pre-push guards, a first run that writes the backlog, and a setup guide; plus a `kit-first-run` skill | `writes-cycle-tools`, `writes-skills`, `runs-agent-commands`, `pushes-branches`, `opens-review-requests` |
 
 `adopt --with NAME` enables an integration in a new `project.json` and
 grants what it declares. In an existing project, add it under

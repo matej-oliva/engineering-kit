@@ -6,15 +6,59 @@ and whether the contract changed. Newest first.
 ## Unreleased
 
 Contract version 1, unchanged. Nothing to do after updating.
+`procedures/handoff.md` gains proposed guidance for authorized delegated
+work: save full reports outside temporary checkouts, update them after late
+notifications, and reconcile worker state with saved reports on resume.
+The `kit-handoff` skill now also applies when delegating work.
+No orchestration capability or new checker requirement is added.
+
+## 1.4.1, 2026-11-03
+
+Contract version 1, unchanged. Nothing to do after updating.
+The README status line, its clone example and the work-cycle adoption
+commands named 1.4.0; they now name this release, and a test compares them
+with the newest heading here.
+The work-cycle edit guard now reads a Perl switch word the way Perl does,
+and a table made by running real Perl on every word of up to three
+characters that holds `i` pins it. It no longer takes the value of a switch
+such as `-Mstrict`, `-Ilib` or `-mList::Util` for an in-place edit, and it
+refuses `-i` after `-0777`, `-0`, `-l012`, `-d` and `-V`, as in
+`perl -0777pi` and `perl -dpi`. A profile
+that names a missing check and a claim with an invalid expiry now produce a
+refusal instead of a traceback; other malformed `project.json` shapes still
+do not.
+The optional work-cycle `az` adapter refuses branch names, base names and
+temporary paths containing line breaks or `& | < > ^ % "` before the checks
+and the push, so a refused delivery leaves no pushed branch. Parentheses and
+`!` are not refused.
+The edit guard remains fail-open for shell syntax it cannot read, including
+`env` and `command` wrappers, `sudo`, quoted program names and
+`PERL5OPT`; it is not a security boundary. The work-cycle guide lists
+these limits.
+
+## 1.4.0, 2026-10-31
+
+Contract version 1, unchanged. Nothing to do after updating.
 `procedures/implement.md` gains a proposed step for gates that reuse check
 results: strip tool-changing variables by family prefix (`LD_*`, `GIT_*`,
 `BASH_FUNC_*`, `npm_config_*`) rather than by name, compute no key while
 one remains, and hash the kept variables that change results into the key.
 
-`procedures/handoff.md` gains proposed guidance for authorized delegated
-work: save full reports outside temporary checkouts, update them after late
-notifications, and reconcile worker state with saved reports on resume.
-No orchestration capability or new checker requirement is added.
+A new optional integration, `work-cycle`, brings one development cycle to
+every repository on a machine. Its first run interviews the owner and writes
+the backlog as task records, and in a shared repository lists the kit's
+files in Git's local exclude file. Its task runner is a foreground loop, not
+an operating-system scheduler entry: it serves every registered repository
+through one first-in, first-out queue during a working-hours window, claims
+each task, runs the configured agent command in a fresh worktree, leaves a
+handoff and stops by itself; it runs each task at most once per session.
+Its delivery command runs the task's checks,
+pushes the task branch and opens a pull or merge request with `gh`, `glab`
+or `az`, labelled routine, sensitive or owner-only from the changed paths;
+without the tool it records the compare address. It never merges and never
+pushes a protected branch, and its pre-push and edit guards refuse both.
+`.kit-cycle/guide.md` covers Windows with WSL2 behind a TLS-inspecting
+proxy. Nothing changes for a project that does not enable it.
 
 ## 1.3.0, 2026-10-23
 
