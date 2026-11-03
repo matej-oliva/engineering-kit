@@ -65,9 +65,9 @@
     },
     {
       "version": "1.4.1",
-      "date": "2026-11-02",
-      "tests": 157,
-      "mutants": 115,
+      "date": "2026-11-03",
+      "tests": 159,
+      "mutants": 129,
       "installed_files": 88
     }
   ],
