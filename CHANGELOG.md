@@ -11,6 +11,10 @@ work: save full reports outside temporary checkouts, update them after late
 notifications, and reconcile worker state with saved reports on resume.
 The `kit-handoff` skill now also applies when delegating work.
 No orchestration capability or new checker requirement is added.
+`procedures/design.md` step 2 gains proposed guidance: the current design
+and earlier decisions are options judged on the same terms as outside
+practices, not the benchmark, and a kept choice names a reason that still
+holds. No checker requirement is added.
 
 ## 1.4.1, 2026-11-03
 

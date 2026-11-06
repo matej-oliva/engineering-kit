@@ -8,7 +8,11 @@ Use after a task is accepted and before implementation.
    Done when `profile` is set and you know its required checks, and whether
    review and release apply (rule `PROFILE`).
 2. **Compare alternatives when the choice is costly to reverse.** Note two
-   or three options, their trade-offs and the reason for your choice. A
+   or three options, their trade-offs and the reason for your choice. The
+   current design and earlier decisions are options too, judged on the same
+   terms, not the benchmark: say plainly where an outside practice is better,
+   even when that reverses an earlier decision, and keep a choice only for a
+   reason that still holds, named. Approvals and safety limits still bind. A
    decision that is hard to reverse, surprising without its context and the
    result of a real trade-off also gets a short decision record in the
    project's documentation.
