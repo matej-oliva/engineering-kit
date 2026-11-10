@@ -77,7 +77,8 @@ def task(identifier, state='accepted', next_actor='agent'):
 
 class Fixture(unittest.TestCase):
     def setUp(self):
-        self.temp = Path(tempfile.mkdtemp(prefix='kit-cycle-'))
+        # Match the CLI's canonical root, including macOS temporary-directory symlinks.
+        self.temp = Path(tempfile.mkdtemp(prefix='kit-cycle-')).resolve()
         self.addCleanup(remove_tree, self.temp)
         env = {k: v for k, v in os.environ.items() if not k.startswith(('GIT_', 'KIT_CYCLE_', 'GH_', 'GITLAB_'))}
         self.log = self.temp / 'log.jsonl'
