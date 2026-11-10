@@ -55,7 +55,6 @@ rule or task-record schema changes. Tests do not prove that agents obey prose.
 
 </details>
 
-
 ## 1.4.1, 2026-11-03
 
 Contract version 1, unchanged. Nothing to do after updating.

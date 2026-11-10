@@ -36,11 +36,11 @@ From 1.4.1, 1.4.0, 1.3.0, 1.2.1 or 1.2.0, preview with
 `python3 .engineering-kit/kit/tools/kit.py update --apply`. From 1.1.0 the
 long form does the same. From 1.0.1, 1.0.0 or a pilot release, name the
 version once: `python3 .engineering-kit/kit/tools/kit.py update 1.4.2
---apply`. The contract is unchanged and no record migration or configuration change is required. This
-release clarifies staged reviews, delegated handoffs and the optional
-`work-cycle` guide. Read the review procedure before resuming a task with
-separate workers and an integrator; a source-ready report is not final
-acceptance. No record migration is needed. On Windows use `py` in place of
+--apply`. The contract is unchanged and no record migration or configuration
+change is required. This release clarifies staged reviews, delegated handoffs
+and the optional `work-cycle` guide. Read the review procedure before resuming
+a task with separate workers and an integrator; a source-ready report is not
+final acceptance. On Windows use `py` in place of
 `python3`, and run `py kit check` after applying the update. If your local
 instructions contradict the new stage guidance, reconcile them explicitly;
 updating the kit cannot rewrite project-specific rules for you.

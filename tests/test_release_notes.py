@@ -42,9 +42,11 @@ class ReleaseNotes(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             done = self.run_script('1.0.1', tmp)
             self.assertEqual(done.returncode, 0, done.stderr)
-            self.assertIn('Contract unchanged.\n\n- Fixed with [contribution #7](https://github.com/matej-oliva/engineering-kit/pull/7).', done.stdout)
-            self.assertIn('**Full Changelog**: https://github.com/matej-oliva/engineering-kit/compare/v1.0.0...v1.0.1', done.stdout)
-            self.assertIn('- Older.', self.run_script('1.0.0', tmp).stdout)
+            expected = ('Contract unchanged.\n\n- Fixed with [contribution #7]'
+                        '(https://github.com/matej-oliva/engineering-kit/pull/7).\n\n'
+                        '**Full Changelog**: https://github.com/matej-oliva/engineering-kit/compare/v1.0.0...v1.0.1\n')
+            self.assertEqual(done.stdout, expected)
+            self.assertEqual(self.run_script('1.0.0', tmp).stdout, '- Older.\n')
 
     def test_links_contribution_numbers_to_pull_requests(self):
         import tempfile

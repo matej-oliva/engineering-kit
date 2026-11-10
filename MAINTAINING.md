@@ -22,9 +22,8 @@ the owner approves anything that widens what the kit may write or do.
 
 1. Bump the version in `README.md`, `integrations/work-cycle/guide.md` and
    `CHANGELOG.md`, then update the version bump's matching mutation fixtures:
-   the "older release"
-   fixtures must start from the candidate version, so the mutation preflight
-   can apply them. Every change since the last release must pass
+   the "older release" fixtures must start from the candidate version, so the
+   mutation preflight can apply them. Every change since the last release must pass
    `python3 -m unittest discover -s tests` and
    `python3 tests/windows_text_mode.py`, and
    `python3 tests/mutation_check.py` reports every mutant caught. Add a
