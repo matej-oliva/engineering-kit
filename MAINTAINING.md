@@ -20,10 +20,9 @@ the owner approves anything that widens what the kit may write or do.
 
 ## Making a release
 
-1. Every change since the last release has passed
-   the version bump's matching mutation-fixture updates: the "older release"
+1. Update the version bump's matching mutation fixtures: the "older release"
    fixtures must start from the candidate version, so the mutation preflight
-   can apply them. Then run
+   can apply them. Every change since the last release must pass
    `python3 -m unittest discover -s tests` and
    `python3 tests/windows_text_mode.py`, and
    `python3 tests/mutation_check.py` reports every mutant caught. Add a
