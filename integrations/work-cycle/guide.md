@@ -76,8 +76,8 @@ pushes the branch and records a compare address you open by hand.
 Clone a release as the kit's README shows and adopt with the integration:
 
 ```sh
-python3 ~/engineering-kit-1.4.1/tools/kit.py adopt --with launcher --with agent-skills --with work-cycle
-python3 ~/engineering-kit-1.4.1/tools/kit.py adopt --with launcher --with agent-skills --with work-cycle --apply
+python3 ~/engineering-kit-1.4.2/tools/kit.py adopt --with launcher --with agent-skills --with work-cycle
+python3 ~/engineering-kit-1.4.2/tools/kit.py adopt --with launcher --with agent-skills --with work-cycle --apply
 ```
 
 A project that already uses the kit adds `"work-cycle": {"grant": [...]}`
@@ -178,25 +178,39 @@ Any client that sends the same JSON payload (`tool_input.command`) and reads
 exit status 2 as a refusal can use the same command. It allows what it
 cannot read, including commands behind `env` or `command` wrappers; this
 is not a shell parser or a security boundary. Direct path-prefixed commands
-such as `/usr/bin/sed -i` are recognized. The guard reads a Perl switch
-word the way Perl does, and the kit's own tests check it against real Perl
-for every word of up to three characters that holds `i`: `-Mstrict`,
+such as `/usr/bin/sed -i` are recognized. The guard is checked against a
+committed table recorded with Perl v5.40.1; the test suite does not run Perl.
+The table covers every word of up to three characters that holds `i` over
+its declared alphabet. It is evidence for those inputs and that runtime,
+not every Perl build or shell expression. To regenerate it, run
+`python3 tests/perl_switch_table.py write` in the kit source repository on a
+non-Windows host with a full build of Perl 5.36 or newer. The generator uses
+Unix resource limits and exercises optional runtime features; its output
+needs review before replacing the committed table. For the recorded inputs, `-Mstrict`,
 `-Ilib`, `-mList::Util`, `-Fi`, `-Ci` and `-d:Trace=i` are allowed, and
 `-0777pi`, `-l012pi`, `-dpi` and `-Vpi` are refused. The pre-push guard still
-refuses protected pushes. Known limits, not defects: the guard does not know
+refuses protected pushes. Known limits: the guard does not know
 where a script's own words begin, so `perl script.pl -file=x` is wrongly
 refused, and it does not read quotes, so `perl -le 'print 1 -i'` is wrongly
-refused. It allows what it does not read, such as variable prefixes, `sudo`,
+refused. Some invalid switch combinations are also refused even though Perl
+would reject them before rewriting a file. Quoted switches such as `perl '-pi'`
+pass the guard. It allows what it does not read, such as variable prefixes, `sudo`,
 `time`, `xargs`, `bash -c`, subshells, quoted program names, `find -exec`,
 renamed or versioned programs like `perl5.40.1`, `gsed` and `sed.exe`,
 `PERL5OPT`, abbreviated long options and a single `&`.
 
 A profile that names a missing check or a claim with an invalid expiry
-produces a refusal. Correct the project configuration or claim before retrying.
-Other malformed shapes in `project.json` are not all refused: `"required_checks"`
-or `"checks"` set to null, a number, a list of lists or a map of text still end
-in a traceback, and a text value for `"required_checks"` is read one character
-at a time.
+produces a refusal. Correct the project configuration before retrying. To
+replace a malformed claim, run `python3 .kit-cycle/cycle.py release ID`, then
+`python3 .kit-cycle/cycle.py claim ID` from the registered repository, with
+the task ID in place of ID. On Windows use `py` instead of `python3`.
+A map of text in `required_checks` is read as its keys, despite not being
+the documented list shape. A list of lists in `checks` refuses a named string check
+as missing. Other malformed shapes are not all refused cleanly: null or a
+number can cause a traceback, as can a list of lists in `required_checks`
+against a check map, or a text value instead of a check's object. A text
+value for `required_checks` is read one character at a time. Use the documented
+list of check names and map of check objects rather than relying on these limits.
 When `az` is installed, Azure DevOps delivery refuses base names, branch names
 and temporary paths containing line breaks or cmd.exe characters (`& | < > ^ % "`)
 before the checks and the push, and again before calling az. Without `az`

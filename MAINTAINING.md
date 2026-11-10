@@ -35,7 +35,12 @@ the owner approves anything that widens what the kit may write or do.
 2. A fresh reviewer who did not write the changes reviews
    `git diff vPREVIOUS..HEAD` against the commit messages. Blocking findings
    are fixed and reviewed again, by a reviewer given the earlier findings.
-3. `CHANGELOG.md` says what changed, what a project must do after updating,
+3. `CHANGELOG.md` leads with a short set of user-facing highlights: name the
+   improvement and explain what it changes for someone using the kit. Keep
+   technical details in a collapsible full changelog, with contribution links
+   where available. Include exact update commands and contract compatibility;
+   do not turn test logs or review history into release highlights.
+   It says what changed, what a project must do after updating,
    and whether the contract changed. The guide in `guide/` describes the
    release's behaviour, including its moving-to section in
    `guide/maintenance.md`, and every diagram still matches its prose.

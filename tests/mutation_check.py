@@ -19,6 +19,13 @@ CYCLE = 'integrations/work-cycle/cycle.py'
 
 # (label, file under tools/, exact original text, replacement)
 MUTANTS = [
+    ('the guide hides quoted Perl switch bypasses', 'integrations/work-cycle/guide.md',
+     "Quoted switches such as `perl '-pi'`", 'Some switches'),
+    ('the guide misstates malformed profile handling', 'integrations/work-cycle/guide.md',
+     'A map of text in `required_checks` is read as its keys',
+     'Every malformed required-checks shape is refused'),
+    ('the guide hides Perl table regeneration limits', 'integrations/work-cycle/guide.md',
+     'non-Windows host with a full build of Perl 5.36 or newer', 'host with Perl'),
     ('the interview allows automatic model invocation',
      'integrations/agent-skills/skills/kit-grill-me/SKILL.md',
      'disable-model-invocation: true', 'disable-model-invocation: false'),
