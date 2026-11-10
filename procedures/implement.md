@@ -18,7 +18,9 @@ Use while changing the repository for an accepted task. Set `state` to
    a pass on your own machine is evidence for that machine only. A check
    whose exit status a pipeline can hide, such as `check | tail`, proves
    nothing; keep its status (`set -o pipefail`) and read the result before
-   you commit on it.
+   you commit on it. When an integrator owns downstream checks, hand over
+   source readiness using `procedures/review.md`; do not demand final
+   acceptance before the integrator can prepare the combined candidate.
 5. **Share the environment safely.** Stop only processes you started, by
    the identifier you captured when you started them; a name or pattern
    also matches other people's and agents' processes. Before a heavy build

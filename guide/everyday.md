@@ -30,6 +30,15 @@ means success, 1 a refusal with its reason, and 2 a mistyped command.
 
 ## Before you ask for review
 
+First identify which review you need. A source-readiness report can let an
+integrator prepare a combined candidate; it does not grant the kit's
+`reviewed` state. Before formal acceptance review, complete the required
+evidence for that stage. Missing evidence goes back to its producer, without
+spending a correction round on the same incomplete packet. The
+[review procedure](../procedures/review.md) explains the sequence and when
+another review is useful. Final acceptance still requires passing checks
+and an independent approval of the exact candidate.
+
 ```sh
 git add -A
 python3 kit scan-secrets
