@@ -55,7 +55,6 @@ rule or task-record schema changes. Tests do not prove that agents obey prose.
 
 </details>
 
-Compare with 1.4.1 in the source repository's release page.
 
 ## 1.4.1, 2026-11-03
 

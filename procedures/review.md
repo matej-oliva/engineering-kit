@@ -49,7 +49,7 @@ worker proof -> source readiness -> integrated candidate -> required checks -> a
 If integration changes source, bind checks and formal review to the resulting
 revision. A source-ready report never satisfies the `REVIEW` rule. A later
 merge or rebase still follows step 5 below. The example is synthetic;
-`tests/test_review_stages.py` verifies that pending or stale evidence cannot
+`tests/test_review_stages.py` in the kit's source repository verifies that pending or stale evidence cannot
 pass final acceptance. It does not test an agent's adherence to this guidance.
 
 ## Formal acceptance review
