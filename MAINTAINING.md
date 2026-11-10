@@ -20,7 +20,10 @@ the owner approves anything that widens what the kit may write or do.
 
 ## Making a release
 
-1. Every change since the last release has passed
+1. Bump the version in `README.md`, `integrations/work-cycle/guide.md` and
+   `CHANGELOG.md`, then update the version bump's matching mutation fixtures:
+   the "older release" fixtures must start from the candidate version, so the
+   mutation preflight can apply them. Every change since the last release must pass
    `python3 -m unittest discover -s tests` and
    `python3 tests/windows_text_mode.py`, and
    `python3 tests/mutation_check.py` reports every mutant caught. Add a
@@ -35,7 +38,12 @@ the owner approves anything that widens what the kit may write or do.
 2. A fresh reviewer who did not write the changes reviews
    `git diff vPREVIOUS..HEAD` against the commit messages. Blocking findings
    are fixed and reviewed again, by a reviewer given the earlier findings.
-3. `CHANGELOG.md` says what changed, what a project must do after updating,
+3. `CHANGELOG.md` leads with a short set of user-facing highlights: name the
+   improvement and explain what it changes for someone using the kit. Keep
+   technical details in a collapsible full changelog, with contribution links
+   where available. Include exact update commands and contract compatibility;
+   do not turn test logs or review history into release highlights.
+   It says what changed, what a project must do after updating,
    and whether the contract changed. The guide in `guide/` describes the
    release's behaviour, including its moving-to section in
    `guide/maintenance.md`, and every diagram still matches its prose.

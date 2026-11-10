@@ -77,7 +77,8 @@ def task(identifier, state='accepted', next_actor='agent'):
 
 class Fixture(unittest.TestCase):
     def setUp(self):
-        self.temp = Path(tempfile.mkdtemp(prefix='kit-cycle-'))
+        # Match the CLI's canonical root, including macOS temporary-directory symlinks.
+        self.temp = Path(tempfile.mkdtemp(prefix='kit-cycle-')).resolve()
         self.addCleanup(remove_tree, self.temp)
         env = {k: v for k, v in os.environ.items() if not k.startswith(('GIT_', 'KIT_CYCLE_', 'GH_', 'GITLAB_'))}
         self.log = self.temp / 'log.jsonl'
@@ -375,6 +376,30 @@ class Delivery(Fixture):
 
 
 class Runner(Fixture):
+    def test_malformed_claim_recovers_through_the_documented_commands(self):
+        root, _ = self.repository(tasks=[task('T1')])
+        self.runner(root)
+        cycle.write_json(cycle.claim_path(self.home, root.name, 'T1'), {'until': 'bad'})
+        command = [sys.executable, str(root / '.kit-cycle/cycle.py'), '--home', str(self.home)]
+        for args in (['release', 'T1'], ['claim', 'T1', '--hours', '1'], ['queue']):
+            result = subprocess.run([*command, *args], cwd=root, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+        guide = (KIT / 'integrations/work-cycle/guide.md').read_text(encoding='utf-8')
+        self.assertIn('release ID', guide)
+        self.assertIn('claim ID', guide)
+
+    def test_documented_malformed_profile_shapes_match_the_adapter(self):
+        project = {'checks': {'unit': {'command': 'check'}},
+                   'profiles': {'change': {'required_checks': {'unit': 'description'}}}}
+        self.assertEqual(cycle.required_checks(project, {'id': 'T1', 'profile': 'change'}), [('unit', 'check')])
+        project['profiles']['change']['required_checks'] = ['unit']
+        project['checks'] = [['unit']]
+        with self.assertRaisesRegex(cycle.CycleError, 'missing check'):
+            cycle.required_checks(project, {'id': 'T1', 'profile': 'change'})
+        guide = (KIT / 'integrations/work-cycle/guide.md').read_text(encoding='utf-8')
+        self.assertIn('A map of text in `required_checks` is read as its keys', guide)
+        self.assertIn('A list of lists in `checks` refuses a named string check', guide)
+
     def test_malformed_claim_is_a_cli_refusal(self):
         root, _ = self.repository(tasks=[task('T1')])
         self.runner(root)
@@ -518,6 +543,19 @@ class Runner(Fixture):
 
 
 class Guards(Fixture):
+    def test_perl_evidence_and_quote_limits_are_explicit(self):
+        guide = (KIT / 'integrations/work-cycle/guide.md').read_text(encoding='utf-8')
+        table = json.loads((KIT / 'tests/perl_switches.json').read_text(encoding='utf-8'))
+        self.assertIn(f'Perl {table["perl"]}', guide)
+        for phrase in ('does not run Perl', 'Perl 5.36 or newer', 'full build',
+                       'non-Windows host', 'tests/perl_switch_table.py write',
+                       "perl '-pi'", 'invalid switch combinations'):
+            self.assertIn(phrase, guide)
+        self.assertEqual(cycle.guard_edit("perl '-pi' -e s/a/b/ x", set()), [])
+        for command in ('perl script.pl -file=x', "perl -le 'print 1 -i'"):
+            self.assertTrue(cycle.guard_edit(command, set()))
+            self.assertIn(command, guide)
+
     def test_unread_shell_wrappers_remain_documented_as_fail_open(self):
         # This is a convenience guard, not a shell parser or security boundary.
         for command in ('env sed -i s/a/b/ x', 'command perl -pi -e s/a/b/ x'):

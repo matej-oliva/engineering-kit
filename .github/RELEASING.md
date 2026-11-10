@@ -3,6 +3,15 @@
 The host-specific commands for the steps in `MAINTAINING.md`. They stay on
 the kit's branches and are never in a release tag or a project.
 
+Release-note style follows the owner's reference:
+<https://github.com/pingdotgg/t3code/releases>. Lead with a few concise
+benefit-led bullets, followed by update instructions and a collapsible full
+changelog with contribution links. Describe this release's actual changes;
+do not copy product claims, invent counts or substitute internal gate logs.
+The portable changelog keeps contribution numbers without repository-specific
+addresses. In the generated release notes, link those numbers to this
+repository's pull requests and append the full comparison link for the two tags.
+
 Run the native platform workflow on the candidate commit with the release
 rehearsal, and wait for all four jobs to pass:
 

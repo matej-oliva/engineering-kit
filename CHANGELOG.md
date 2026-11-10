@@ -3,26 +3,57 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
-## Unreleased
+## 1.4.2, 2026-11-10
 
-Planning and review guidance separates optional source readiness from formal
-acceptance. Projects with workers and an integrator should assign evidence
-owners and stages, assemble the integrated candidate before its final checks,
-and complete missing evidence before requesting acceptance review. Repeat
-reviews need changed code, new evidence or a specific unresolved dispute.
-This is proposed coordination guidance, not a new checker requirement or
-permission to merge. Contract version 1 and the `reviewed` state are unchanged.
+- **Reviews that move work forward.** Separate source readiness from final
+  acceptance so a worker can hand off to an integrator without waiting for
+  checks that only the integrated candidate can produce. Complete missing
+  evidence before asking for another acceptance review.
+- **Handoffs that survive a session ending.** Save delegated results outside
+  temporary checkouts and verify pending delivery when resuming work.
+- **Better decisions and clearer recovery.** Compare existing designs with
+  alternatives on equal terms. The work-cycle guide now explains how to
+  replace a malformed claim and states the actual limits of its edit guard.
 
-Contract version 1, unchanged. Nothing to do after updating.
-`procedures/handoff.md` gains proposed guidance for authorized delegated
-work: save full reports outside temporary checkouts, update them after late
-notifications, and reconcile worker state with saved reports on resume.
-The `kit-handoff` skill now also applies when delegating work.
-No orchestration capability or new checker requirement is added.
-`procedures/design.md` step 2 gains proposed guidance: the current design
-and earlier decisions are options judged on the same terms as outside
-practices, not the benchmark, and a kept choice names a reason that still
-holds. No checker requirement is added.
+### Updating
+
+From your project root, preview and apply the release, then check the project:
+
+```sh
+python3 kit update 1.4.2 --diff
+python3 kit update 1.4.2 --apply
+python3 kit check
+```
+
+On Windows use `py` instead of `python3`. Without the launcher, replace `kit`
+with `.engineering-kit/kit/tools/kit.py`. Contract version 1 is unchanged;
+no record migration is needed. For a task split between workers and an
+integrator, read the updated review procedure and reconcile conflicting local
+instructions. Final acceptance still needs passing checks and an independent
+approval of the exact candidate.
+
+<details>
+<summary>Full changelog</summary>
+
+- Separate source readiness from final acceptance (contribution #7).
+  Planning assigns evidence owners and stages. Repeat reviews require changed
+  code, new evidence or a specific unresolved dispute. The synthetic regression
+  retains rejection of unknown, failed, skipped and stale final evidence.
+- Preserve durable reports for delegated work (contribution #5).
+  The handoff procedure and its skill cover saved reports, late notifications
+  and reconciliation on resume. No new delegation authority is granted.
+- Judge the current design as one option (contribution #6).
+  Keeping an earlier decision requires a reason that still holds.
+- Correct the work-cycle guide's malformed configuration examples, document
+  claim recovery, narrow the Perl table evidence to its recorded runtime, and
+  explain regeneration requirements, false refusals and quoted-switch bypasses.
+  The guard's behavior is unchanged; it remains a convenience, not a security
+  boundary. Regression checks cover the documented limits and recovery commands.
+
+These workflow lessons remain proposed guidance from one project. No checker
+rule or task-record schema changes. Tests do not prove that agents obey prose.
+
+</details>
 
 ## 1.4.1, 2026-11-03
 

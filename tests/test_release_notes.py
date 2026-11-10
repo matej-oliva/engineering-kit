@@ -13,7 +13,7 @@ Intro.
 
 ## 1.1.0, 2026-11-01
 
-- Newer.
+- Newer with contribution #42.
 
 ## 1.0.10, 2026-10-30
 
@@ -23,7 +23,7 @@ Intro.
 
 Contract unchanged.
 
-- Fixed.
+- Fixed with contribution #7.
 
 ## 1.0.0, 2026-10-20, first supported release
 
@@ -42,8 +42,18 @@ class ReleaseNotes(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             done = self.run_script('1.0.1', tmp)
             self.assertEqual(done.returncode, 0, done.stderr)
-            self.assertEqual(done.stdout, 'Contract unchanged.\n\n- Fixed.\n')
+            expected = ('Contract unchanged.\n\n- Fixed with [contribution #7]'
+                        '(https://github.com/matej-oliva/engineering-kit/pull/7).\n\n'
+                        '**Full Changelog**: https://github.com/matej-oliva/engineering-kit/compare/v1.0.0...v1.0.1\n')
+            self.assertEqual(done.stdout, expected)
             self.assertEqual(self.run_script('1.0.0', tmp).stdout, '- Older.\n')
+
+    def test_links_contribution_numbers_to_pull_requests(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            done = self.run_script('1.1.0', tmp)
+            self.assertEqual(done.returncode, 0, done.stderr)
+            self.assertIn('[contribution #42](https://github.com/matej-oliva/engineering-kit/pull/42)', done.stdout)
 
     def test_an_unknown_version_is_refused(self):
         import tempfile

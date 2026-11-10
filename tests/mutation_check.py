@@ -19,6 +19,13 @@ CYCLE = 'integrations/work-cycle/cycle.py'
 
 # (label, file under tools/, exact original text, replacement)
 MUTANTS = [
+    ('the guide hides quoted Perl switch bypasses', 'integrations/work-cycle/guide.md',
+     "Quoted switches such as `perl '-pi'`", 'Some switches'),
+    ('the guide misstates malformed profile handling', 'integrations/work-cycle/guide.md',
+     'A map of text in `required_checks` is read as its keys',
+     'Every malformed required-checks shape is refused'),
+    ('the guide hides Perl table regeneration limits', 'integrations/work-cycle/guide.md',
+     'non-Windows host with a full build of Perl 5.36 or newer', 'host with Perl'),
     ('the interview allows automatic model invocation',
      'integrations/agent-skills/skills/kit-grill-me/SKILL.md',
      'disable-model-invocation: true', 'disable-model-invocation: false'),
@@ -257,10 +264,10 @@ MUTANTS = [
      "if kind == 'azure' and tool:", "if kind == 'azure':"),
     ('the guide loses the wrapper limit', 'integrations/work-cycle/guide.md',
      ', including commands behind `env` or `command` wrappers', ''),
-    ('the README status names an older release', './README.md', 'Status: version 1.4.1', 'Status: version 1.4.0'),
-    ('the README clone example names an older release', './README.md', '--branch v1.4.1', '--branch v1.4.0'),
+    ('the README status names an older release', './README.md', 'Status: version 1.4.2', 'Status: version 1.4.1'),
+    ('the README clone example names an older release', './README.md', '--branch v1.4.2', '--branch v1.4.1'),
     ('the work-cycle adoption path names an older release', 'integrations/work-cycle/guide.md',
-     '--with work-cycle\npython3 ~/engineering-kit-1.4.1', '--with work-cycle\npython3 ~/engineering-kit-1.4.0'),
+     '--with work-cycle\npython3 ~/engineering-kit-1.4.2', '--with work-cycle\npython3 ~/engineering-kit-1.4.1'),
     ('missing profile checks raise a traceback', CYCLE, 'if name not in checks:', 'if False:'),
     ('malformed claims raise a traceback', CYCLE,
      'except (KeyError, TypeError, ValueError) as error:', 'except OSError as error:'),

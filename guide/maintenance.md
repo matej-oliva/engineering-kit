@@ -25,17 +25,27 @@ have installed. Edits you make to it are merged like edits to any kit file,
 but a project's own notes belong in `project.json` or its own
 documentation instead.
 
-## Moving to this release, 1.4.1
+## Moving to this release, 1.4.2
 
 Each release rewrites this section for itself; the changelog keeps what
 every earlier release asked.
 
-From 1.4.0, 1.3.0, 1.2.1 or 1.2.0, `python3 kit update --apply` is enough, or without the launcher
+From 1.4.1, 1.4.0, 1.3.0, 1.2.1 or 1.2.0, preview with
+`python3 kit update 1.4.2 --diff`, then apply with
+`python3 kit update 1.4.2 --apply`, or without the launcher use
 `python3 .engineering-kit/kit/tools/kit.py update --apply`. From 1.1.0 the
 long form does the same. From 1.0.1, 1.0.0 or a pilot release, name the
-version once: `python3 .engineering-kit/kit/tools/kit.py update 1.4.1
---apply`. The contract is unchanged and nothing else is required. This
-release fixes the optional `work-cycle` integration, which installs nothing
+version once: `python3 .engineering-kit/kit/tools/kit.py update 1.4.2
+--apply`. The contract is unchanged and no record migration or configuration
+change is required. This release clarifies staged reviews, delegated handoffs
+and the optional `work-cycle` guide. Read the review procedure before resuming
+a task with separate workers and an integrator; a source-ready report is not
+final acceptance. On Windows use `py` in place of
+`python3`, and run `py kit check` after applying the update. If your local
+instructions contradict the new stage guidance, reconcile them explicitly;
+updating the kit cannot rewrite project-specific rules for you.
+
+The optional integration installs nothing
 until you enable it with its five permissions, as
 [Customize](customize.md) lists; its setup guide is `.kit-cycle/guide.md`
 once installed. Coming from 1.2.1 or earlier with `agent-skills` enabled,
