@@ -19,7 +19,13 @@ Use after a task is accepted and before implementation.
 3. **Name dependencies, risks and recovery**: how the change is undone and
    what cannot be undone. Done when `plan.risks` and `plan.recovery` say so.
 4. **Plan the evidence**: which check proves each acceptance example, and at
-   which boundary. For an interface, cover its interaction states (empty,
+   which boundary. Name its producer, prerequisites and stage: worker proof,
+   integrated-candidate validation, or release verification. Keep this in the
+   plan or handoff; no new task-record fields are required. Check that no
+   stage requires approval based on evidence only a later stage can produce.
+   Source readiness and formal acceptance have different purposes; follow
+   `procedures/review.md` when work is split between workers and an integrator.
+   For an interface, cover its interaction states (empty,
    loading, error and success), keyboard and screen reader use, and the
    screen sizes the project supports. The project's own design system, not
    the kit, decides how it looks.

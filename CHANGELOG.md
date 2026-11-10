@@ -5,6 +5,14 @@ and whether the contract changed. Newest first.
 
 ## Unreleased
 
+Planning and review guidance separates optional source readiness from formal
+acceptance. Projects with workers and an integrator should assign evidence
+owners and stages, assemble the integrated candidate before its final checks,
+and complete missing evidence before requesting acceptance review. Repeat
+reviews need changed code, new evidence or a specific unresolved dispute.
+This is proposed coordination guidance, not a new checker requirement or
+permission to merge. Contract version 1 and the `reviewed` state are unchanged.
+
 Contract version 1, unchanged. Nothing to do after updating.
 `procedures/handoff.md` gains proposed guidance for authorized delegated
 work: save full reports outside temporary checkouts, update them after late
