@@ -76,6 +76,13 @@
       "tests": 165,
       "mutants": 132,
       "installed_files": 88
+    },
+    {
+      "version": "1.5.0",
+      "date": "2026-11-14",
+      "tests": 174,
+      "mutants": 144,
+      "installed_files": 88
     }
   ],
   "context_bytes": {
