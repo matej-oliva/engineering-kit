@@ -834,6 +834,12 @@ class ChecksSettings(Fixture):
         self.assertEqual(self.deliver(root)['outcome'], 'opened')
         self.assertFalse([c for c in self.calls() if 'ssh' in c])
 
+    def test_the_guide_warns_that_the_check_host_receives_the_code(self):
+        # Choosing a check host is a decision about where the code may go, so the guide must say so.
+        guide = (KIT / 'integrations/work-cycle/guide.md').read_text(encoding='utf-8')
+        self.assertIn("**The check host receives the project's source code and history.**", guide)
+        self.assertIn('Both settings are off until `runner.json` turns them on', guide)
+
     def test_unusable_check_host_settings_are_refused_before_checks_or_push(self):
         root, remote = self.project('git --version')
         cases = [({'ssh': '-oProxyCommand=touch pwned'}, True, 'host name'),
