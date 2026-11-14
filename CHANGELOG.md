@@ -3,6 +3,55 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
+## 1.5.0, 2026-11-14
+
+- **Checks that stop competing for the processor.** With
+  `checks.one_at_a_time` in `runner.json`, a delivery waits while another
+  delivery on the machine runs its checks, instead of every agent running
+  the full suite at once. Agents are asked to run only the affected tests
+  while they work.
+- **Checks on another computer.** A repository can send its checks to a
+  check host over SSH. They run there in a clean checkout that is removed
+  afterwards. A host that cannot be reached stops the delivery before the
+  push and never counts as a pass. The check host receives the repository's
+  code, so each repository chooses it for itself.
+
+### Updating
+
+From your project root, preview and apply the release, then check the project:
+
+```sh
+python3 kit update 1.5.0 --diff
+python3 kit update 1.5.0 --apply
+python3 kit check
+```
+
+On Windows use `py` instead of `python3`. Without the launcher, replace `kit`
+with `.engineering-kit/kit/tools/kit.py`. Contract version 1 is unchanged;
+no record migration is needed. Both new settings are off until you turn them
+on; section 7 of `.kit-cycle/guide.md` explains them. Restart a running task
+runner after updating.
+
+<details>
+<summary>Full changelog</summary>
+
+- Run work-cycle checks one delivery at a time or on a check host
+  (contribution #9). The turn is an operating-system lock on `checks.lock`
+  in the runner's home, which a crashed delivery releases. A repository
+  entry's `"check_host": true` sends the commit to `checks.host` and runs
+  each check with `sh` there. An unreachable host, a failed checkout or a
+  connection that ends during a check is an `unknown` check with the
+  outcome `checks_unavailable`; delivery exits 1 before the push. The host
+  address and folder are validated, so no SSH option passes as a host.
+- The runner gives agents its home folder as `KIT_CYCLE_HOME`, so their
+  deliveries read the same settings.
+- Twelve new mutants cover the new guards and the guide's statement that the
+  check host receives the code. The check host tests use a stand-in SSH
+  command and are skipped on Windows; no real SSH server or Windows client
+  has run the check host path.
+
+</details>
+
 ## 1.4.2, 2026-11-10
 
 - **Reviews that move work forward.** Separate source readiness from final

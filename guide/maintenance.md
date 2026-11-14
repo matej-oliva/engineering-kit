@@ -25,25 +25,28 @@ have installed. Edits you make to it are merged like edits to any kit file,
 but a project's own notes belong in `project.json` or its own
 documentation instead.
 
-## Moving to this release, 1.4.2
+## Moving to this release, 1.5.0
 
 Each release rewrites this section for itself; the changelog keeps what
 every earlier release asked.
 
-From 1.4.1, 1.4.0, 1.3.0, 1.2.1 or 1.2.0, preview with
-`python3 kit update 1.4.2 --diff`, then apply with
-`python3 kit update 1.4.2 --apply`, or without the launcher use
+From 1.4.2, 1.4.1, 1.4.0, 1.3.0, 1.2.1 or 1.2.0, preview with
+`python3 kit update 1.5.0 --diff`, then apply with
+`python3 kit update 1.5.0 --apply`, or without the launcher use
 `python3 .engineering-kit/kit/tools/kit.py update --apply`. From 1.1.0 the
 long form does the same. From 1.0.1, 1.0.0 or a pilot release, name the
-version once: `python3 .engineering-kit/kit/tools/kit.py update 1.4.2
+version once: `python3 .engineering-kit/kit/tools/kit.py update 1.5.0
 --apply`. The contract is unchanged and no record migration or configuration
-change is required. This release clarifies staged reviews, delegated handoffs
-and the optional `work-cycle` guide. Read the review procedure before resuming
-a task with separate workers and an integrator; a source-ready report is not
-final acceptance. On Windows use `py` in place of
-`python3`, and run `py kit check` after applying the update. If your local
-instructions contradict the new stage guidance, reconcile them explicitly;
-updating the kit cannot rewrite project-specific rules for you.
+change is required. On Windows use `py` in place of `python3`, and run
+`py kit check` after applying the update.
+
+This release adds two settings to the optional `work-cycle` integration:
+full checks one delivery at a time, and checks on another computer over SSH.
+Both stay off until the runner's `runner.json` turns them on, and a check
+host serves only the repositories whose entry chooses it, because that
+computer receives the repository's code. Section 7 of `.kit-cycle/guide.md`
+sets them up. Restart a running task runner after updating, so the agents it
+starts receive its home folder and deliver with its settings.
 
 The optional integration installs nothing
 until you enable it with its five permissions, as
