@@ -1,9 +1,9 @@
 {
   "kit": "integration/1",
   "name": "work-cycle",
-  "summary": "A development cycle for every repository on one machine: a first run that writes the backlog as task records, a foreground task runner that serves registered repositories through one first-in, first-out queue during working hours, delivery that pushes a task branch and opens a labelled pull or merge request that a person merges, and edit and pre-push guards.",
+  "summary": "A development cycle for every repository on one machine: a first run that writes the backlog as task records, a foreground task runner that serves registered repositories through one first-in, first-out queue during working hours, delivery that runs the checks, optionally one delivery at a time or on a check host over SSH, then pushes a task branch and opens a labelled pull or merge request that a person merges, and edit and pre-push guards.",
   "contract": [1],
-  "capabilities": ["backlog-first-run", "task-runner", "review-request-delivery", "push-guard", "edit-guard", "local-exclude"],
+  "capabilities": ["backlog-first-run", "task-runner", "review-request-delivery", "check-queue", "check-host", "push-guard", "edit-guard", "local-exclude"],
   "runtime": "Python 3.11 or later and Git, on Windows, WSL2, macOS or Linux; gh, glab or az for opening requests, each optional",
   "permissions": ["writes-cycle-tools", "writes-skills", "runs-agent-commands", "pushes-branches", "opens-review-requests"],
   "inputs": [

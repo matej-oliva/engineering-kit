@@ -10,7 +10,9 @@ work-cycle integration as `.kit-cycle/cycle.py`; run it from the project root, a
     run [--once]                      serve every registered repository until the window closes
     queue                             show the queue and the claims
     claim ID [--hours N] / release ID keep the runner off a task you work on yourself
-    deliver [--task ID]               run the checks, push the branch, open a review request
+    deliver [--task ID]               run the checks, here or on a check host, one delivery at a
+                                      time when runner.json says so, then push the branch and open
+                                      a review request
     exclude                           list the kit's files in Git's local exclude file
     guards install|remove             the pre-push guard in this repository's Git hooks
     guard-push / guard-edit           the guards themselves, run by Git and agent clients
@@ -23,12 +25,14 @@ explains the setup.
 from __future__ import annotations
 
 import argparse
+import contextlib
 from datetime import datetime, timedelta
 import fnmatch
 import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+import shlex
 import shutil
 import signal
 import subprocess
@@ -36,6 +40,11 @@ import sys
 import tempfile
 import time
 from urllib.parse import quote
+
+if os.name == 'nt':
+    import msvcrt
+else:
+    import fcntl
 
 DAYS = ('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun')
 CLASSES = ('routine', 'sensitive', 'owner-only')  # least attention first
@@ -265,6 +274,8 @@ PROMPT = """You are working unattended on task {task} in {repository}.
 - Follow the kit's procedures for the task's current state, and the project's own
   instructions. Ask no questions: if the next step needs a person, record the question in
   the task, set "next_actor" to "owner" and stop.
+- While you work, run only the tests your change affects. Delivery runs the full checks
+  once.
 - Before you stop, write the handoff {handoff} and update the task record.
 - Deliver finished work with: {python} {cycle} deliver --task {task}
   It runs the checks, pushes this branch and opens a review request. Never merge it and
@@ -307,7 +318,8 @@ def run_one(home: Path, config: dict, item: dict, moment: datetime, deadline: da
         cycle = root / '.kit-cycle' / 'cycle.py'
         values = {'task': task_id, 'repository': item['repository'], 'root': str(root), 'branch': branch,
                   'base': base, 'worktree': str(worktree), 'task_file': str(task_file), 'handoff': str(handoff),
-                  'cycle': str(cycle), 'python': sys.executable, 'deadline': deadline.strftime('%H:%M')}
+                  'cycle': str(cycle), 'python': sys.executable, 'deadline': deadline.strftime('%H:%M'),
+                  'home': str(home)}  # KIT_CYCLE_HOME: the agent's delivery reads this runner's settings
         prompt = PROMPT.format(**values)
         run_folder = home / 'runs'
         run_folder.mkdir(parents=True, exist_ok=True)
@@ -505,8 +517,178 @@ def required_checks(project: dict, task: dict | None) -> list[tuple[str, str | N
     return [(name, checks[name].get('command')) for name in names]
 
 
+# ------------------------------------------------------------- where and when checks run
+
+SSH = ['ssh', '-o', 'BatchMode=yes', '-o', 'ServerAliveInterval=30', '-o', 'ServerAliveCountMax=4']
+SSH_TARGET = re.compile(r'[A-Za-z0-9][A-Za-z0-9._-]*(@[A-Za-z0-9][A-Za-z0-9._-]*)?')
+REMOTE_FOLDER = re.compile(r'[A-Za-z0-9_][A-Za-z0-9._-]*(/[A-Za-z0-9_][A-Za-z0-9._-]*)*')
+REMOTE_NAME = re.compile(r'[A-Za-z0-9_][A-Za-z0-9._-]*')
+
+
+def check_settings(home: Path, root: Path) -> tuple[bool, dict | None]:
+    """Whether this machine runs one delivery's checks at a time, and the check host this repository
+    sends its checks to, from the "checks" object and the repository's entry in runner.json. Both are
+    off when runner.json does not say otherwise, also when there is no runner."""
+    config = read_json(home / 'runner.json')
+    if config is None:
+        return False, None
+    if not isinstance(config, dict) or config.get('kit') != RUNNER:
+        raise CycleError(f'{home / "runner.json"} is not a {RUNNER} file')
+    checks = config.get('checks', {})
+    if not isinstance(checks, dict) or not isinstance(checks.get('one_at_a_time', False), bool):
+        raise CycleError('"checks" in runner.json must be an object whose one_at_a_time is true or false')
+    entry = next((e for e in config.get('repositories', []) if Path(e['path']).resolve() == root), None)
+    if not entry or entry.get('check_host', False) is False:
+        return checks.get('one_at_a_time', False), None
+    if entry['check_host'] is not True:
+        raise CycleError(f'check_host for {entry["name"]} in runner.json must be true or false')
+    host = checks.get('host')
+    if not isinstance(host, dict):
+        raise CycleError(f'{entry["name"]} sends its checks to the check host, but runner.json has no checks.host')
+    target, folder = host.get('ssh'), host.get('folder', 'kit-checks')
+    command = host.get('ssh_command', SSH)
+    if not isinstance(target, str) or not SSH_TARGET.fullmatch(target):
+        raise CycleError('checks.host.ssh in runner.json must be a host name or user@host')
+    if not isinstance(folder, str) or not REMOTE_FOLDER.fullmatch(folder):  # no leading / or . segment
+        raise CycleError('checks.host.folder in runner.json must be a folder under the check host account\'s '
+                         'home, such as kit-checks')
+    if not REMOTE_NAME.fullmatch(entry['name']):
+        raise CycleError(f'the registered name {entry["name"]!r} cannot name a folder on the check host')
+    if not (isinstance(command, list) and command and all(isinstance(part, str) for part in command)):
+        raise CycleError('checks.host.ssh_command in runner.json must be a list of words')
+    return checks.get('one_at_a_time', False), {'ssh': target, 'folder': folder, 'command': command,
+                                                'repository': f'{folder}/{entry["name"]}.git'}
+
+
+def try_lock(handle) -> bool:
+    try:
+        if os.name == 'nt':
+            handle.seek(0)
+            msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        return False
+    return True
+
+
+def unlock(handle) -> None:
+    if os.name == 'nt':
+        handle.seek(0)
+        msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+    else:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
+@contextlib.contextmanager
+def check_turn(home: Path, out=print):
+    """Hold the machine's turn to run checks. The turn is an operating-system lock on a file in the
+    runner's home, which the system releases when its holder exits, so a delivery that crashed never
+    blocks the next one."""
+    home.mkdir(parents=True, exist_ok=True)
+    with open(home / 'checks.lock', 'a+b') as handle:
+        if not try_lock(handle):
+            out('waiting for another delivery\'s checks to finish')
+            while not try_lock(handle):
+                time.sleep(2)
+        try:
+            yield
+        finally:
+            unlock(handle)
+
+
+def ssh(host: dict, script: str, **options) -> subprocess.CompletedProcess:
+    program = shutil.which(host['command'][0])
+    if program is None:
+        raise CycleError(f'the SSH command {host["command"][0]} is not on PATH')
+    return subprocess.run([program, *host['command'][1:], host['ssh'], script], capture_output=True, text=True,
+                          stdin=subprocess.DEVNULL, **options)
+
+
+def send_revision(host: dict, worktree: Path, revision: str, ref: str) -> str | None:
+    """Copy REVISION to the check host's bare repository as REF; the reason when that failed."""
+    repository = shlex.quote(host['repository'])
+    made = ssh(host, f'mkdir -p {shlex.quote(host["folder"])} && '
+                     f'{{ test -d {repository} || git init --quiet --bare {repository}; }}')
+    if made.returncode:
+        return f'cannot prepare {host["repository"]} on {host["ssh"]}: {(made.stdout + made.stderr).strip()[-600:]}'
+    program = shutil.which(host['command'][0])
+    command = shlex.join([Path(program).as_posix(), *host['command'][1:]])
+    pushed = subprocess.run(['git', 'push', '--quiet', f'{host["ssh"]}:{host["repository"]}', f'{revision}:{ref}'],
+                            cwd=worktree, capture_output=True, text=True, env=dict(os.environ, GIT_SSH_COMMAND=command))
+    if pushed.returncode:
+        return f'cannot send the commit to {host["ssh"]}: {pushed.stderr.strip()[-600:]}'
+    return None
+
+
+def remote_check(host: dict, revision: str, mark: str, command: str) -> tuple[str, str]:
+    """Run COMMAND on the check host in a clean checkout of REVISION that is removed afterwards; the
+    result and the output's tail. The script prints a start and an exit line around the check, so a
+    host that never started it, or a connection that ended before it finished, is unknown, never a
+    pass."""
+    script = '\n'.join([
+        f'work=$(mktemp -d {shlex.quote(host["folder"])}/run.XXXXXX) || exit 97',
+        'work=$(cd "$work" && pwd)',
+        'trap \'rm -rf "$work"\' EXIT',
+        f'git clone --quiet --shared {shlex.quote(host["repository"])} "$work/src" 2>&1 || exit 97',
+        f'git -C "$work/src" checkout --quiet --detach {revision} 2>&1 || exit 97',
+        f'echo {mark}-start',
+        f'(cd "$work/src" && sh -c {shlex.quote(command)}) </dev/null 2>&1',
+        f'echo "{mark}-exit $?"',
+    ])
+    result = ssh(host, script)
+    lines = result.stdout.splitlines()
+    output = '\n'.join(line for line in lines if not line.startswith(mark)) + result.stderr
+    if f'{mark}-start' not in lines:
+        return 'unknown', f'the check host did not start the check: {output.strip()[-1600:]}'
+    ended = [line for line in lines if line.startswith(f'{mark}-exit ')]
+    if not ended:
+        return 'unknown', f'the connection ended before the check finished: {output.strip()[-1600:]}'
+    return ('pass' if ended[-1] == f'{mark}-exit 0' else 'fail'), output[-2000:]
+
+
+def run_checks(project: dict, task: dict | None, worktree: Path, revision: str, host: dict | None,
+               record: dict, out) -> str | None:
+    """Run the required checks here or on the check host, in order, and stop at the first that does not
+    pass; the delivery's outcome when one did not."""
+    mark = f'kit-check-{stamp(now_local())}-{os.getpid()}'
+    ref = f'refs/kit-checks/{mark}'
+    sent = False
+    try:
+        for name, command in required_checks(project, task):
+            if not command:
+                record['checks'].append({'id': name, 'result': 'unknown', 'evidence': 'performed by hand'})
+                continue
+            if host is None:
+                ran = subprocess.run(command, shell=True, cwd=worktree, capture_output=True, text=True)
+                result, output = ('pass' if ran.returncode == 0 else 'fail'), (ran.stdout + ran.stderr)[-2000:]
+            else:
+                if not sent:
+                    reason = send_revision(host, worktree, revision, ref)
+                    if reason:
+                        record['checks'].append({'id': name, 'result': 'unknown', 'command': command,
+                                                 'host': host['ssh'], 'output': reason})
+                        out(f'check {name}: unknown, {reason}')
+                        return 'checks_unavailable'
+                    sent = True
+                result, output = remote_check(host, revision, mark, command)
+            entry = {'id': name, 'result': result, 'command': command, 'output': output}
+            if host is not None:
+                entry['host'] = host['ssh']
+            record['checks'].append(entry)
+            out(f'check {name}: {result}' + (f' on {host["ssh"]}' if host else ''))
+            if result == 'fail':
+                return 'checks_failed'
+            if result != 'pass':
+                return 'checks_unavailable'
+        return None
+    finally:
+        if sent:  # the clean checkouts are gone already; the ref goes too, and its objects with Git's own cleanup
+            ssh(host, f'git --git-dir={shlex.quote(host["repository"])} update-ref -d {ref}')
+
+
 def deliver(root: Path, worktree: Path, task_id: str | None, title: str | None, body: str | None,
-            out=print) -> dict:
+            out=print, home: Path | None = None) -> dict:
     project = project_config(root)
     settings = cycle_config(project)
     remote = settings.get('remote', 'origin')
@@ -537,18 +719,13 @@ def deliver(root: Path, worktree: Path, task_id: str | None, title: str | None, 
         tool = shutil.which(TOOLS[kind])
         if kind == 'azure' and tool:  # refuse before the checks and the push, not after the branch is out
             check_azure_arguments(base, branch, tempfile.gettempdir())
-        for name, command in required_checks(project, task):
-            if not command:
-                record['checks'].append({'id': name, 'result': 'unknown', 'evidence': 'performed by hand'})
-                continue
-            result = subprocess.run(command, shell=True, cwd=worktree, capture_output=True, text=True)
-            passed = result.returncode == 0
-            record['checks'].append({'id': name, 'result': 'pass' if passed else 'fail', 'command': command,
-                                     'output': (result.stdout + result.stderr)[-2000:]})
-            out(f'check {name}: {"pass" if passed else "fail"}')
-            if not passed:
-                record['outcome'] = 'checks_failed'
-                return record
+        home = home or runner_home(None)
+        one_at_a_time, check_host = check_settings(home, root)
+        with check_turn(home, out) if one_at_a_time else contextlib.nullcontext():
+            stopped = run_checks(project, task, worktree, record['revision'], check_host, record, out)
+        if stopped:
+            record['outcome'] = stopped
+            return record
         fetched = git(worktree, 'rev-parse', '--verify', '--quiet', f'refs/remotes/{remote}/{base}', check=False)
         changed = git(worktree, 'diff', '--name-only', f'{fetched or base}...HEAD').splitlines()
         level, matched = classify(changed, settings.get('paths', {}))
@@ -840,7 +1017,7 @@ def main(argv: list[str] | None = None) -> int:
                 release(home, name, args.task)
                 lines = [f'Released {name} {args.task}.']
         elif args.command == 'deliver':
-            record = deliver(main_checkout(root), root, args.task, args.title, args.body)
+            record = deliver(main_checkout(root), root, args.task, args.title, args.body, home=home)
             return 0 if record.get('outcome') in ('opened', 'manual', 'nothing_to_deliver') else 1
         elif args.command == 'exclude':
             lines = exclude(root)
