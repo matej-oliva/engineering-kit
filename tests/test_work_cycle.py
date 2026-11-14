@@ -42,11 +42,35 @@ if os.environ.get('FAKE_FAIL') and os.environ['FAKE_FAIL'] in sys.argv:
     sys.exit(1)
 print('https://example.invalid/request/1')
 '''
+FAKE_SSH = '''
+import json, os, subprocess, sys
+args = sys.argv[1:]
+while args and args[0].startswith('-'):  # options, as ssh and Git's ssh calls pass them
+    args = args[2:] if args[0] in ('-o', '-p', '-i', '-l') else args[1:]
+host, command = args[0], ' '.join(args[1:])
+with open(os.environ['FAKE_LOG'], 'a', encoding='utf-8') as log:
+    log.write(json.dumps({'ssh': host, 'command': command}) + '\\n')
+if host.endswith('@down'):
+    sys.stderr.write('ssh: connect to host down port 22: Connection refused\\n')
+    sys.exit(255)
+remote = os.environ['FAKE_REMOTE_HOME']  # the check host account's home
+os.makedirs(remote, exist_ok=True)
+environment = dict(os.environ, HOME=remote)
+if os.environ.get('FAKE_SSH_NO_DISK') and 'mktemp' in command:
+    sys.stderr.write('mktemp: No space left on device\\n')
+    sys.exit(97)
+if os.environ.get('FAKE_SSH_CUT') and '-start' in command:  # the connection ends once the check starts
+    ran = subprocess.run(['sh', '-c', command], cwd=remote, env=environment, capture_output=True, text=True)
+    sys.stdout.write(ran.stdout.split('-start')[0] + '-start\\n')
+    sys.exit(255)
+sys.exit(subprocess.run(['sh', '-c', command], cwd=remote, env=environment).returncode)
+'''
 FAKE_AGENT = '''
 import json, os, subprocess, sys, time
 mode = os.environ.get('FAKE_AGENT', 'handoff')
 with open(os.environ['FAKE_LOG'], 'a', encoding='utf-8') as log:
-    log.write(json.dumps({'cwd': os.getcwd(), 'argv': sys.argv[1:], 'task': os.environ.get('KIT_CYCLE_TASK')}) + '\\n')
+    log.write(json.dumps({'cwd': os.getcwd(), 'argv': sys.argv[1:], 'task': os.environ.get('KIT_CYCLE_TASK'),
+                          'home': os.environ.get('KIT_CYCLE_HOME')}) + '\\n')
 if mode == 'sleep':
     time.sleep(60)
 if mode == 'handoff':
@@ -461,6 +485,7 @@ class Runner(Fixture):
         worktree = Path(run['worktree'])
         self.assertEqual(Path(self.calls()[0]['cwd']).resolve(), worktree.resolve())
         self.assertEqual(self.calls()[0]['task'], 'T1')
+        self.assertEqual(Path(self.calls()[0]['home']), self.home)  # its delivery reads this runner's settings
         self.assertTrue(run['branch'].startswith('kit/T1-'))
         self.assertEqual(run['base'], 'origin/main')
         self.assertEqual(git('rev-parse', 'HEAD~1', cwd=worktree), git('rev-parse', 'main', cwd=remote))
@@ -468,6 +493,7 @@ class Runner(Fixture):
         self.assertIn('agent handoff', (root / '.engineering-kit' / 'handoffs' / 'T1.md').read_text(encoding='utf-8'))
         prompt = Path(self.calls()[0]['argv'][2]).read_text(encoding='utf-8')
         self.assertIn('deliver --task T1', prompt)
+        self.assertIn('run only the tests your change affects', prompt)
         self.assertIn('never push main', prompt)
         self.assertIsNone(cycle.claimed(self.home, 'billing', 'T1', MONDAY))
 
@@ -695,6 +721,135 @@ class Exclude(Fixture):
         self.assertEqual(text.count(cycle.BEGIN), 1)
         self.assertTrue(text.startswith('*.log\n'))
         self.assertEqual(git('status', '--porcelain', '--untracked-files=all', cwd=root), '')
+
+
+class ChecksSettings(Fixture):
+    """Checks one delivery at a time, and on a check host over SSH. The stand-in ssh runs the remote
+    script in a folder that plays the check host account's home."""
+    branch_with = Delivery.branch_with
+
+    def setUp(self):
+        super().setUp()
+        self.tool('ssh', FAKE_SSH)
+        self.remote_home = self.temp / 'check-host-home'
+        os.environ['FAKE_REMOTE_HOME'] = str(self.remote_home)
+        self.said = []
+
+    def project(self, command):
+        root, remote = self.repository(tasks=[task('T1')], url='https://github.com/acme/billing.git')
+        project = cycle.project_config(root)
+        project['checks']['tests']['command'] = command
+        cycle.write_json(root / '.engineering-kit' / 'project.json', project)
+        self.branch_with(root, 'src/a.py')
+        return root, remote
+
+    def settings(self, root, one_at_a_time=False, host=None, check_host=True):
+        config = cycle.new_runner()
+        config['repositories'] = [{'name': 'billing', 'path': str(root), 'check_host': check_host}]
+        config['checks'] = {'one_at_a_time': one_at_a_time, **({'host': host} if host else {})}
+        cycle.write_json(self.home / 'runner.json', config)
+
+    def deliver(self, root):
+        return cycle.deliver(root, root, 'T1', None, None, out=self.said.append, home=self.home)
+
+    def test_one_delivery_at_a_time_waits_for_the_running_checks(self):
+        root, _ = self.project('git --version')
+        self.settings(root, one_at_a_time=True, check_host=False)
+        held = cycle.check_turn(self.home, out=self.said.append)
+        held.__enter__()
+        with mock.patch.object(cycle.time, 'sleep', side_effect=lambda _: held.__exit__(None, None, None)) as slept:
+            record = self.deliver(root)
+        self.assertEqual(slept.call_count, 1)
+        self.assertIn("waiting for another delivery's checks to finish", self.said)
+        self.assertEqual(record['outcome'], 'opened')
+
+    def test_without_the_setting_deliveries_never_wait(self):
+        root, _ = self.project('git --version')
+        held = cycle.check_turn(self.home, out=self.said.append)
+        held.__enter__()
+        self.addCleanup(held.__exit__, None, None, None)
+        for written in (False, True):  # no runner.json, then one with the setting off
+            with self.subTest(written=written):
+                if written:
+                    self.settings(root, check_host=False)
+                with mock.patch.object(cycle.time, 'sleep', side_effect=AssertionError('waited')):
+                    self.assertEqual(self.deliver(root)['outcome'], 'opened')
+
+    @unittest.skipIf(os.name == 'nt', 'the stand-in check host runs a POSIX shell')
+    def test_checks_run_on_the_check_host_in_a_clean_checkout_that_is_removed(self):
+        root, remote = self.project('git rev-parse HEAD > "$HOME/ran.txt" && test -f src/a.py && pwd')
+        self.settings(root, host={'ssh': 'checks@build-box'})
+        record = self.deliver(root)
+        self.assertEqual(record['outcome'], 'opened')
+        self.assertEqual([(c['id'], c['result'], c.get('host')) for c in record['checks']],
+                         [('tests', 'pass', 'checks@build-box'), ('notes', 'unknown', None)])
+        revision = git('rev-parse', 'HEAD', cwd=root)
+        self.assertEqual((self.remote_home / 'ran.txt').read_text(encoding='utf-8').strip(), revision)
+        self.assertNotIn(str(root), record['checks'][0]['output'])  # it ran there, not here
+        self.assertEqual([p.name for p in (self.remote_home / 'kit-checks').iterdir()], ['billing.git'])
+        self.assertEqual(git('for-each-ref', cwd=self.remote_home / 'kit-checks' / 'billing.git'), '')
+        self.assertIn('check tests: pass on checks@build-box', self.said)
+        self.assertEqual(git('rev-parse', 'kit/T1', cwd=remote), revision)
+
+    @unittest.skipIf(os.name == 'nt', 'the stand-in check host runs a POSIX shell')
+    def test_a_check_that_fails_on_the_check_host_stops_before_the_push(self):
+        root, remote = self.project('echo broken on the host; exit 3')
+        self.settings(root, host={'ssh': 'checks@build-box', 'folder': 'work/checks'})
+        record = self.deliver(root)
+        self.assertEqual(record['outcome'], 'checks_failed')
+        self.assertEqual(record['checks'][0]['result'], 'fail')
+        self.assertIn('broken on the host', record['checks'][0]['output'])
+        self.assertEqual([p.name for p in (self.remote_home / 'work' / 'checks').iterdir()], ['billing.git'])
+        self.assertEqual(git('branch', '--format=%(refname:short)', cwd=remote), 'main')
+
+    @unittest.skipIf(os.name == 'nt', 'the stand-in check host runs a POSIX shell')
+    def test_a_check_host_that_cannot_be_reached_is_an_open_gate_never_a_pass(self):
+        root, remote = self.project('git --version')
+        self.settings(root, host={'ssh': 'checks@down'})
+        record = self.deliver(root)
+        self.assertEqual(record['outcome'], 'checks_unavailable')
+        self.assertEqual(record['checks'][0]['result'], 'unknown')
+        self.assertIn('Connection refused', record['checks'][0]['output'])
+        self.assertEqual(git('branch', '--format=%(refname:short)', cwd=remote), 'main')
+        result = subprocess.run([sys.executable, str(root / '.kit-cycle/cycle.py'), '--home', str(self.home),
+                                 'deliver', '--task', 'T1'], cwd=root, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 1)
+
+    @unittest.skipIf(os.name == 'nt', 'the stand-in check host runs a POSIX shell')
+    def test_a_check_that_never_started_or_never_finished_is_unknown(self):
+        root, remote = self.project('exit 0')
+        self.settings(root, host={'ssh': 'checks@build-box'})
+        for switch, message in (('FAKE_SSH_NO_DISK', 'did not start the check: mktemp: No space left'),
+                                ('FAKE_SSH_CUT', 'connection ended before the check finished')):
+            with self.subTest(switch), mock.patch.dict(os.environ, {switch: '1'}):
+                record = self.deliver(root)
+                self.assertEqual(record['outcome'], 'checks_unavailable')
+                self.assertEqual(record['checks'][0]['result'], 'unknown')
+                self.assertIn(message, record['checks'][0]['output'])
+        self.assertEqual(git('branch', '--format=%(refname:short)', cwd=remote), 'main')
+
+    def test_a_repository_that_did_not_choose_the_check_host_runs_its_checks_here(self):
+        root, _ = self.project('git --version')
+        self.settings(root, host={'ssh': 'checks@down'}, check_host=False)
+        self.assertEqual(self.deliver(root)['outcome'], 'opened')
+        self.assertFalse([c for c in self.calls() if 'ssh' in c])
+
+    def test_unusable_check_host_settings_are_refused_before_checks_or_push(self):
+        root, remote = self.project('git --version')
+        cases = [({'ssh': '-oProxyCommand=touch pwned'}, True, 'host name'),
+                 ({'ssh': '-oProxyJump.attacker'}, True, 'host name'),
+                 ({'ssh': 'checks@build-box', 'folder': '../elsewhere'}, True, 'folder'),
+                 ({'ssh': 'checks@build-box', 'folder': '/srv/checks'}, True, 'folder'),
+                 ({'ssh': 'checks@build-box', 'ssh_command': 'ssh'}, True, 'list of words'),
+                 (None, True, 'no checks.host'),
+                 ({'ssh': 'checks@build-box'}, 'yes', 'true or false')]
+        for host, choice, message in cases:
+            with self.subTest(message=message, host=host):
+                self.settings(root, host=host, check_host=choice)
+                with self.assertRaisesRegex(cycle.CycleError, message):
+                    self.deliver(root)
+        self.assertEqual(git('branch', '--format=%(refname:short)', cwd=remote), 'main')
+        self.assertFalse([c for c in self.calls() if 'ssh' in c])
 
 
 if __name__ == '__main__':

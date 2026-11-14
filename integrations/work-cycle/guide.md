@@ -155,7 +155,64 @@ title and description from files, because on Windows it is a batch file
 whose command line cannot hold line breaks or characters such as `&`. Each delivery is recorded under the
 repository's Git folder in `kit-cycle/deliveries/`, never in a commit.
 
-## 7. Guards
+## 7. Checks one at a time, or on a check host
+
+Both settings are off until `runner.json` turns them on, so updating the
+kit changes nothing by itself. The runner's prompt asks agents to run only
+the tests their change affects while they work; delivery runs the full
+checks once.
+
+On a laptop, several agents that deliver at once each run the full checks,
+and the runs slow each other down. With one at a time, a delivery waits
+until the delivery before it has finished its checks:
+
+```json
+"checks": {"one_at_a_time": true}
+```
+
+The turn is a lock on `checks.lock` in the runner's home folder, which the
+operating system releases when a delivery stops, also when it crashes. An
+agent the runner starts delivers with the runner's home folder; for a
+delivery you start yourself, use the same `--home` or `KIT_CYCLE_HOME` as
+the runner.
+
+A check host is another computer that runs the checks instead of this one.
+Each repository chooses it in its own entry, so other repositories keep
+running their checks here:
+
+```json
+"repositories": [{"name": "billing", "path": "C:/src/billing", "check_host": true}],
+"checks": {"one_at_a_time": true,
+           "host": {"ssh": "checks@build-box", "folder": "kit-checks"}}
+```
+
+**The check host receives the project's source code and history.** Choose
+it only for repositories whose owner allows the code on that computer, such
+as your employer for a work repository.
+
+Delivery sends the commit over SSH to a bare repository named after the
+registered repository, in `folder` under the account's home folder (the
+default is `kit-checks`). Then it runs each check command there with `sh`,
+in a clean checkout that it removes when the check ends, and records the
+result and the end of the output, with the host's name. It deletes the
+commit's reference again afterwards. A host that cannot be reached, a
+checkout that fails and a connection that ends before the check finishes
+are each an `unknown` check and the outcome `checks_unavailable`. Delivery
+then stops before the push and exits with status 1. They never count as a
+pass.
+
+The check host needs Linux or macOS, Git, an SSH server, and everything the
+check commands use, on the `PATH` of a non-interactive SSH session, because
+none of this machine's environment travels with the check. Use a separate
+account that holds only these checkouts, and sign in with an SSH key: delivery
+runs `ssh -o BatchMode=yes`, so it never asks for a password. Set
+`ssh_command` to a list of words to use another SSH program or extra
+options. The host's address is a host name or `user@host`, without options.
+Test with `ssh -o BatchMode=yes checks@build-box git --version` before the
+first delivery. The kit's tests run the check host part on Linux and macOS
+with a stand-in SSH command; no real SSH server or Windows client has run it.
+
+## 8. Guards
 
 `python3 .kit-cycle/cycle.py guards install` writes a pre-push hook into
 the repository's Git folder that refuses any push to a protected branch,
