@@ -32,7 +32,7 @@ caught. The first release had no deliberate faults yet.
 | 1.4.0 | 2026-10-31 | 148 | 103 | 88 |
 | 1.4.1 | 2026-11-03 | 159 | 129 | 88 |
 | 1.4.2 | 2026-11-10 | 165 | 132 | 88 |
-| 1.5.0 | 2026-11-20 | 174 | 144 | 88 |
+| 1.5.0 | 2026-11-20 | 175 | 145 | 88 |
 <!-- /figures:releases -->
 
 ## What each release installs
