@@ -11,6 +11,10 @@ see `THIRD_PARTY_NOTICES.md`.
    approval for the targets next to it.
 2. **Capture the current state** of the target: versions, configuration
    digests and data counts, without copying credentials or private data.
+   For upgrades, use the installed version as the start of the review. If
+   an intervening release was reviewed but never deployed, carry its migration
+   and compatibility findings into the rollout. Cite prior reviews and read
+   the release notes for any uncovered interval up to the target.
 3. **Confirm recovery.** Check that the latest backup covers the target and
    that a restore has been shown to work, or record the gap.
 4. **Define the rollback** and the checks that show the change worked at the
