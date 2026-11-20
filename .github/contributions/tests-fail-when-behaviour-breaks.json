@@ -1,0 +1,19 @@
+{
+  "kit": "contribution/1",
+  "project": "home-server",
+  "source_revision": "452c4f8f2f8d82906edc8a14985d0a338850236d",
+  "kit_version": "not installed; direct contribution against 7cfad2c",
+  "files": [
+    "procedures/implement.md",
+    "procedures/review.md",
+    "guide/agents.md",
+    "CHANGELOG.md"
+  ],
+  "status": "proposal",
+  "need": "Agents copy the tests they find nearby, so tests that only restate a source file multiplied: assertions that a stylesheet, script or configuration file contains a literal string, and tests that slept or read the wall clock. They failed when a file was reworded or the machine was busy, cost every later change a repair and caught no defect. Reviewers made it worse by asking for more coverage.",
+  "evidence": "One project read every such assertion in its interface tests, family by family, over three days. It removed 181 assertions and 30 tests from nine test files and kept 99 assertions as boundaries and contracts another tool reads. A count of the same patterns then held the rest at a baseline; its first count of real-time waits found 585 in 187 test files. Its review briefs now ask for fewer or smaller tests, never more coverage.",
+  "limits": "Observed in one project over about a week, mostly on tests of web pages, shell scripts and service definitions. This is guidance: the kit adds no check, because recognising a restated source depends on the project's languages. No defect rate before and after was measured, and the project found that an automated sweep is unsafe, so pruning stays a reading task. The source project does not install the kit, so this is a direct contribution rather than an installed-release export.",
+  "rights": "owner-authored",
+  "owner": "matej-oliva",
+  "sanitization": "Removed the project's tool, script, task and application names, host names and paths. No credentials, private account data, employer, client or third-party material is included."
+}

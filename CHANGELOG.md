@@ -3,8 +3,18 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
-## 1.5.0, 2026-11-14
+## 1.5.0, 2026-11-20
 
+- **Tests that earn their place.** Agents are asked to test behaviour, such
+  as state changes, parsers and permission boundaries, and to leave out tests
+  that only restate a source file or wait on real time. Reviewers ask for
+  fewer or smaller tests before more coverage.
+- **Lessons every agent can read.** A lesson about the project goes into the
+  repository, as a check, a tool's message or a page, not into one agent
+  client's private memory, which no other client or person reads.
+- **New checks on old code.** Where existing work already breaks a new
+  check, start from a count per file that may fall and never rise, instead
+  of postponing the check or exempting old files.
 - **Checks that stop competing for the processor.** With
   `checks.one_at_a_time` in `runner.json`, a delivery waits while another
   delivery on the machine runs its checks, instead of every agent running
@@ -28,9 +38,11 @@ python3 kit check
 
 On Windows use `py` instead of `python3`. Without the launcher, replace `kit`
 with `.engineering-kit/kit/tools/kit.py`. Contract version 1 is unchanged;
-no record migration is needed. Both new settings are off until you turn them
-on; section 7 of `.kit-cycle/guide.md` explains them. Restart a running task
-runner after updating.
+no record migration is needed. The new guidance on tests, shared lessons and
+baselines changes no check; reconcile a local rule that contradicts it. Both
+new settings are off until you turn them on; section 7 of
+`.kit-cycle/guide.md` explains them. Restart a running task runner after
+updating.
 
 <details>
 <summary>Full changelog</summary>
@@ -49,6 +61,25 @@ runner after updating.
   check host receives the code. The check host tests use a stand-in SSH
   command and are skipped on Windows; no real SSH server or Windows client
   has run the check host path.
+- Write tests that fail when behaviour breaks (contribution #12).
+  `procedures/implement.md` gains a step, so its later steps move up by one,
+  and the review procedure treats a test that restates its source as a
+  finding.
+- Keep shared lessons in the repository, not one agent client's private
+  memory (contribution #12), in `procedures/write-instructions.md`.
+- Start a new check on existing work from a baseline that only falls
+  (contribution #12), in `procedures/maintain.md`.
+- Start an upgrade's review at the installed version and carry forward the
+  findings of releases reviewed but never deployed (contribution #10), in
+  `procedures/change-preflight.md`.
+- The explicitly requested interview tests a candidate name in real
+  sentences and asks alone the one question the rest depends on
+  (contribution #11), from `mattpocock/skills`, MIT;
+  `THIRD_PARTY_NOTICES.md` names the revision.
+
+The five procedure changes are proposed guidance from one project. No
+checker rule or task-record schema changes. Tests do not prove that agents
+obey prose.
 
 </details>
 

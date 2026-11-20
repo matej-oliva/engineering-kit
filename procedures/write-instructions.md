@@ -16,7 +16,12 @@ MIT licensed; see `THIRD_PARTY_NOTICES.md`.
 3. **Keep one source of truth.** A rule lives in one place and others point
    to it. A configuration file, a script's help or a test already states its
    facts; write down only what reading them cannot reveal, such as the
-   reason or the trap.
+   reason or the trap. A lesson every contributor needs goes into the
+   repository, where its procedure lives: a check, the tool's own message
+   or that procedure's page. One agent client's private memory or settings
+   reach no other client or person, and nobody reviews them, so they go
+   stale unseen; keep there only what is personal to that client. The
+   memory part is a proposal from one project.
 4. **Prefer a check to a rule.** A mechanical rule, such as a path, a format
    or a forbidden pattern, belongs in a check. Label every rule with how it
    is enforced (rule `ENFORCEMENT`).

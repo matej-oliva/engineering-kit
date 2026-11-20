@@ -48,6 +48,13 @@ computer receives the repository's code. Section 7 of `.kit-cycle/guide.md`
 sets them up. Restart a running task runner after updating, so the agents it
 starts receive its home folder and deliver with its settings.
 
+It also adds guidance, with no new check: write tests that fail when
+behaviour breaks, keep a lesson every contributor needs in the repository
+instead of one agent client's private memory, start a new check on existing
+work from a baseline that only falls, and begin an upgrade's review at the
+installed version. `procedures/implement.md` gains a step, so a local
+instruction that cites its later steps by number needs the new number.
+
 The optional integration installs nothing
 until you enable it with its five permissions, as
 [Customize](customize.md) lists; its setup guide is `.kit-cycle/guide.md`

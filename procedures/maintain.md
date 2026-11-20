@@ -16,7 +16,12 @@ needs a decision.
 4. **Turn repeated mistakes into checks.** When a mistake could have been
    caught mechanically, add a check, and show it fails on the real past
    mistake before relying on it; its message says what to do instead. Prose
-   rules are for judgment. Delete a rule that changed nothing.
+   rules are for judgment. Delete a rule that changed nothing. When existing
+   work already breaks the new check, record today's count for each file as
+   a baseline that may fall and never rise, with a new file starting at
+   zero, instead of exempting old work or postponing the check; lower the
+   baseline whenever a count falls. The baseline is a proposal from one
+   project.
 5. **Measure before you keep or remove** a tool, rule or integration: how
    often it is used, what it caught and what it costs. A claim that has not
    been measured stays labelled as unproved.
