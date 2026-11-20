@@ -1,0 +1,19 @@
+{
+  "kit": "contribution/1",
+  "project": "home-server",
+  "source_revision": "452c4f8f2f8d82906edc8a14985d0a338850236d",
+  "kit_version": "not installed; direct contribution against 7cfad2c",
+  "files": [
+    "procedures/understand.md",
+    "procedures/handoff.md",
+    "guide/agents.md",
+    "CHANGELOG.md"
+  ],
+  "status": "proposal",
+  "need": "Agents named the task they had picked, or the tasks a piece of work waited on, by ID alone, such as a code and a stage number. A person reading the message could not tell what the work was without searching for the task's record.",
+  "evidence": "The owner of one project reported this with an example message and asked for task names and links, then approved a proposal to require them and asked for the rule in the kit as well. An earlier draft of this lesson stated the rule in three procedures and added a command that prints a formatted reference; this version keeps one sentence and a pointer, because the title is already in the record the agent has read.",
+  "limits": "The need was observed once, in one project. The source project's own change was written and not delivered, so no before and after exists, and the kit adds no check: nothing can read what an agent writes in a message. The source project does not install the kit, so this is a direct contribution rather than an installed-release export.",
+  "rights": "owner-authored",
+  "owner": "matej-oliva",
+  "sanitization": "Removed the project's task identifiers and titles, tool names, host names and paths. No credentials, private account data, employer, client or third-party material is included."
+}

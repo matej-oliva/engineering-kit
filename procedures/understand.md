@@ -25,13 +25,18 @@ Use at the start of every task, before choosing tools or writing code.
 6. **Ask only what is the decision owner's** (rule `DECIDE`): one batch of
    questions in the task's `questions`, each with a recommended answer.
    Choose routine engineering details yourself and write the assumption down.
+   A question about how an interface looks or behaves shows the screen as
+   it is today beside each proposal, as images or a working mockup, not as a
+   description. This sentence is a proposal from one project.
 7. **Accept the task**: when the request fixes the outcome, name its
    `author` and the delivery `profile` that fits its risk
    (`procedures/design.md` step 1), then set `state` to `accepted`
    yourself; the decision owner can still correct an assumption.
    When the outcome itself is the owner's open question, wait for the
    answer. Run `tools/kit.py check-task FILE`. Done when it passes (rule
-   `ACCEPT`).
+   `ACCEPT`). From then on, name the task to people by its title and the
+   path of its record, with its ID: an ID alone tells a reader nothing.
+   This sentence is a proposal from one project.
 
 A new task gets the next unused ID and a file named after it. A problem found
 during other work becomes a `proposed` task, which needs no author yet.

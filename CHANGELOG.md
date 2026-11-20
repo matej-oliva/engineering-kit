@@ -15,6 +15,10 @@ and whether the contract changed. Newest first.
 - **New checks on old code.** Where existing work already breaks a new
   check, start from a count per file that may fall and never rise, instead
   of postponing the check or exempting old files.
+- **Questions and messages a person can follow.** An interface choice goes
+  to the decision owner as today's screen beside each proposal, not as a
+  description. An agent names a task by its title and path, not its ID
+  alone.
 - **Checks that stop competing for the processor.** With
   `checks.one_at_a_time` in `runner.json`, a delivery waits while another
   delivery on the machine runs its checks, instead of every agent running
@@ -38,8 +42,8 @@ python3 kit check
 
 On Windows use `py` instead of `python3`. Without the launcher, replace `kit`
 with `.engineering-kit/kit/tools/kit.py`. Contract version 1 is unchanged;
-no record migration is needed. The new guidance on tests, shared lessons and
-baselines changes no check; reconcile a local rule that contradicts it. Both
+no record migration is needed. The new guidance on tests, shared lessons,
+baselines, interface questions and task names changes no check; reconcile a local rule that contradicts it. Both
 new settings are off until you turn them on; section 7 of
 `.kit-cycle/guide.md` explains them. Restart a running task runner after
 updating.
@@ -69,6 +73,11 @@ updating.
   memory (contribution #12), in `procedures/write-instructions.md`.
 - Start a new check on existing work from a baseline that only falls
   (contribution #12), in `procedures/maintain.md`.
+- Show an interface choice as images or a working mockup beside the screen
+  as it is today (contribution #12), in `procedures/understand.md`.
+- Name a task by its title and the path of its record as well as its ID
+  (contribution #12), in `procedures/understand.md`, with a pointer in
+  `procedures/handoff.md`.
 - Start an upgrade's review at the installed version and carry forward the
   findings of releases reviewed but never deployed (contribution #10), in
   `procedures/change-preflight.md`.
@@ -77,7 +86,7 @@ updating.
   (contribution #11), from `mattpocock/skills`, MIT;
   `THIRD_PARTY_NOTICES.md` names the revision.
 
-The five procedure changes are proposed guidance from one project. No
+These seven lessons are proposed guidance, each observed in one project. No
 checker rule or task-record schema changes. Tests do not prove that agents
 obey prose.
 
