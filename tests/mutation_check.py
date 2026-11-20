@@ -310,6 +310,8 @@ MUTANTS = [
      "return 'unknown', f'the check host did not start", "return 'pass', f'the check host did not start"),
     ('a check whose connection ended passes', CYCLE,
      "return 'unknown', f'the connection ended", "return 'pass', f'the connection ended"),
+    ('a check whose output ends without a newline is unknown on the check host', CYCLE,
+     'status=$?; echo; echo "{mark}-exit $status"', 'status=$?; echo "{mark}-exit $status"'),
     ('a check that is not a pass lets the delivery go on', CYCLE,
      "            if result != 'pass':\n                return 'checks_unavailable'",
      "            if False:\n                return 'checks_unavailable'"),

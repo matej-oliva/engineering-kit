@@ -57,7 +57,7 @@ updating.
   address and folder are validated, so no SSH option passes as a host.
 - The runner gives agents its home folder as `KIT_CYCLE_HOME`, so their
   deliveries read the same settings.
-- Twelve new mutants cover the new guards and the guide's statement that the
+- Thirteen new mutants cover the new guards and the guide's statement that the
   check host receives the code. The check host tests use a stand-in SSH
   command and are skipped on Windows; no real SSH server or Windows client
   has run the check host path.
