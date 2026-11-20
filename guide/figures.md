@@ -62,7 +62,7 @@ plan, review or release, and a procedure only for its stage.
 | --- | --- |
 | Entry block, read in every session | 473 |
 | Contract, read to plan, review or release | 6875 |
-| One procedure, on average, read for its stage | 2777 |
+| One procedure, on average, read for its stage | 2815 |
 | All skill metadata, before client invocation filtering | 3264 |
 <!-- /figures:context -->
 
