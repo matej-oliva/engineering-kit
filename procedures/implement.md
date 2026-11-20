@@ -12,7 +12,18 @@ Use while changing the repository for an accepted task. Set `state` to
    working copy.
 3. **Start a defect with its reproduction** (`procedures/diagnose-defect.md`):
    a check that fails for the reported reason before any fix.
-4. **Run the focused checks** for what you change while you iterate. Run the
+4. **Write tests that fail when behaviour breaks.** Test state changes,
+   parsers, permission and exposure boundaries and each defect that
+   happened, once, at the lowest layer that owns the rule. Leave out a test
+   that restates its source, such as a literal string from a stylesheet,
+   script or configuration file, and what the type checker already proves:
+   they fail when a file is reworded and catch nothing. Leave out real time
+   too. A sleep or a wall-clock read fails under load, not under a defect;
+   inject the clock or wait for the event. When a feature is replaced,
+   remove the tests of the version that is gone. Before deleting a weak
+   test, find the test or rule it was copied from and fix that as well.
+   This step is a proposal from one project.
+5. **Run the focused checks** for what you change while you iterate. Run the
    profile's required checks once the candidate is complete, on each
    platform and the oldest runtime version the project claims to support:
    a pass on your own machine is evidence for that machine only. A check
@@ -21,7 +32,7 @@ Use while changing the repository for an accepted task. Set `state` to
    you commit on it. When an integrator owns downstream checks, hand over
    source readiness using `procedures/review.md`; do not demand final
    acceptance before the integrator can prepare the combined candidate.
-5. **Share the environment safely.** Stop only processes you started, by
+6. **Share the environment safely.** Stop only processes you started, by
    the identifier you captured when you started them; a name or pattern
    also matches other people's and agents' processes. Before a heavy build
    or test run, check the limit that applies to you, such as a container's
@@ -29,7 +40,7 @@ Use while changing the repository for an accepted task. Set `state` to
    scratch on disk and bound its memory and lifetime. Edit tracked files
    with an editor or patch so each change is a reviewable diff, not with a
    throwaway script that rewrites them.
-6. **Fix the candidate**: record `candidate.revision` and `candidate.base`,
+7. **Fix the candidate**: record `candidate.revision` and `candidate.base`,
    the revision your work started from, and set `state` to `candidate`. Any
    later edit makes a new candidate, and checks and reviews then apply to the
    new revision (rule `CANDIDATE`). Commits that change only process files,
@@ -41,10 +52,10 @@ Use while changing the repository for an accepted task. Set `state` to
    that can commit, is to commit those files unchanged and repeat the checks
    on that revision; that session adds itself to `contributors`. This step
    is a proposal from one pilot.
-7. **Record each check** with the revision it ran on and its result. A
+8. **Record each check** with the revision it ran on and its result. A
    skipped, unknown or failed check is recorded as such, never as a pass
    (rule `CHECKS`).
-8. **Reuse a check result only when its key covers how it ran.** A cache
+9. **Reuse a check result only when its key covers how it ran.** A cache
    or gate that skips a check because its inputs are unchanged must count
    the environment as an input. Run such checks without variables that
    change what their tools do, and remove whole families by prefix, since
@@ -60,7 +71,7 @@ Use while changing the repository for an accepted task. Set `state` to
    such as `PATH`, the locale and `TZ`, into the key, and name those left
    out, such as `HOME`: a check that reads one is never reused. This step
    is a proposal from one project.
-9. **Hand off if you stop** before acceptance (`procedures/handoff.md`).
+10. **Hand off if you stop** before acceptance (`procedures/handoff.md`).
 
 Done when the task passes `tools/kit.py check-task FILE` in state
 `candidate` and its required checks are recorded against that revision.

@@ -65,7 +65,9 @@ agent's adherence to this guidance.
    in `contributors` and does not review it.
 2. **Review against the requirement.** For each acceptance example, does the
    candidate meet it, and is there evidence? Are the required checks
-   meaningful, recorded for this revision and passing? Look for changes
+   meaningful, recorded for this revision and passing? A test that restates
+   its source is a finding, not evidence; ask for fewer or smaller tests
+   before more coverage (`procedures/implement.md`). Look for changes
    outside the task, unrelated edits, credentials or restricted material,
    and documentation that no longer matches.
 3. **Record findings** with `blocking` set when an acceptance example is not

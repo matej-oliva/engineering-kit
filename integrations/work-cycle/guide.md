@@ -76,8 +76,8 @@ pushes the branch and records a compare address you open by hand.
 Clone a release as the kit's README shows and adopt with the integration:
 
 ```sh
-python3 ~/engineering-kit-1.4.2/tools/kit.py adopt --with launcher --with agent-skills --with work-cycle
-python3 ~/engineering-kit-1.4.2/tools/kit.py adopt --with launcher --with agent-skills --with work-cycle --apply
+python3 ~/engineering-kit-1.5.0/tools/kit.py adopt --with launcher --with agent-skills --with work-cycle
+python3 ~/engineering-kit-1.5.0/tools/kit.py adopt --with launcher --with agent-skills --with work-cycle --apply
 ```
 
 A project that already uses the kit adds `"work-cycle": {"grant": [...]}`

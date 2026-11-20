@@ -6,7 +6,7 @@ verified delivery and maintenance, and what evidence each step leaves. Each
 project keeps its own language, framework, design system, agent client, Git
 host, deployment platform and permissions.
 
-Status: version 1.4.2, contract version 1.
+Status: version 1.5.0, contract version 1.
 See `CHANGELOG.md` and `MAINTAINING.md`. MIT licence; see `LICENSE`.
 
 People start with the [guide](guide/README.md): what the kit does, a quick
@@ -63,9 +63,9 @@ project's root. It installs the release it was cloned at, from the address
 it was cloned from:
 
 ```sh
-git clone --depth 1 --branch v1.4.2 KIT_ADDRESS ~/engineering-kit-1.4.2
-python3 ~/engineering-kit-1.4.2/tools/kit.py adopt --with launcher --with agent-skills           # preview
-python3 ~/engineering-kit-1.4.2/tools/kit.py adopt --with launcher --with agent-skills --apply   # write
+git clone --depth 1 --branch v1.5.0 KIT_ADDRESS ~/engineering-kit-1.5.0
+python3 ~/engineering-kit-1.5.0/tools/kit.py adopt --with launcher --with agent-skills           # preview
+python3 ~/engineering-kit-1.5.0/tools/kit.py adopt --with launcher --with agent-skills --apply   # write
 ```
 
 `--with` names the instruction files your agents read, beyond `AGENTS.md`:
@@ -132,7 +132,7 @@ in `procedures/adopt-and-update.md`.
 
 Only the entry block is loaded into every agent session: about 0.5 kB. The
 contract is read when work is planned, reviewed or released: about 6.9 kB.
-A procedure is about 2.7 kB and is read only for its stage. With the
+A procedure is about 2.8 kB and is read only for its stage. With the
 `agent-skills` integration, clients that support skills also load each
 automatic skill's name and description, near 2.9 kB for the twelve, and open
 a skill, and so its procedure, only when the work matches it. The additional

@@ -803,6 +803,14 @@ class ChecksSettings(Fixture):
         self.assertEqual(git('branch', '--format=%(refname:short)', cwd=remote), 'main')
 
     @unittest.skipIf(os.name == 'nt', 'the stand-in check host runs a POSIX shell')
+    def test_a_check_whose_output_ends_without_a_newline_still_passes_on_the_check_host(self):
+        root, _ = self.project('printf ok')
+        self.settings(root, host={'ssh': 'checks@build-box'})
+        record = self.deliver(root)
+        self.assertEqual((record['checks'][0]['result'], record['outcome']), ('pass', 'opened'))
+        self.assertIn('ok', record['checks'][0]['output'])
+
+    @unittest.skipIf(os.name == 'nt', 'the stand-in check host runs a POSIX shell')
     def test_a_check_host_that_cannot_be_reached_is_an_open_gate_never_a_pass(self):
         root, remote = self.project('git --version')
         self.settings(root, host={'ssh': 'checks@down'})

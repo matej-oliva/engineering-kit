@@ -3,6 +3,95 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
+## 1.5.0, 2026-11-20
+
+- **Tests that earn their place.** Agents are asked to test behaviour, such
+  as state changes, parsers and permission boundaries, and to leave out tests
+  that only restate a source file or wait on real time. Reviewers ask for
+  fewer or smaller tests before more coverage.
+- **Lessons every agent can read.** A lesson about the project goes into the
+  repository, as a check, a tool's message or a page, not into one agent
+  client's private memory, which no other client or person reads.
+- **New checks on old code.** Where existing work already breaks a new
+  check, start from a count per file that may fall and never rise, instead
+  of postponing the check or exempting old files.
+- **Questions and messages a person can follow.** An interface choice goes
+  to the decision owner as today's screen beside each proposal, not as a
+  description. An agent names a task by its title and path, not its ID
+  alone.
+- **Checks that stop competing for the processor.** With
+  `checks.one_at_a_time` in `runner.json`, a delivery waits while another
+  delivery on the machine runs its checks, instead of every agent running
+  the full suite at once. Agents are asked to run only the affected tests
+  while they work.
+- **Checks on another computer.** A repository can send its checks to a
+  check host over SSH. They run there in a clean checkout that is removed
+  afterwards. A host that cannot be reached stops the delivery before the
+  push and never counts as a pass. The check host receives the repository's
+  code, so each repository chooses it for itself.
+
+### Updating
+
+From your project root, preview and apply the release, then check the project:
+
+```sh
+python3 kit update 1.5.0 --diff
+python3 kit update 1.5.0 --apply
+python3 kit check
+```
+
+On Windows use `py` instead of `python3`. Without the launcher, replace `kit`
+with `.engineering-kit/kit/tools/kit.py`. Contract version 1 is unchanged;
+no record migration is needed. The new guidance on tests, shared lessons,
+baselines, interface questions and task names changes no check; reconcile a local rule that contradicts it. Both
+new settings are off until you turn them on; section 7 of
+`.kit-cycle/guide.md` explains them. Restart a running task runner after
+updating.
+
+<details>
+<summary>Full changelog</summary>
+
+- Run work-cycle checks one delivery at a time or on a check host
+  (contribution #9). The turn is an operating-system lock on `checks.lock`
+  in the runner's home, which a crashed delivery releases. A repository
+  entry's `"check_host": true` sends the commit to `checks.host` and runs
+  each check with `sh` there. An unreachable host, a failed checkout or a
+  connection that ends during a check is an `unknown` check with the
+  outcome `checks_unavailable`; delivery exits 1 before the push. The host
+  address and folder are validated, so no SSH option passes as a host.
+- The runner gives agents its home folder as `KIT_CYCLE_HOME`, so their
+  deliveries read the same settings.
+- Thirteen new mutants cover the new guards and the guide's statement that the
+  check host receives the code. The check host tests use a stand-in SSH
+  command and are skipped on Windows; no real SSH server or Windows client
+  has run the check host path.
+- Write tests that fail when behaviour breaks (contribution #12).
+  `procedures/implement.md` gains a step, so its later steps move up by one,
+  and the review procedure treats a test that restates its source as a
+  finding.
+- Keep shared lessons in the repository, not one agent client's private
+  memory (contribution #12), in `procedures/write-instructions.md`.
+- Start a new check on existing work from a baseline that only falls
+  (contribution #12), in `procedures/maintain.md`.
+- Show an interface choice as images or a working mockup beside the screen
+  as it is today (contribution #12), in `procedures/understand.md`.
+- Name a task by its title and the path of its record as well as its ID
+  (contribution #12), in `procedures/understand.md`, with a pointer in
+  `procedures/handoff.md`.
+- Start an upgrade's review at the installed version and carry forward the
+  findings of releases reviewed but never deployed (contribution #10), in
+  `procedures/change-preflight.md`.
+- The explicitly requested interview tests a candidate name in real
+  sentences and asks alone the one question the rest depends on
+  (contribution #11), from `mattpocock/skills`, MIT;
+  `THIRD_PARTY_NOTICES.md` names the revision.
+
+These seven lessons are proposed guidance, each observed in one project. No
+checker rule or task-record schema changes. Tests do not prove that agents
+obey prose.
+
+</details>
+
 ## 1.4.2, 2026-11-10
 
 - **Reviews that move work forward.** Separate source readiness from final

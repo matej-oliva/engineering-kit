@@ -634,7 +634,7 @@ def remote_check(host: dict, revision: str, mark: str, command: str) -> tuple[st
         f'git -C "$work/src" checkout --quiet --detach {revision} 2>&1 || exit 97',
         f'echo {mark}-start',
         f'(cd "$work/src" && sh -c {shlex.quote(command)}) </dev/null 2>&1',
-        f'echo "{mark}-exit $?"',
+        f'status=$?; echo; echo "{mark}-exit $status"',  # its own line, even after output with no final newline
     ])
     result = ssh(host, script)
     lines = result.stdout.splitlines()
