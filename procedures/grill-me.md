@@ -2,7 +2,8 @@
 
 Use only when the user asks for `kit-grill-me` or `grill-me` by name.
 Otherwise return to the current task. Adapted from Matt Pocock's `grill-me`
-and `grilling` skills at `5beb35b0`, MIT; see `THIRD_PARTY_NOTICES.md`.
+and `grilling` skills at `5beb35b0`, and the naming test from his
+`domain-modeling` at `5863806d`, MIT; see `THIRD_PARTY_NOTICES.md`.
 
 The interview builds a shared understanding of a plan, decision or idea.
 It is conversation only: read relevant evidence, but write no files and
@@ -28,12 +29,21 @@ request under the project's normal rules.
    Recommended: the answer and why.
    ```
 
-4. **Wait and update.** After the user answers, update the decisions and ask
+4. **Test a name in sentences.** When a question is what to call something,
+   read the project's glossary first if it has one. Then show a table: one
+   row for each of about six sentences the user or a colleague would really
+   say about it, one column for each candidate, and in each cell whether the
+   sentence reads right, reads wrong or collides with a term already in use.
+   Include the word the user reaches for unprompted. Recommend from the
+   table.
+5. **Wait and update.** After the user answers, update the decisions and ask
    the next round. Treat "I don't know" as an answer: name evidence or an
    experiment that would resolve it and keep it explicitly unresolved.
    Proposing an experiment does not authorize running it. Challenge answers
-   conflicting with earlier decisions, evidence or project boundaries.
-5. **Confirm understanding.** When no answerable questions remain, summarize
+   conflicting with earlier decisions, evidence or project boundaries. When
+   one decision carries the rest, or the user asks, ask that one question
+   alone until it is settled, then return to whole rounds.
+6. **Confirm understanding.** When no answerable questions remain, summarize
    the decisions and unresolved items with what would settle them. Ask the
    user to confirm. Finish when they confirm, or stop when asked;
    confirmation of the summary is not permission to implement it.
