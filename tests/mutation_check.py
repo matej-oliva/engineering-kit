@@ -1,7 +1,7 @@
 """Break each guard on purpose and confirm the test suite notices; run before every release.
 
 Each mutant replaces one exact piece of code in a throwaway copy of the kit and runs
-the whole suite there. A mutant that leaves the suite passing names a guard no test
+tests until the first failure. A mutant that leaves the whole suite passing names a guard no test
 protects. Exit status 1 when any survives.
 
     python3 tests/mutation_check.py [LABEL ...]
@@ -334,8 +334,21 @@ def survives(snapshot: Path, name: str, old: str, new: str) -> bool:
         shutil.copytree(snapshot, copy)
         target = copy / mutant_path(name)
         target.write_text(target.read_text(encoding='utf-8').replace(old, new), encoding='utf-8')
-        result = subprocess.run([sys.executable, '-B', '-m', 'unittest', 'discover', '-s', 'tests'], cwd=copy,
-                                capture_output=True, text=True, timeout=600)
+        first = {
+            CYCLE: 'test_work_cycle.py',
+            'integrations/work-cycle/guide.md': 'test_work_cycle.py',
+            'kit_update.py': 'test_distribution.py',
+            'kit.py': 'test_tool.py',
+            'tests/release_commit.py': 'test_release_commit.py',
+        }.get(name)
+        command = [sys.executable, '-B', '-m', 'unittest', 'discover', '-f', '-s', 'tests']
+        if first:
+            focused = subprocess.run(command + ['-p', first], cwd=copy, capture_output=True, timeout=600)
+            if focused.returncode == 1:
+                return False
+        result = subprocess.run(command, cwd=copy, capture_output=True, timeout=600)
+        if result.returncode not in (0, 1):
+            result.check_returncode()
         return result.returncode == 0
 
 
