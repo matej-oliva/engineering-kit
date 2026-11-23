@@ -158,6 +158,15 @@ your project has a design system, name it in the optional `design` field.
 
 ## Project documentation
 
+Teams that need shared names can copy `templates/GLOSSARY.md` into their
+project as `<project>/GLOSSARY.md`, or use their existing glossary. Replace the
+example with terms people actually disagree about.
+
+For local codebase mapping, start with search and the project’s tests. Keep
+personal exploration tools, generated indexes and scratch diagrams outside
+the checkout or in locally excluded paths. Share the verified call path
+and its source references in the task.
+
 Keep your own documentation where it already lives. A task's
 `documentation` field lists the pages it updated when it closes, or says why
 none changed, so your documentation stays current with the work.

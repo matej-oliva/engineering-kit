@@ -22,6 +22,10 @@ needs a decision.
    zero, instead of exempting old work or postponing the check; lower the
    baseline whenever a count falls. The baseline is a proposal from one
    project.
+   At the retrospective, group recurring review comments by cause. For a
+   recurring mechanical mistake, assign an owner to turn one real example
+   into a failing lint or test case and verify a valid example passes.
+   Retire the duplicate review reminder once the check covers it.
 5. **Measure before you keep or remove** a tool, rule or integration: how
    often it is used, what it caught and what it costs. A claim that has not
    been measured stays labelled as unproved.
@@ -30,3 +34,9 @@ needs a decision.
 7. **Offer reusable lessons to the kit** with their provenance and rights
    (rule `LESSON`). Keep project secrets, private data and restricted
    material out of anything you offer.
+8. **Check module depth at a regular team retrospective.** Pick one module
+   with repeated fixes or changes that ripple into callers. Trace a recent
+   change through its public interface. Which decisions must callers repeat,
+   and could the module hide them behind one operation? Record a caller and
+   test for a proposed improvement, or the reason to keep the boundary.
+   Revisit the example at the next retrospective.

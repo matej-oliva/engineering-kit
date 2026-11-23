@@ -9,6 +9,11 @@ see `THIRD_PARTY_NOTICES.md`.
 1. **Restate the exact target** and confirm the authorization covers it under
    `authority.effects` in `project.json`. Approval for one target is not
    approval for the targets next to it.
+   For a feature reserved for human opt-in, leave it disabled until the
+   authorized person enables it. An agent encountering the gate stops,
+   quotes the local rule and gives the person the documented opt-in step.
+   Only that person may supply consent or toggle the setting. The same
+   gate applies at every entry point.
 2. **Capture the current state** of the target: versions, configuration
    digests and data counts, without copying credentials or private data.
    For upgrades, use the installed version as the start of the review. If

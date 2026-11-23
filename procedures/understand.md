@@ -11,7 +11,11 @@ Use at the start of every task, before choosing tools or writing code.
 3. **Inspect the existing system** before proposing anything: the code,
    records and documentation the problem touches, and the checks that cover
    them. Done when every assumption is either verified or listed as an
-   unknown in the task.
+   unknown in the task. In an unfamiliar codebase, map one vertical slice:
+   follow a real acceptance example from its entry point through the domain
+   decision to storage or an external effect and back to the caller. Name
+   the files or symbols at each hop and the test that exercises the path.
+   Mark inferred hops as unknown and inspect them before designing a change.
 4. **Write acceptance examples**: observable situations with an expected
    result, such as "given one line of 2.675, the total is 2.68". Include the
    case that matters most and one that must not change. Examples you add

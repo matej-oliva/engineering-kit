@@ -9,6 +9,10 @@ MIT licensed; see `THIRD_PARTY_NOTICES.md`.
    in every session. Put material that only some tasks need behind a
    pointer: one always-loaded line that names the material and when to read
    it.
+   Give the local path and a specific trigger, such as “When changing a
+   file format, read docs/compatibility.md.” Retrieve that section when the
+   trigger matches. When it changes a decision, quote the governing sentence
+   and cite its location so a reviewer can check the interpretation.
 2. **Order by when the reader needs it**: the steps first, each ending in a
    done-when the reader can check; then reference grouped by concept; then
    material for rare cases in a separate file named by the step that needs
