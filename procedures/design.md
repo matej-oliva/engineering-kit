@@ -16,6 +16,10 @@ Use after a task is accepted and before implementation.
    decision that is hard to reverse, surprising without its context and the
    result of a real trade-off also gets a short decision record in the
    project's documentation.
+   Use the project glossary, when present, for names in the plan, interface
+   and acceptance examples. If two teams mean different things by a term,
+   settle the distinction before exposing it in a shared interface. Record
+   the agreed meaning and avoided synonyms in the project glossary.
 3. **Name dependencies, risks and recovery**: how the change is undone and
    what cannot be undone. Done when `plan.risks` and `plan.recovery` say so.
 4. **Plan the evidence**: which check proves each acceptance example, and at

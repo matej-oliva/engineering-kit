@@ -34,6 +34,8 @@ request under the project's normal rules.
    row for each of about six sentences the user or a colleague would really
    say about it, one column for each candidate, and in each cell whether the
    sentence reads right, reads wrong or collides with a term already in use.
+   If the project uses `<project>/GLOSSARY.md`, compare candidates with its canonical
+   terms and avoided synonyms. Flag a collision for the decision owner.
    Include the word the user reaches for unprompted. Recommend from the
    table.
 5. **Wait and update.** After the user answers, update the decisions and ask

@@ -70,6 +70,14 @@ agent's adherence to this guidance.
    before more coverage (`procedures/implement.md`). Look for changes
    outside the task, unrelated edits, credentials or restricted material,
    and documentation that no longer matches.
+
+   Report two conclusions in the review evidence. Under **Spec**, tie the
+   observed behaviour to each acceptance example. Under **Standards**, check
+   the applicable contract and project rules. For a standards finding, quote
+   the governing sentence, cite its local source and point to the affected
+   change. Check the scope of any recorded exception. Keep optional advisory
+   checks quiet on a clean result. Report an actionable match once as advice.
+   A blocking finding needs an applicable requirement, rule or demonstrated risk.
 3. **Record findings** with `blocking` set when an acceptance example is not
    met, a check is wrong or missing, a risk is unhandled or a contract rule
    is broken. Other findings are not blocking; the reviewer proposes each
