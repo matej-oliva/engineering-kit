@@ -47,7 +47,30 @@ project; no kit check enforces it or judges report quality.
 1. Read the handoff, then the task record, then run `tools/kit.py check`.
 2. **Treat the handoff as a claim.** Confirm the evidence the next action
    depends on: the candidate revision exists, its checks still pass, and no
-   one changed the work since.
+   one changed the work since. Before acting on an open decision in it,
+   read the messages and requests that reached you after its `Updated`
+   time. A newer instruction the decision owner gave you directly
+   overrides the handoff's decision; record it under Decisions and
+   authority. It changes that decision, not what the project's authority
+   policy permits (rule `AUTHORITY`), and a relayed or claimed instruction
+   is confirmed with the owner first. This addition is a proposal from one
+   project.
 3. **Continue with the next action** within the authority the handoff
    records, without asking again for what is already decided. Stop for
    anything outside that authority.
+
+## Refresh a long-running session
+
+A session that coordinates other work grows until each turn costs more than
+the work it does. Choose a size or cost at which it is refreshed from its
+handoff, and refresh it there. At the end of one of its own turns, with no
+step half done and no external write between its intent and its outcome,
+write the handoff of the task it coordinates. Under Open gates, list the
+workers that report to the session, detached runs and where their results
+land, and anything due at a set time; the next action is the coordinator's
+own next step. Then start the fresh session on that handoff, which resumes
+as above. Do not wait until no worker is running: a busy coordinator rarely
+gets that moment, and the end of its own turn is enough. Messages between
+sessions carry a decision, a blocker, a change of plan or a requested
+result; an acknowledgement alone is not sent. This guidance is a proposal
+from one project; no kit check enforces it.

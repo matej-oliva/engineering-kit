@@ -114,6 +114,17 @@ python3 kit integrated abc1234 main
 `abc1234` is the candidate the review approved. Record the result in the
 task's `candidate.integrated`, as the message says.
 
+The candidate's check results carry over to a revision that differs only in
+process files, but what those files say still needs its own checks. With
+the candidate's copy of the tool, run `check`, `scan-secrets` after staging,
+and any scan your project has for restricted or private material, against a
+checkout of that revision (`--root`). If only task records or handoffs
+changed, the other required checks need not run again unless one of them
+reads those files. A wording or citation fix in a record after review that
+changes no meaning needs no new review round when a reviewer of the
+candidate reads it and says so in the review's evidence; any other change
+to a record is reviewed again. This is a proposal from one project.
+
 ## Worked example: a small change
 
 A teammate asks for a `--quiet` option. The agent records task `T-12` with

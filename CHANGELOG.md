@@ -3,6 +3,35 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
+## Unreleased
+
+Contract version 1, unchanged. Three proposals from one project, all
+guidance; no checker rule or record schema changes. After updating,
+reconcile a local rule that contradicts them:
+
+- `procedures/review.md` step 5 and `guide/everyday.md` say what a revision
+  that differs from the candidate only in process files still needs. The
+  candidate's check results carry over, and when only task records or
+  handoffs changed, the profile's other required checks need not run again
+  unless one reads those files. `check`, `scan-secrets` and any project scan
+  for restricted or private material still run on that revision. A wording
+  or citation fix to a record after review that changes no meaning needs no
+  new review round when a reviewer of the candidate reads it and says so in
+  the review's evidence; any other change to a record is reviewed again.
+- `procedures/design.md` step 4, `procedures/implement.md` step 4 and
+  `procedures/review.md` step 2 ask, for code that reads data it does not
+  produce itself, for at least one check on input made by the real producer,
+  not only on fixtures built by hand, sourced without secrets or
+  unauthorized effects. A missing one is a review finding, blocking when an
+  acceptance example depends on that input.
+- `procedures/handoff.md`: on resume, messages that arrived after the
+  handoff's `Updated` time are read before acting on an open decision, and
+  a newer instruction the decision owner gave directly overrides that
+  decision, not the authority policy. A new section describes refreshing a
+  long-running coordinating session from its handoff at the end of its own
+  turn, and sending messages between sessions only when they carry a
+  decision, blocker, change of plan or requested result.
+
 ## 1.5.0, 2026-11-20
 
 - **Tests that earn their place.** Agents are asked to test behaviour, such

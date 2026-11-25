@@ -22,6 +22,9 @@ Use while changing the repository for an accepted task. Set `state` to
    inject the clock or wait for the event. When a feature is replaced,
    remove the tests of the version that is gone. Before deleting a weak
    test, find the test or rule it was copied from and fix that as well.
+   A parser or guard over data it does not produce itself gets at least one
+   test on a sample made by the real producer as well as its edge cases,
+   sourced as `procedures/design.md` step 4 says.
    This step is a proposal from one project.
 5. **Run the focused checks** for what you change while you iterate. Run the
    profile's required checks once the candidate is complete, on each
