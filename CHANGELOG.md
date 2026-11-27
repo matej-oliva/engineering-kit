@@ -3,29 +3,84 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
-## Unreleased
+## 1.6.0, 2026-11-27
 
-Contract version 1, unchanged. Three guidance proposals from one project; no
-checker rule or record schema changes. After updating, reconcile any local
-rule that contradicts them:
+- **Shared names for a team.** An optional `templates/GLOSSARY.md` holds each
+  term people disagree about, its meaning and the synonyms to avoid. Plans,
+  interfaces, reviews and the interview use it when a project has one.
+- **Reviews that say why.** A review reports two conclusions: whether the
+  change does what each acceptance example asks, and which project rule a
+  finding rests on, quoting the sentence. Recurring review comments become a
+  check, and a module that keeps rippling into its callers is examined at a
+  regular retrospective.
+- **Finding your way in unfamiliar code.** Before designing a change, follow
+  one real example from its entry point to storage and back, naming the files
+  and the test on each step, and mark what is guessed.
+- **Tests fed by real output.** A change to code that reads another
+  program's output tests it with a captured, cleaned sample of that output,
+  not only an example written by hand.
+- **Small record changes after review.** A change that touches only task
+  records or handoffs after review keeps the reviewed checks and reruns the
+  record and secret checks on the merged result.
+- **Resuming on current decisions.** An agent that resumes work reads the
+  answers and messages that arrived since the last handoff before acting on
+  a decision.
 
-- **Records-only deltas (`procedures/review.md` step 5, `guide/everyday.md`):**
-  task-record or handoff deltas after review keep the candidate's check
-  results, but still run `check-task`, `check-handoff` when a handoff exists
-  or is required, `scan-secrets` and restricted-material scans on a clean
-  checkout of the integrated revision, recorded in `candidate.integrated`'s
-  `evidence`.
-- **Real-producer input (`procedures/design.md` step 4,
-  `procedures/implement.md` step 4, `procedures/review.md` step 2):** changed
-  parsers or guards for a producer-owned format swap a hand-built fixture for
-  a captured, sanitized sample (or reuse an existing producer check), unless
-  an answered `questions` entry cited in `plan.evidence` records the decision
-  owner's acceptance of hand-built evidence.
-- **Resume and coordinator handoff (`procedures/handoff.md`):** check
-  authoritative decision channels from the last recorded message or answer
-  before acting on a decision; coordinating sessions hand off at a turn
-  boundary without waiting for workers, listing active workers and report
-  paths under Open gates.
+### Updating
+
+From your project root, preview and apply the release, then check the project:
+
+```sh
+python3 kit update 1.6.0 --diff
+python3 kit update 1.6.0 --apply
+python3 kit check
+```
+
+On Windows use `py` instead of `python3`. Without the launcher, replace `kit`
+with `.engineering-kit/kit/tools/kit.py`. Contract version 1 is unchanged;
+no record migration or configuration change is needed. The new guidance
+changes no check; reconcile a local rule that contradicts it.
+`procedures/maintain.md` gains step 8, after the existing steps, so no step
+moves.
+
+<details>
+<summary>Full changelog</summary>
+
+- Team practices (contribution #14): the optional `templates/GLOSSARY.md`
+  and its use in `procedures/design.md`, `procedures/grill-me.md` and
+  `guide/customize.md`; one vertical slice mapped in
+  `procedures/understand.md`; separate Spec and Standards conclusions in
+  `procedures/review.md`; a feature reserved for a person's opt-in stays off
+  in `procedures/change-preflight.md`; recurring review comments turned into
+  checks and a module depth check at a retrospective in
+  `procedures/maintain.md`; local instructions cited with a trigger and the
+  governing sentence in `procedures/write-instructions.md`. Written in the
+  kit's own words; no code was copied.
+- Records-only deltas (contribution #15), in `procedures/review.md` step 5
+  and `guide/everyday.md`: task-record or handoff deltas after review keep
+  the candidate's check results, but still run `check-task`, `check-handoff`
+  when a handoff exists or is required, `scan-secrets` and
+  restricted-material scans on a clean checkout of the integrated revision,
+  recorded in `candidate.integrated`'s `evidence`.
+- Real-producer input (contribution #15), in `procedures/design.md` step 4,
+  `procedures/implement.md` step 4 and `procedures/review.md` step 2:
+  changed parsers or guards for a producer-owned format swap a hand-built
+  fixture for a captured, sanitized sample (or reuse an existing producer
+  check), unless an answered `questions` entry cited in `plan.evidence`
+  records the decision owner's acceptance of hand-built evidence.
+- Resume and coordinator handoff (contribution #15), in
+  `procedures/handoff.md`: check authoritative decision channels from the
+  last recorded message or answer before acting on a decision; coordinating
+  sessions hand off at a turn boundary without waiting for workers, listing
+  active workers and report paths under Open gates.
+- The kit's own repository: each mutation run stops at its first failing
+  test (contribution #13), and making a release first validates every
+  contribution record (contribution #15). Neither is installed in a project.
+
+These are proposed guidance, each observed in one project. No checker rule
+or task-record schema changes. Tests do not prove that agents obey prose.
+
+</details>
 
 ## 1.5.0, 2026-11-20
 
