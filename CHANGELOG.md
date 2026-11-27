@@ -14,17 +14,19 @@ and whether the contract changed. Newest first.
   check, and a module that keeps rippling into its callers is examined at a
   regular retrospective.
 - **Finding your way in unfamiliar code.** Before designing a change, follow
-  one real example from its entry point to storage and back, naming the files
-  and the test on each step, and mark what is guessed.
-- **Tests fed by real output.** A change to code that reads another
-  program's output tests it with a captured, cleaned sample of that output,
-  not only an example written by hand.
+  one real example from its entry point to storage or an outside effect and
+  back, naming the files on each step and the test that covers the path, and
+  mark what is guessed.
+- **Tests fed by real output.** A change to a parser or guard that reads
+  another program's output tests it with a captured, cleaned sample of that
+  output or an existing check against the real program, unless the decision
+  owner accepted an example written by hand.
 - **Small record changes after review.** A change that touches only task
-  records or handoffs after review keeps the reviewed checks and reruns the
-  record and secret checks on the merged result.
-- **Resuming on current decisions.** An agent that resumes work reads the
-  answers and messages that arrived since the last handoff before acting on
-  a decision.
+  records or handoffs after review keeps the reviewed checks, and reruns the
+  project-wide record check and the secret scan on the merged result.
+- **Resuming on current decisions.** An agent that resumes work reads every
+  answer and message since the last one it recorded before acting on a
+  decision.
 
 ### Updating
 
@@ -54,14 +56,15 @@ moves.
   in `procedures/change-preflight.md`; recurring review comments turned into
   checks and a module depth check at a retrospective in
   `procedures/maintain.md`; local instructions cited with a trigger and the
-  governing sentence in `procedures/write-instructions.md`. Written in the
-  kit's own words; no code was copied.
+  governing sentence in `procedures/write-instructions.md`. Adapted from
+  public talks and browser-vendor guidance the decision owner reviewed;
+  written for the kit, with no text, code or example copied.
 - Records-only deltas (contribution #15), in `procedures/review.md` step 5
   and `guide/everyday.md`: task-record or handoff deltas after review keep
-  the candidate's check results, but still run `check-task`, `check-handoff`
-  when a handoff exists or is required, `scan-secrets` and
-  restricted-material scans on a clean checkout of the integrated revision,
-  recorded in `candidate.integrated`'s `evidence`.
+  the candidate's check results, but still run `check --root .`, which checks
+  every task record and handoff, `scan-secrets` and restricted-material scans
+  from a clean checkout of the integrated revision, recorded in
+  `candidate.integrated`'s `evidence`.
 - Real-producer input (contribution #15), in `procedures/design.md` step 4,
   `procedures/implement.md` step 4 and `procedures/review.md` step 2:
   changed parsers or guards for a producer-owned format swap a hand-built
