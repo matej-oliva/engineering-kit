@@ -93,6 +93,8 @@ def write_json(path: Path, data) -> None:
     try:
         with os.fdopen(fd, 'wb') as output:
             output.write((json.dumps(data, indent=2) + '\n').encode())
+        if path.exists():
+            shutil.copymode(path, temporary)
         os.replace(temporary, path)
     finally:
         temporary.unlink(missing_ok=True)

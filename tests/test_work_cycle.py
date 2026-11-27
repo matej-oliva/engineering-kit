@@ -456,9 +456,11 @@ class Runner(Fixture):
         checker.write_bytes((KIT / 'tools/kit.py').read_bytes())
         path = root / '.engineering-kit/tasks/T1.json'
         revision = cycle.task_revision(json.loads(path.read_text()))
+        mode = path.stat().st_mode
         source = self.temp / 'edit.json'
         source.write_text(json.dumps(dict(task('T1', state='proposed'), title='Updated')))
         cycle.replace_task(root, 'T1', revision, source)
+        self.assertEqual(path.stat().st_mode, mode)
         with self.assertRaisesRegex(cycle.CycleError, 'changed since'):
             cycle.replace_task(root, 'T1', revision, source)
         source.write_text(json.dumps({'id': 'T1'}))
