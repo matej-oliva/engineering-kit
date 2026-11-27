@@ -1,0 +1,20 @@
+{
+  "kit": "contribution/1",
+  "project": "private adopting project",
+  "source_revision": "owner-held (redacted)",
+  "kit_version": "1.5.0",
+  "files": [
+    "procedures/review.md",
+    "guide/everyday.md",
+    "guide/agents.md",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "status": "proposal",
+  "need": "Teams integrating reviewed work with only task-record or handoff edits either rerun unrelated heavy check suites or skip checks that validate and scan the changed records.",
+  "evidence": "Observed in one adopting project where integration commits often touched only task records after the gated revision and a restricted-material issue appeared in a record edit after heavy checks had already passed.",
+  "limits": "Observed in one project. Guidance only: kit integrated does not yet scan or validate changed record blobs automatically, and project-specific restricted-material scans remain the project's responsibility.",
+  "rights": "owner-authored",
+  "owner": "matej-oliva",
+  "sanitization": "Removed project names, repository identifiers, counts, specific anecdotes and paths. No credentials, private account data, employer, client or third-party material is included."
+}

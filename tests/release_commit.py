@@ -24,6 +24,18 @@ def git(*args, root: Path) -> str:
     return done.stdout
 
 
+def check_contributions(root: Path, python: str) -> None:
+    folder = root / '.github' / 'contributions'
+    if not folder.is_dir():
+        return
+    for path in sorted(folder.glob('*.json')):
+        done = subprocess.run([python, str(root / 'tools' / 'kit.py'), 'check-contribution', str(path)],
+                              cwd=root, capture_output=True, text=True)
+        if done.returncode:
+            raise SystemExit(f'{path.relative_to(root)} failed check-contribution: '
+                             f'{(done.stdout + done.stderr).strip()}')
+
+
 def make(root: Path, version: str, python: str = sys.executable) -> str:
     if not re.fullmatch(r'\d+\.\d+\.\d+', version):
         raise SystemExit(f'version {version!r} is not MAJOR.MINOR.PATCH')
@@ -36,6 +48,7 @@ def make(root: Path, version: str, python: str = sys.executable) -> str:
     for ref, kind in ((f'refs/heads/{branch}', 'branch'), (f'refs/tags/{tag}', 'tag')):
         if subprocess.run(['git', 'rev-parse', '--verify', '-q', ref], cwd=root, capture_output=True).returncode == 0:
             raise SystemExit(f'the {kind} {ref.split("/", 2)[2]} already exists; a published tag never moves')
+    check_contributions(root, python)
     git('switch', '-q', '-c', branch, root=root)
     made = False
     try:

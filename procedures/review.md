@@ -69,11 +69,13 @@ agent's adherence to this guidance.
    its source is a finding, not evidence; ask for fewer or smaller tests
    before more coverage (`procedures/implement.md`). Look for changes
    outside the task, unrelated edits, credentials or restricted material,
-   and documentation that no longer matches. For code that reads data it
-   does not produce itself, ask which check feeds it input made by the real
-   producer; if none does, that is a finding, and it blocks when an
-   acceptance example depends on that input. This addition is a proposal
-   from one project.
+   and documentation that no longer matches. For changed behaviour that
+   parses or guards a producer-owned format, check `procedures/design.md`
+   step 4: a missing real-producer sample or check is a finding, and blocks
+   when an acceptance example depends on that format unless an answered
+   `questions` entry cited in `plan.evidence` records the decision owner's
+   acceptance of hand-built evidence. This addition is a proposal from one
+   project.
 
    Report two conclusions in the review evidence. Under **Spec**, tie the
    observed behaviour to each acceptance example. Under **Standards**, check
@@ -102,22 +104,26 @@ agent's adherence to this guidance.
    under judgement. When it reports `UNKNOWN`, such as a kit adopted or
    moved to another source after the candidate, review that kit change
    before you rely on the result.
-   Equivalence carries the candidate's check results over to that revision;
-   it says nothing about what its task records, handoffs and `project.json`
-   now say. Still run the checks that read those files against the
-   integrated revision, with the candidate's copy of the tool and `--root`
-   at a checkout of that revision: `tools/kit.py check`,
-   `tools/kit.py scan-secrets` after staging, and any project scan for
-   restricted or private material. When only task records or handoffs
-   changed, the profile's other required checks need not run again, unless
-   one of them reads those files. A wording or citation fix to a record
-   after review that changes no meaning needs no new review round when a
-   reviewer of the candidate reads the change, confirms that, and says so in
-   the review's `evidence`. Any other change to a record is reviewed again,
-   such as one to its requirement or acceptance examples, profile,
-   `not_applicable` reasons, exceptions, candidate, checks, a review's
-   verdict or findings, effects, release, verification or documentation.
-   This addition is a proposal from one project.
+   When the integrated revision differs from the candidate only in task
+   records or handoffs, the candidate's check results stay bound to the
+   candidate revision and other required checks need not rerun unless one
+   reads those files. Still validate what those records say on a clean
+   checkout of the exact integrated revision (`--root`), with the
+   candidate's copy of the tool: run `check-task` and `check-handoff` for
+   this task, `scan-secrets`, and any project scan for restricted material,
+   and record their results in that `candidate.integrated` entry's
+   `evidence`. If `project.json` or a kit or tool file changed, evaluate the
+   policy change and rerun affected required checks. A record edit to what
+   the review accepted (requirement, acceptance examples, profile,
+   `not_applicable` reasons, exceptions, checks, review findings or planned
+   effects) needs a new review; changing `candidate.revision` or `base`
+   makes a new candidate. A harmless wording or citation fix needs a new
+   approving review entry for the candidate from an independent reviewer
+   saying meaning did not change. Normal post-review stage entries
+   (`candidate.integrated`, effect outcomes, `release`, `verification` and
+   `documentation` under `procedures/release.md` and
+   `procedures/maintain.md`) need no new review. This addition is a proposal
+   from one project.
 6. **Mark the task reviewed** once a review of this revision approves it and
    its required checks pass. Put what you examined and reran in the review's
    `evidence`, not in `checks`: recording the author's checks would make you

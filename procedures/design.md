@@ -33,17 +33,19 @@ Use after a task is accepted and before implementation.
    loading, error and success), keyboard and screen reader use, and the
    screen sizes the project supports. The project's own design system, not
    the kit, decides how it looks.
-   Where the change reads data it does not produce itself, such as files on
-   disk, a service's state or another tool's output, plan at least one
-   check that feeds it input made by the real producer: a real directory
-   tree, the real service in a disposable container, or captured output of
-   the real tool. Fixtures you build by hand show your model of the input,
-   not the input. Produce that input from a disposable or synthetic source,
-   remove credentials and restricted material before you commit a sample
-   (rule `SECRETS`), and use a shared or production service only with the
-   authorization the project requires for that effect (rule `EFFECTS`).
-   Name in the plan which acceptance examples have only hand-built
-   evidence. This addition is a proposal from one project.
+   Where changed behaviour parses or guards a producer-owned format, layout
+   or state (such as files on disk, a service's state or another tool's
+   output), plan at least one check that feeds it input made by the real
+   producer — reusing an existing check or swapping a hand-built fixture for
+   a captured, sanitized sample, rather than adding test coverage. Fixtures
+   built by hand show your model of the input, not the input. Run the real
+   producer on disposable or synthetic data, remove credentials and
+   restricted material before committing a sample (rule `SECRETS`), and use
+   a shared or production service only with the authorization the project
+   requires (rule `EFFECTS`). If real-producer input cannot be obtained,
+   record the reason and the decision owner's acceptance in `questions` and
+   cite that question ID in `plan.evidence`. This addition is a proposal
+   from one project.
 5. **Split the work into increments** that each leave the system working and
    can be reviewed alone. Done when `plan.increments` lists them.
 6. **Prepare effects** outside the repository, such as deployments, data

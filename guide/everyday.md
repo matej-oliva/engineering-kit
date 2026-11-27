@@ -114,16 +114,14 @@ python3 kit integrated abc1234 main
 `abc1234` is the candidate the review approved. Record the result in the
 task's `candidate.integrated`, as the message says.
 
-The candidate's check results carry over to a revision that differs only in
-process files, but what those files say still needs its own checks. With
-the candidate's copy of the tool, run `check`, `scan-secrets` after staging,
-and any scan your project has for restricted or private material, against a
-checkout of that revision (`--root`). If only task records or handoffs
-changed, the other required checks need not run again unless one of them
-reads those files. A wording or citation fix in a record after review that
-changes no meaning needs no new review round when a reviewer of the
-candidate reads it and says so in the review's evidence; any other change
-to a record is reviewed again. This is a proposal from one project.
+Equivalence carries the candidate's check results over only for task-record
+or handoff deltas; it does not validate what the changed records say. On a
+clean checkout of the merged revision (`--root`), run `check-task` and
+`check-handoff` for this task, `scan-secrets`, and any project scan for
+restricted material using the candidate's copy of the tool, and record the
+results in `candidate.integrated`'s `evidence`. See
+[Review and validate](../procedures/review.md) step 5 for when other checks
+or a new review apply. This is a proposal from one project.
 
 ## Worked example: a small change
 

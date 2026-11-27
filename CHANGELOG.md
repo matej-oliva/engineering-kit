@@ -5,32 +5,26 @@ and whether the contract changed. Newest first.
 
 ## Unreleased
 
-Contract version 1, unchanged. Three proposals from one project, all
-guidance; no checker rule or record schema changes. After updating,
-reconcile a local rule that contradicts them:
+Contract version 1, unchanged. Three guidance proposals from one project; no
+checker rule or record schema changes. After updating, reconcile any local
+rule that contradicts them:
 
-- `procedures/review.md` step 5 and `guide/everyday.md` say what a revision
-  that differs from the candidate only in process files still needs. The
-  candidate's check results carry over, and when only task records or
-  handoffs changed, the profile's other required checks need not run again
-  unless one reads those files. `check`, `scan-secrets` and any project scan
-  for restricted or private material still run on that revision. A wording
-  or citation fix to a record after review that changes no meaning needs no
-  new review round when a reviewer of the candidate reads it and says so in
-  the review's evidence; any other change to a record is reviewed again.
-- `procedures/design.md` step 4, `procedures/implement.md` step 4 and
-  `procedures/review.md` step 2 ask, for code that reads data it does not
-  produce itself, for at least one check on input made by the real producer,
-  not only on fixtures built by hand, sourced without secrets or
-  unauthorized effects. A missing one is a review finding, blocking when an
-  acceptance example depends on that input.
-- `procedures/handoff.md`: on resume, messages that arrived after the
-  handoff's `Updated` time are read before acting on an open decision, and
-  a newer instruction the decision owner gave directly overrides that
-  decision, not the authority policy. A new section describes refreshing a
-  long-running coordinating session from its handoff at the end of its own
-  turn, and sending messages between sessions only when they carry a
-  decision, blocker, change of plan or requested result.
+- **Records-only deltas (`procedures/review.md` step 5, `guide/everyday.md`):**
+  task-record or handoff deltas after review keep the candidate's check
+  results, but still run `check-task`, `check-handoff`, `scan-secrets` and
+  restricted-material scans on a clean checkout of the integrated revision,
+  recorded in `candidate.integrated`'s `evidence`.
+- **Real-producer input (`procedures/design.md` step 4,
+  `procedures/implement.md` step 4, `procedures/review.md` step 2):** changed
+  parsers or guards for a producer-owned format swap a hand-built fixture for
+  a captured, sanitized sample (or reuse an existing producer check), unless
+  an answered `questions` entry cited in `plan.evidence` records the decision
+  owner's acceptance of hand-built evidence.
+- **Resume and coordinator handoff (`procedures/handoff.md`):** check
+  authoritative decision channels from the last recorded message or answer
+  before acting on a decision; coordinating sessions hand off at a turn
+  boundary without waiting for workers, listing active workers and report
+  paths under Open gates.
 
 ## 1.5.0, 2026-11-20
 

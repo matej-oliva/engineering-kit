@@ -190,6 +190,16 @@ class Portability(unittest.TestCase):
         self.assertEqual(contract, round(len((KIT / 'CONTRACT.md').read_bytes()) / 1000, 1))
         self.assertEqual(procedure, round(sum(sizes) / len(sizes) / 1000, 1))
 
+    def test_contribution_records_pass_check_contribution(self):
+        folder = KIT / '.github' / 'contributions'
+        if not folder.is_dir():
+            return
+        import kit_update
+        for path in sorted(folder.glob('*.json')):
+            with self.subTest(path.name):
+                record = json.loads(path.read_text(encoding='utf-8'))
+                self.assertEqual(kit_update.check_contribution(record), [])
+
 
 if __name__ == '__main__':
     unittest.main()

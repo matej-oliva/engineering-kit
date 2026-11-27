@@ -87,6 +87,8 @@ MUTANTS = [
      "            git('reset', '-q', '--hard', root=root)", '            pass'),
     ('the release commit keeps repository-host files', 'tests/release_commit.py',
      "HOST_ONLY = ('.github',)", 'HOST_ONLY = ()'),
+    ('an invalid contribution record still tags a release', 'tests/release_commit.py',
+     '    check_contributions(root, python)\n', ''),
     ('repository workflows become installed payload', 'kit_update.py',
      "'conformance/', '.github/'", "'conformance/'"),
     ('a skipped check counts as a pass', 'kit.py',
