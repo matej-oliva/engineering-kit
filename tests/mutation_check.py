@@ -281,6 +281,7 @@ MUTANTS = [
     ('runner accepts unknown approver', CYCLE, "approval['by'] in trusted", 'True'),
     ('lease contender overwrites active holder', CYCLE, '(lease is None and active)', 'False'),
     ('stale task write succeeds', CYCLE, 'if task_revision(read_json(path)) != expected:', 'if False:'),
+    ('task write drops shared access', CYCLE, 'shutil.copymode(path, temporary)', 'pass'),
     ('malformed claims raise a traceback', CYCLE,
      'except (KeyError, TypeError, ValueError) as error:', 'except OSError as error:'),
     ('the guide loses the fail-open boundary', 'integrations/work-cycle/guide.md',
