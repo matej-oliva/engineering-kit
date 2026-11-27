@@ -44,8 +44,8 @@ acceptance example separately from which project rule a finding rests on,
 recurring review comments turned into checks, a module depth check at a
 regular retrospective, one real example traced through unfamiliar code
 before a design, a captured sample of another program's real output in the
-tests of a parser or guard that reads it unless the decision owner accepts a
-hand-written example, smaller checks for changes to records alone after
+tests of a parser or guard that reads it, or an existing check against that
+program, unless the decision owner accepts a hand-written example, smaller checks for changes to records alone after
 review, and a resumed agent that reads every answer and message since the
 last one it recorded before acting on a decision. To use the glossary, copy
 `templates/GLOSSARY.md` into your project as [Customize](customize.md)

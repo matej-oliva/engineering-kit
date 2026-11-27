@@ -109,9 +109,11 @@ agent's adherence to this guidance.
    candidate revision and other required checks need not rerun unless one
    reads those files. Validate the records themselves on a clean checkout of
    that exact revision with the candidate's copy of the tool, run from that
-   checkout: `check --root .`, which checks every task record and handoff
-   there, since a merge can change another task's record too, then
-   `scan-secrets` and any project scan for restricted material, and record
+   checkout: `check --root .`, which checks the task records and handoffs
+   in their folders, since a merge can change another task's record too.
+   It cannot see a handoff the merge deleted, so confirm that each handoff
+   rule `HANDOFF` requires still exists there. Then run `scan-secrets` and
+   any project scan for restricted material, and record
    the results in that `candidate.integrated` entry's
    `evidence`. If instead `project.json` or a kit or tool file changed,
    evaluate the change and rerun affected required checks. A record edit to

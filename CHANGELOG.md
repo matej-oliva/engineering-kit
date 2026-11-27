@@ -62,7 +62,8 @@ moves.
 - Records-only deltas (contribution #15), in `procedures/review.md` step 5
   and `guide/everyday.md`: task-record or handoff deltas after review keep
   the candidate's check results, but still run `check --root .`, which checks
-  every task record and handoff, `scan-secrets` and restricted-material scans
+  the task records and handoffs in their folders, confirm that each required
+  handoff still exists, and run `scan-secrets` and restricted-material scans
   from a clean checkout of the integrated revision, recorded in
   `candidate.integrated`'s `evidence`.
 - Real-producer input (contribution #15), in `procedures/design.md` step 4,
@@ -80,8 +81,9 @@ moves.
   test (contribution #13), and making a release first validates every
   contribution record (contribution #15). Neither is installed in a project.
 
-These are proposed guidance, each observed in one project. No checker rule
-or task-record schema changes. Tests do not prove that agents obey prose.
+All are proposed guidance: the three lessons of contribution #15 were each
+observed in one project, and the practices of contribution #14 are adapted
+ideas. No checker rule or task-record schema changes. Tests do not prove that agents obey prose.
 
 </details>
 
