@@ -29,6 +29,9 @@ MIT licensed; see `THIRD_PARTY_NOTICES.md`.
 4. **Prefer a check to a rule.** A mechanical rule, such as a path, a format
    or a forbidden pattern, belongs in a check. Label every rule with how it
    is enforced (rule `ENFORCEMENT`).
+   Turn a repeatable multi-step workflow into a deterministic callable
+   command. Validate the records it writes and compare the input revision
+   before replacing an existing record.
 5. **Say what to do.** State the behaviour you want. Keep a prohibition for a
    hard safety boundary, and pair it with what to do instead.
 6. **Delete what changes nothing.** A sentence the reader already follows

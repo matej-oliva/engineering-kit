@@ -53,6 +53,7 @@ settings from, such as `.claude` or `.github`; no check enforces that yet.
 | `kit` | Always `"task/1"`. | always |
 | `id`, `title`, `state` | Stable ID, title and current state. | always |
 | `author` | Who implements the task. A proposed task may not have one yet. | `accepted` |
+| `blocked_by` | Optional list of prerequisite task IDs. Each must exist. Dependencies must be acyclic. The unattended runner waits for every listed task to reach `closed`. | optional |
 | `contributors` | Optional: everyone else who changed the candidate or recorded its evidence, such as a session that committed the author's work. None of them may approve it. | |
 | `profile` | A profile name from `project.json`. | `accepted` |
 | `requirement` | `{"revision", "problem", "decision_owner", "excluded": [...], "acceptance": [{"id", "example"}], "acceptance_boundary"}`. Optional `assumptions`: choices made without the decision owner, such as examples added beyond the request. | `accepted` |

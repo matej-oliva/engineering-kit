@@ -152,6 +152,17 @@ class CommandLine(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('No such mutant', result.stderr)
 
+    def test_task_graph_refuses_missing_and_cyclic_dependencies(self):
+        root = self.copy_example()
+        folder = root / '.engineering-kit/tasks'
+        task = json.loads((folder / 'T-7.json').read_text())
+        for dependencies, message in ((['absent'], 'unknown prerequisite'), (['T-7'], 'dependency cycle'),
+                                      ('T-7', 'must list')):
+            (folder / 'T-7.json').write_text(json.dumps(dict(task, blocked_by=dependencies)))
+            result = run('check', '--root', str(root))
+            self.assertEqual(result.returncode, 1)
+            self.assertIn(message, result.stdout)
+
     def test_check_task_and_handoff_commands(self):
         stage = KIT / 'examples' / 'walkthrough' / 'stages' / '07-closed.json'
         self.assertEqual(run('check-task', '--root', str(EXAMPLE), str(stage)).returncode, 0)

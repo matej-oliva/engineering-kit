@@ -121,7 +121,8 @@ python3 .kit-cycle/cycle.py run   # WSL2
 
 The runner takes the oldest ready task across every registered repository:
 a task record in `accepted` or `in_progress` with `"next_actor": "agent"`.
-It claims it, makes a fresh worktree on a new branch `kit/ID-TIME` from the
+It takes an approved task whose prerequisites have closed, claims it,
+makes a fresh worktree on a unique branch starting with `kit/ID-TIME` from the
 default branch, and runs the agent command there with a time limit that
 ends before the window does. When the agent stops without a handoff, the
 runner writes one that says the outcome is unknown. It records each run in
@@ -284,6 +285,23 @@ registered checkout's script, such as
 `py C:/src/billing/.kit-cycle/cycle.py guard-edit`. The prompt the runner
 writes names the kit files and procedures in the registered checkout. The
 pre-push guard needs nothing: every worktree shares the checkout's hooks.
+
+## Approving unattended work
+
+Keep the registered checkout's project configuration under the approvers'
+control. In `project.json`, set `cycle.trusted_approvers` to the principals
+or roles that may approve unattended work. In `cycle.approvals`, map each
+approved task ID to an object with `by` and `revision`. The approver reads
+the task and obtains its digest with `cycle.py task-revision FILE`. An
+empty policy holds all tasks. Editing a task requires fresh approval.
+Write tool-generated edits with `cycle.py update-task ID --expected DIGEST
+--file FILE` from the registered checkout. A stale digest requires rereading
+the record before retrying.
+
+The runner waits for all listed prerequisites to close. Each runner holds
+a three-minute lease and renews it every minute while the agent runs.
+The claim records the operating-system principal and configured agent
+profile (or executable). All contenders must use the same runner home.
 
 ## Removing it
 

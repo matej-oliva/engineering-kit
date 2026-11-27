@@ -89,3 +89,8 @@ credential shapes in the staged copy of each file, so stage every change
 before scanning; restricted material needs judgment.
 `HANDOFF` is partial because the checker refuses an incomplete or stale
 handoff but cannot know that a session stopped without writing one.
+
+Unattended work requires approval of the exact task revision by a principal
+or role the project trusts. Protect the approval policy from task authors.
+Put repeatable multi-step workflows in deterministic callable commands that
+write schema-checked records and refuse stale input before updating them.

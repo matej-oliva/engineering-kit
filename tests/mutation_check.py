@@ -19,6 +19,16 @@ CYCLE = 'integrations/work-cycle/cycle.py'
 
 # (label, file under tools/, exact original text, replacement)
 MUTANTS = [
+    ('unknown dependencies pass', 'kit.py', 'sorted(set(blockers) - records.keys())', '[]'),
+    ('dependency cycles pass', 'kit.py', 'tuple(TopologicalSorter(graph).static_order())', 'pass'),
+    ('runner ignores prerequisite state', CYCLE, "record.get('state') == 'closed'", 'True'),
+    ('agent stops renewing lease', CYCLE, '                    renew()', '                    pass'),
+    ('contending claim writers both enter', CYCLE,
+     "if not try_lock(handle):\n            raise CycleError('another writer", "if False:\n            raise CycleError('another writer"),
+    ('runner accepts unsigned revision', CYCLE, "approval.get('revision') == task_revision(task)", 'True'),
+    ('runner accepts unknown approver', CYCLE, "approval['by'] in trusted", 'True'),
+    ('lease contender overwrites active holder', CYCLE, '(lease is None and active)', 'False'),
+    ('stale task write succeeds', CYCLE, 'if task_revision(read_json(path)) != expected:', 'if False:'),
     ('the guide hides quoted Perl switch bypasses', 'integrations/work-cycle/guide.md',
      "Quoted switches such as `perl '-pi'`", 'Some switches'),
     ('the guide misstates malformed profile handling', 'integrations/work-cycle/guide.md',

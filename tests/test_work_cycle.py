@@ -166,6 +166,13 @@ class Fixture(unittest.TestCase):
     def write_task(self, root, record):
         path = root / '.engineering-kit' / 'tasks' / f'{record["id"]}.json'
         path.write_text(json.dumps(record), encoding='utf-8')
+        config = root / '.engineering-kit/project.json'
+        project = json.loads(config.read_text())
+        settings = project['cycle']
+        settings.setdefault('trusted_approvers', ['maintainer'])
+        settings.setdefault('approvals', {})[record['id']] = {
+            'by': 'maintainer', 'revision': cycle.task_revision(record)}
+        config.write_text(json.dumps(project), encoding='utf-8')
 
     def calls(self):
         if not self.log.exists():
@@ -400,6 +407,67 @@ class Delivery(Fixture):
 
 
 class Runner(Fixture):
+    def test_dependencies_and_approval_bind_unattended_work(self):
+        root, _ = self.repository(tasks=[task('A'), dict(task('B'), blocked_by=['A'])])
+        def ids():
+            return [item['id'] for item in cycle.ready_tasks(root, cycle.project_config(root))]
+        self.assertEqual(ids(), ['A'])
+        self.write_task(root, task('A', state='closed'))
+        self.assertEqual(ids(), ['B'])
+        path = root / '.engineering-kit/tasks/B.json'
+        path.write_text(json.dumps(dict(json.loads(path.read_text()), title='Changed')))
+        self.assertEqual(ids(), [])
+        self.write_task(root, task('B'))
+        project = cycle.project_config(root)
+        project['cycle']['trusted_approvers'] = []
+        self.assertEqual(cycle.ready_tasks(root, project), [])
+
+    def test_exclusive_acquisition_renewal_and_stale_release(self):
+        args = (self.home, 'billing', 'T1')
+        end = MONDAY + timedelta(minutes=3)
+        with cycle.locked(cycle.claim_path(*args).with_suffix('.lock')):
+            with self.assertRaisesRegex(cycle.CycleError, 'writer'):
+                cycle.claim(*args, 'runner', end, moment=MONDAY)
+        first = cycle.claim(*args, 'runner', end, moment=MONDAY, profile='tester')
+        with self.assertRaises(cycle.CycleError):
+            cycle.claim(*args, 'runner', end, moment=MONDAY)
+        later = end + timedelta(minutes=1)
+        cycle.claim(*args, 'runner', later, lease=first, moment=MONDAY, profile='tester')
+        held = cycle.claimed(*args, end)
+        self.assertEqual(held['profile'], 'tester')
+        self.assertTrue(held['principal'])
+        second = cycle.claim(*args, 'runner', later + timedelta(minutes=1), moment=later)
+        with self.assertRaises(cycle.CycleError):
+            cycle.release(*args, first)
+        self.assertEqual(cycle.claimed(*args, later)['lease'], second)
+
+    def test_agent_renews_while_waiting_for_exit(self):
+        process = mock.Mock()
+        process.wait.side_effect = [subprocess.TimeoutExpired('agent', 60), 0]
+        renew = mock.Mock()
+        with mock.patch.object(cycle.subprocess, 'Popen', return_value=process):
+            self.assertEqual(cycle.run_agent(['agent'], self.temp, {}, 300, self.temp / 'log', renew), (0, False))
+        renew.assert_called_once_with()
+
+    def test_task_writer_compares_revision_before_overwrite(self):
+        root, _ = self.repository(tasks=[task('T1', state='proposed')])
+        checker = root / '.engineering-kit/kit/tools/kit.py'
+        checker.parent.mkdir(parents=True)
+        checker.write_bytes((KIT / 'tools/kit.py').read_bytes())
+        path = root / '.engineering-kit/tasks/T1.json'
+        revision = cycle.task_revision(json.loads(path.read_text()))
+        source = self.temp / 'edit.json'
+        source.write_text(json.dumps(dict(task('T1', state='proposed'), title='Updated')))
+        cycle.replace_task(root, 'T1', revision, source)
+        with self.assertRaisesRegex(cycle.CycleError, 'changed since'):
+            cycle.replace_task(root, 'T1', revision, source)
+        source.write_text(json.dumps({'id': 'T1'}))
+        with self.assertRaisesRegex(cycle.CycleError, 'check-task'):
+            cycle.replace_task(root, 'T1', cycle.task_revision(json.loads(path.read_text())), source)
+        source.write_text(json.dumps(dict(task('T1', state='proposed'), blocked_by=['T1'])))
+        with self.assertRaisesRegex(cycle.CycleError, 'check-task'):
+            cycle.replace_task(root, 'T1', cycle.task_revision(json.loads(path.read_text())), source)
+
     def test_malformed_claim_recovers_through_the_documented_commands(self):
         root, _ = self.repository(tasks=[task('T1')])
         self.runner(root)
