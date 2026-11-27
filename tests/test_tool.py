@@ -184,7 +184,7 @@ class CommandLine(unittest.TestCase):
         git('commit', '-q', '-m', 'candidate')
         candidate = git('rev-parse', 'HEAD')
         record = root / '.engineering-kit' / 'tasks' / 'T-7.json'
-        record.write_text(record.read_text().replace('"state": "candidate"', '"state": "reviewed"'))
+        record.write_text(record.read_text() + '\n')
         config = root / '.engineering-kit' / 'project.json'
         config.write_text(config.read_text().replace('"published": "The package', '"published": "Our package'))
         git('commit', '-qam', 'record the candidate and correct a boundary meaning')
@@ -196,6 +196,24 @@ class CommandLine(unittest.TestCase):
         result = run('integrated', '--json', candidate, changed, '--root', str(root), env=env)
         self.assertEqual(result.returncode, 1)
         self.assertEqual([f['where'] for f in json.loads(result.stdout)['findings']], ['total.py'])
+        handoff = root / '.engineering-kit' / 'handoffs' / 'T-7.md'
+        clean = record.read_text()
+        token = 'ghp_' + 'x' * 30
+        for path, content, rule in (
+                (record, clean.replace('"candidate"', '"broken"', 1), 'FORMAT'),
+                (handoff, handoff.read_text().replace('## Evidence', '## Missing'), 'HANDOFF'),
+                (record, json.dumps(dict(json.loads(clean), title=token)), 'SECRETS'),
+                (handoff, handoff.read_text() + token, 'SECRETS')):
+            with self.subTest(path=path, rule=rule):
+                git('checkout', records_only, '--', '.')
+                path.write_text(content)
+                git('commit', '-qam', 'change a process record')
+                ref = git('rev-parse', 'HEAD')
+                path.write_text('unrelated working tree contents')
+                result = run('integrated', '--json', records_only, ref, '--root', str(root), env=env)
+                self.assertEqual(result.returncode, 1)
+                self.assertIn(rule, {f['rule'] for f in json.loads(result.stdout)['findings']})
+                self.assertNotIn(token, result.stdout + result.stderr)
 
 
 class SecretScan(unittest.TestCase):

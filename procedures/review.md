@@ -107,14 +107,10 @@ agent's adherence to this guidance.
    When the integrated revision differs from the candidate only in task
    records or handoffs, the candidate's check results stay bound to the
    candidate revision and other required checks need not rerun unless one
-   reads those files. Validate the records themselves on a clean checkout of
-   that exact revision with the candidate's copy of the tool, run from that
-   checkout: `check --root .`, which checks the task records and handoffs
-   in their folders, since a merge can change another task's record too.
-   It cannot see a handoff the merge deleted, so confirm that each handoff
-   rule `HANDOFF` requires still exists there. Then run `scan-secrets` and
-   any project scan for restricted material, and record
-   the results in that `candidate.integrated` entry's
+   reads those files. The tool validates changed record blobs and scans them
+   for known secret formats. Confirm any deleted handoff may be retired under
+   rule `HANDOFF`. Run the project's scan for restricted material on the
+   integrated revision and record its result in that `candidate.integrated` entry's
    `evidence`. If instead `project.json` or a kit or tool file changed,
    evaluate the change and rerun affected required checks. A record edit to
    what the review accepted needs a new review; changing `candidate.revision`

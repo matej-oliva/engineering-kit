@@ -806,6 +806,17 @@ def compare_integrated(root: Path, candidate: str, revision: str) -> list[Findin
             continue
         now, before = show(revision, name), show(candidate, name)
         if is_record(name, (before, now)):
+            if now is not None:
+                try:
+                    source = now.decode('utf-8')
+                    if any(pattern.search(source) for _, pattern in SECRET_COMPILED):
+                        found.append(Finding('SECRETS', name, 'changed record contains restricted material'))
+                    elif name.endswith('.json'):
+                        found += check_task(json.loads(source), project, name)
+                    else:
+                        found += check_handoff(source, where=name)
+                except (UnicodeError, TypeError, ValueError, RecursionError):
+                    found.append(Finding(FORMAT, name, 'cannot validate changed record'))
             continue
         if name in lock.get('files', {}) or name.startswith(KIT_FOLDER + '/'):
             expected = lock.get('files', {}).get(name)
