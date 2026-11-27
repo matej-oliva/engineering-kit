@@ -150,6 +150,19 @@ class ContractConsistency(unittest.TestCase):
 
 
 class Portability(unittest.TestCase):
+    def test_project_lint_and_load_procedures(self):
+        steps = {
+            'procedures/maintain.md': ('planted violation', 'expected rule ID and location'),
+            'procedures/review.md': ('effective rules', 'named human approver'),
+            'guide/customize.md': ('avoided synonyms', 'split identifiers'),
+            'procedures/diagnose-defect.md': ('under bounded', 'then run it alone'),
+        }
+        for file, phrases in steps.items():
+            with self.subTest(file=file):
+                source = (KIT / file).read_text(encoding='utf-8')
+                for phrase in phrases:
+                    self.assertIn(phrase, source)
+
     def test_no_file_names_a_personal_environment(self):
         for relative, content in kit_files(core=False):
             if relative.name == 'LICENSE':  # names the copyright holder, as a licence must

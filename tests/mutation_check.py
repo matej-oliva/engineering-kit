@@ -19,6 +19,10 @@ CYCLE = 'integrations/work-cycle/cycle.py'
 
 # (label, file under tools/, exact original text, replacement)
 MUTANTS = [
+    ('lint canary ignores the diagnostic', 'procedures/maintain.md', 'expected rule ID and location', 'exit status'),
+    ('lint policy permits automated loosening', 'procedures/review.md', 'named human approver', 'worker'),
+    ('glossary check ignores identifiers', 'guide/customize.md', 'split identifiers', 'skip identifiers'),
+    ('diagnosis omits the quiet control', 'procedures/diagnose-defect.md', 'then run it alone', 'repeat under load'),
     ('the guide hides quoted Perl switch bypasses', 'integrations/work-cycle/guide.md',
      "Quoted switches such as `perl '-pi'`", 'Some switches'),
     ('the guide misstates malformed profile handling', 'integrations/work-cycle/guide.md',

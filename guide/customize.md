@@ -162,6 +162,11 @@ Teams that need shared names can copy `templates/GLOSSARY.md` into their
 project as `<project>/GLOSSARY.md`, or use their existing glossary. Replace the
 example with terms people actually disagree about.
 
+As an optional check, read avoided synonyms and their preferred terms from
+the project's glossary. Match whole words in prose and split identifiers
+at case changes and underscores. Report the location and preferred term.
+Exclude the glossary definitions and generated sources from this check.
+
 For local codebase mapping, start with search and the project’s tests. Keep
 personal exploration tools, generated indexes and scratch diagrams outside
 the checkout or in locally excluded paths. Share the verified call path

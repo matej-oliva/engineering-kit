@@ -84,6 +84,11 @@ agent's adherence to this guidance.
    change. Check the scope of any recorded exception. Keep optional advisory
    checks quiet on a clean result. Report an actionable match once as advice.
    A blocking finding needs an applicable requirement, rule or demonstrated risk.
+   When lint settings change, compare the effective rules on base and
+   candidate, including inherited settings and ignored paths. Allow a
+   tightening to pass this guard. Hold a disabled rule, wider exclusion,
+   raised tolerance or unclassified change for a named human approver.
+   Record the approver, affected rule and reason against the candidate.
 3. **Record findings** with `blocking` set when an acceptance example is not
    met, a check is wrong or missing, a risk is unhandled or a contract rule
    is broken. Other findings are not blocking; the reviewer proposes each

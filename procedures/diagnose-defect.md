@@ -13,6 +13,11 @@ authorizes no fix and no retry of an effect. Adapted from ideas in `mattpocock/s
    the reported reason. A missing tool, credential or access path is a setup
    failure, not a reproduction. If the real symptom cannot be reproduced
    safely, record that gap instead of experimenting on production.
+   For a timing-sensitive failure, run the same reproducer under bounded
+   CPU load on an isolated test host, then run it alone. Fix the revision,
+   input, timeout and repetition count. Limit worker count and duration,
+   stop the load workers, and record failures and elapsed times in both
+   runs. A failure seen only under load warrants testing a timing cause.
 3. **Rank falsifiable causes** for a defect that is not obvious: three to
    five, each with the observation that would rule it out. Change one
    variable at a time. After two fixes built on the same premise fail, test
