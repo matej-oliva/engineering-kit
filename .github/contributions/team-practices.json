@@ -1,0 +1,25 @@
+{
+  "kit": "contribution/1",
+  "project": "private adopting project",
+  "source_revision": "owner-held (redacted)",
+  "kit_version": "not installed; direct contribution against 1.5.0 (f54d90e)",
+  "files": [
+    "README.md",
+    "guide/customize.md",
+    "procedures/change-preflight.md",
+    "procedures/design.md",
+    "procedures/grill-me.md",
+    "procedures/maintain.md",
+    "procedures/review.md",
+    "procedures/understand.md",
+    "procedures/write-instructions.md",
+    "templates/GLOSSARY.md"
+  ],
+  "status": "proposal",
+  "need": "Teams larger than a few people drift on what shared terms mean, receive review findings without the rule they rest on, repeat the same review comment instead of turning it into a check, and design changes in unfamiliar code before tracing how a real request flows through it.",
+  "evidence": "The decision owner reviewed public talks on team-scale engineering practice and public browser-vendor guidance for coding agents, and approved adapting their practice-level ideas: a shared glossary, separate spec and standards review conclusions, recurring review comments turned into checks, a periodic module depth check, tracing one vertical slice, short local instructions with a trigger, quoting the governing rule, quiet advisory checks and opt-in gates an agent cannot pass.",
+  "limits": "Adapted ideas, not observations measured in the adopting project. Guidance only: no checker rule or record schema changes, and tests do not establish that agents obey prose. Each sentence and the glossary template were written for the kit; no text, code or example was copied from any source.",
+  "rights": "owner-authored",
+  "owner": "matej-oliva",
+  "sanitization": "Removed project names, task identifiers, links to the reviewed sources' threads and paths. No credentials, private account data, employer, client or third-party text is included."
+}

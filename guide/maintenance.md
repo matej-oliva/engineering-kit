@@ -25,36 +25,40 @@ have installed. Edits you make to it are merged like edits to any kit file,
 but a project's own notes belong in `project.json` or its own
 documentation instead.
 
-## Moving to this release, 1.5.0
+## Moving to this release, 1.6.0
 
 Each release rewrites this section for itself; the changelog keeps what
 every earlier release asked.
 
-From 1.4.2, 1.4.1, 1.4.0, 1.3.0, 1.2.1 or 1.2.0, preview with
-`python3 kit update 1.5.0 --diff`, then apply with
-`python3 kit update 1.5.0 --apply`, or without the launcher use
-`python3 .engineering-kit/kit/tools/kit.py update --apply`. From 1.1.0 the
-long form does the same. From 1.0.1, 1.0.0 or a pilot release, name the
-version once: `python3 .engineering-kit/kit/tools/kit.py update 1.5.0
---apply`. The contract is unchanged and no record migration or configuration
+From 1.5.0, 1.4.2, 1.4.1, 1.4.0, 1.3.0, 1.2.1 or 1.2.0, preview with
+`python3 kit update 1.6.0 --diff`, then apply with
+`python3 kit update 1.6.0 --apply`. Without the launcher, and from 1.1.0,
+1.0.1, 1.0.0 or a pilot release, use
+`python3 .engineering-kit/kit/tools/kit.py update 1.6.0 --apply`. The contract is unchanged and no record migration or configuration
 change is required. On Windows use `py` in place of `python3`, and run
 `py kit check` after applying the update.
 
-This release adds two settings to the optional `work-cycle` integration:
-full checks one delivery at a time, and checks on another computer over SSH.
-Both stay off until the runner's `runner.json` turns them on, and a check
-host serves only the repositories whose entry chooses it, because that
-computer receives the repository's code. Section 7 of `.kit-cycle/guide.md`
-sets them up. Restart a running task runner after updating, so the agents it
-starts receive its home folder and deliver with its settings.
+This release adds guidance, with no new check: an optional glossary of the
+names a team shares, a review that reports whether the change meets each
+acceptance example separately from which project rule a finding rests on,
+recurring review comments turned into checks, a module depth check at a
+regular retrospective, one real example traced through unfamiliar code
+before a design, a captured sample of another program's real output in the
+tests of a parser or guard that reads it, or an existing check against that
+program, unless the decision owner accepts a hand-written example, smaller checks for changes to records alone after
+review, and a resumed agent that reads every answer and message since the
+last one it recorded before acting on a decision. To use the glossary, copy
+`templates/GLOSSARY.md` into your project as [Customize](customize.md)
+describes. `procedures/maintain.md` gains step 8 after the existing steps,
+so no step number moves.
 
-It also adds guidance, with no new check: write tests that fail when
-behaviour breaks, keep a lesson every contributor needs in the repository
-instead of one agent client's private memory, start a new check on existing
-work from a baseline that only falls, show an interface choice as pictures,
-name a task by its title as well as its ID, and begin an upgrade's review at
-the installed version. `procedures/implement.md` gains a step, so a local
-instruction that cites its later steps by number needs the new number.
+If you are coming from 1.4.2 or earlier, 1.5.0 also added two optional
+`work-cycle` settings, full checks one delivery at a time and checks on
+another computer over SSH, both off until `runner.json` turns them on. Restart
+a running task runner after updating, so the agents it starts deliver with
+its settings. 1.5.0 also gave `procedures/implement.md` a new step 4, so a
+local instruction that cites its later steps by number needs the new number.
+The changelog lists what each release asked.
 
 The optional integration installs nothing
 until you enable it with its five permissions, as

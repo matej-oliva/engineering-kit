@@ -115,11 +115,14 @@ python3 kit integrated abc1234 main
 task's `candidate.integrated`, as the message says.
 
 Equivalence carries the candidate's check results over only for task-record
-or handoff deltas; it does not validate what the changed records say. On a
-clean checkout of the merged revision (`--root`), run `check-task` for this
-task, `check-handoff` when a handoff exists or is required, `scan-secrets`
-and any project scan for restricted material using the candidate's copy of
-the tool, and record the results in `candidate.integrated`'s `evidence`. See
+or handoff deltas; it does not validate what the changed records say. From a
+clean checkout of the merged revision, run the candidate's copy of the tool
+there: `check --root .`, which checks the task records and handoffs in their
+folders, since a merge can change another task's record too. It cannot see a
+handoff the merge deleted, so confirm that each required handoff still
+exists. Then run `scan-secrets` and any project scan for restricted
+material, and record the results in
+`candidate.integrated`'s `evidence`. See
 [Review and validate](../procedures/review.md) step 5 for when other checks
 or a new review apply. This is a proposal from one project.
 
