@@ -1,0 +1,19 @@
+{
+  "kit": "contribution/1",
+  "project": "private adopting project",
+  "source_revision": "owner-held (redacted)",
+  "kit_version": "1.5.0",
+  "files": [
+    "procedures/handoff.md",
+    "guide/agents.md",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "status": "proposal",
+  "need": "A handoff is a snapshot, so a resuming session can act on a superseded decision if it does not check authoritative decision channels, and a coordinating session needs a safe way to hand off at a turn boundary while workers continue.",
+  "evidence": "One adopting project observed that handoffs could lag authoritative decision channels, causing a resumed session to act on a superseded decision.",
+  "limits": "Observed in one project. Guidance only; no kit check enforces decision-channel reconciliation, and handoff timing, session creation and receipt protocols remain project choices.",
+  "rights": "owner-authored",
+  "owner": "matej-oliva",
+  "sanitization": "Removed project names, repository identifiers, counts, specific anecdotes and paths. No credentials, private account data, employer, client or third-party material is included."
+}

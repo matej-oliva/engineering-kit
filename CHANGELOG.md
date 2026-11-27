@@ -3,6 +3,30 @@
 Each release lists what changed, anything a project must do when updating,
 and whether the contract changed. Newest first.
 
+## Unreleased
+
+Contract version 1, unchanged. Three guidance proposals from one project; no
+checker rule or record schema changes. After updating, reconcile any local
+rule that contradicts them:
+
+- **Records-only deltas (`procedures/review.md` step 5, `guide/everyday.md`):**
+  task-record or handoff deltas after review keep the candidate's check
+  results, but still run `check-task`, `check-handoff` when a handoff exists
+  or is required, `scan-secrets` and restricted-material scans on a clean
+  checkout of the integrated revision, recorded in `candidate.integrated`'s
+  `evidence`.
+- **Real-producer input (`procedures/design.md` step 4,
+  `procedures/implement.md` step 4, `procedures/review.md` step 2):** changed
+  parsers or guards for a producer-owned format swap a hand-built fixture for
+  a captured, sanitized sample (or reuse an existing producer check), unless
+  an answered `questions` entry cited in `plan.evidence` records the decision
+  owner's acceptance of hand-built evidence.
+- **Resume and coordinator handoff (`procedures/handoff.md`):** check
+  authoritative decision channels from the last recorded message or answer
+  before acting on a decision; coordinating sessions hand off at a turn
+  boundary without waiting for workers, listing active workers and report
+  paths under Open gates.
+
 ## 1.5.0, 2026-11-20
 
 - **Tests that earn their place.** Agents are asked to test behaviour, such

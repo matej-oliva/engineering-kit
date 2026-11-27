@@ -103,6 +103,20 @@ class ReleaseCommit(unittest.TestCase):
         self.assertIn('uncommitted changes', done.stderr)
         self.assertEqual(self.git('tag', '--list').strip(), '')
 
+    def test_an_invalid_contribution_record_is_refused_without_a_tag(self):
+        bad = self.root / '.github' / 'contributions' / 'invalid-rights.json'
+        bad.parent.mkdir(parents=True, exist_ok=True)
+        bad.write_text('{"kit": "contribution/1", "rights": "unknown"}\n', encoding='utf-8')
+        self.git('add', '-A')
+        self.git('commit', '-q', '-m', 'Add invalid contribution record')
+        done = self.make('2.0.0')
+        self.assertNotEqual(done.returncode, 0)
+        self.assertIn('check-contribution', done.stderr)
+        self.assertIn('rights must be', done.stderr)
+        self.assertEqual(self.git('rev-parse', '--abbrev-ref', 'HEAD').strip(), 'main')
+        self.assertEqual(self.git('branch', '--list', 'release/*').strip(), '')
+        self.assertEqual(self.git('tag', '--list').strip(), '')
+
 
 if __name__ == '__main__':
     unittest.main()

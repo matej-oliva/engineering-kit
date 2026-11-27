@@ -114,6 +114,15 @@ python3 kit integrated abc1234 main
 `abc1234` is the candidate the review approved. Record the result in the
 task's `candidate.integrated`, as the message says.
 
+Equivalence carries the candidate's check results over only for task-record
+or handoff deltas; it does not validate what the changed records say. On a
+clean checkout of the merged revision (`--root`), run `check-task` for this
+task, `check-handoff` when a handoff exists or is required, `scan-secrets`
+and any project scan for restricted material using the candidate's copy of
+the tool, and record the results in `candidate.integrated`'s `evidence`. See
+[Review and validate](../procedures/review.md) step 5 for when other checks
+or a new review apply. This is a proposal from one project.
+
 ## Worked example: a small change
 
 A teammate asks for a `--quiet` option. The agent records task `T-12` with
