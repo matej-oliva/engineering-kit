@@ -107,23 +107,19 @@ agent's adherence to this guidance.
    When the integrated revision differs from the candidate only in task
    records or handoffs, the candidate's check results stay bound to the
    candidate revision and other required checks need not rerun unless one
-   reads those files. Still validate what those records say on a clean
-   checkout of the exact integrated revision (`--root`), with the
-   candidate's copy of the tool: run `check-task` and `check-handoff` for
-   this task, `scan-secrets`, and any project scan for restricted material,
-   and record their results in that `candidate.integrated` entry's
-   `evidence`. If `project.json` or a kit or tool file changed, evaluate the
-   policy change and rerun affected required checks. A record edit to what
-   the review accepted (requirement, acceptance examples, profile,
-   `not_applicable` reasons, exceptions, checks, review findings or planned
-   effects) needs a new review; changing `candidate.revision` or `base`
-   makes a new candidate. A harmless wording or citation fix needs a new
-   approving review entry for the candidate from an independent reviewer
-   saying meaning did not change. Normal post-review stage entries
-   (`candidate.integrated`, effect outcomes, `release`, `verification` and
-   `documentation` under `procedures/release.md` and
-   `procedures/maintain.md`) need no new review. This addition is a proposal
-   from one project.
+   reads those files. Validate the records themselves on a clean checkout of
+   that exact revision (`--root`) with the candidate's copy of the tool: run
+   `check-task` for this task, `check-handoff` when a handoff exists or rule
+   `HANDOFF` requires one, `scan-secrets` and any project scan for restricted
+   material, and record the results in that `candidate.integrated` entry's
+   `evidence`. If instead `project.json` or a kit or tool file changed,
+   evaluate the change and rerun affected required checks. A record edit to
+   what the review accepted needs a new review; changing `candidate.revision`
+   or `base` makes a new candidate. A harmless wording or citation fix needs
+   a new approving entry from an independent reviewer saying meaning did not
+   change. Post-review stage entries (`candidate.integrated`, effect
+   outcomes, `release`, `verification` and `documentation`) need none. This
+   addition is a proposal from one project.
 6. **Mark the task reviewed** once a review of this revision approves it and
    its required checks pass. Put what you examined and reran in the review's
    `evidence`, not in `checks`: recording the author's checks would make you

@@ -8,7 +8,8 @@ working day.
 
 1. **Write the handoff** at `paths.handoffs/<task ID>.md` from
    `templates/handoff.md`. State says where the work stands. Evidence lists
-   each revision, check, review and verification with where to read it. Open
+   each revision, check, review and verification with where to read it, and
+   the last decision message or answer read. Open
    gates lists every failed, missing or unknown result and pending decision.
    Decisions and authority says what was decided, by whom, and what the work
    may and may not do. Next action holds exactly one step with its done-when,

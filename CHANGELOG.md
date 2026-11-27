@@ -11,9 +11,10 @@ rule that contradicts them:
 
 - **Records-only deltas (`procedures/review.md` step 5, `guide/everyday.md`):**
   task-record or handoff deltas after review keep the candidate's check
-  results, but still run `check-task`, `check-handoff`, `scan-secrets` and
-  restricted-material scans on a clean checkout of the integrated revision,
-  recorded in `candidate.integrated`'s `evidence`.
+  results, but still run `check-task`, `check-handoff` when a handoff exists
+  or is required, `scan-secrets` and restricted-material scans on a clean
+  checkout of the integrated revision, recorded in `candidate.integrated`'s
+  `evidence`.
 - **Real-producer input (`procedures/design.md` step 4,
   `procedures/implement.md` step 4, `procedures/review.md` step 2):** changed
   parsers or guards for a producer-owned format swap a hand-built fixture for

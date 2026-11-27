@@ -112,6 +112,7 @@ class ReleaseCommit(unittest.TestCase):
         done = self.make('2.0.0')
         self.assertNotEqual(done.returncode, 0)
         self.assertIn('check-contribution', done.stderr)
+        self.assertIn('rights must be', done.stderr)
         self.assertEqual(self.git('rev-parse', '--abbrev-ref', 'HEAD').strip(), 'main')
         self.assertEqual(self.git('branch', '--list', 'release/*').strip(), '')
         self.assertEqual(self.git('tag', '--list').strip(), '')

@@ -12,7 +12,7 @@
   ],
   "status": "proposal",
   "need": "Teams integrating reviewed work with only task-record or handoff edits either rerun unrelated heavy check suites or skip checks that validate and scan the changed records.",
-  "evidence": "Observed in one adopting project where integration commits often touched only task records after the gated revision and a restricted-material issue appeared in a record edit after heavy checks had already passed.",
+  "evidence": "One adopting project observed that candidate checks did not cover later task-record edits, leading teams either to rerun unrelated suites or to miss record validation and restricted-material checks.",
   "limits": "Observed in one project. Guidance only: kit integrated does not yet scan or validate changed record blobs automatically, and project-specific restricted-material scans remain the project's responsibility.",
   "rights": "owner-authored",
   "owner": "matej-oliva",
