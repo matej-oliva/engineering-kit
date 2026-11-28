@@ -1037,7 +1037,8 @@ class Distribution(unittest.TestCase):
             status = subprocess.run(['git', 'diff', '--name-status', with_billing, 'HEAD'], cwd=root,
                                     capture_output=True, text=True).stdout
             self.assertTrue(status.startswith('R'), status)  # Git sees a rename; the deletion must still be listed
-            self.assertEqual([f.where for f in kit.compare_integrated(root, with_billing, 'HEAD')], ['src/billing.py'])
+            self.assertEqual({(f.where, f.rule) for f in kit.compare_integrated(root, with_billing, 'HEAD')},
+                             {('src/billing.py', 'CANDIDATE'), ('.engineering-kit/handoffs/T-1.md', 'HANDOFF')})
             sh('reset', '-q', '--hard', good, cwd=root)
             sh('clean', '-qfd', cwd=root)
         with self.subTest('an instruction file placed in the handoffs folder'):
@@ -1056,7 +1057,7 @@ class Distribution(unittest.TestCase):
                  '.engineering-kit/handoffs/README.md', '.engineering-kit/tasks/Claude.json'])
         with self.subTest('a handoff whose title line is indented, as check allows'):
             tampered(lambda: (root / '.engineering-kit' / 'handoffs' / 'T-1.md').write_text(
-                ' # Billing handoff\n\nTask: T-1\n'), [])
+                ' # Billing handoff\n\nTask: T-1\n'), [('HANDOFF', '.engineering-kit/handoffs/T-1.md')])
         with self.subTest('a handoff naming its task only inside a section'):
             tampered(lambda: (root / '.engineering-kit' / 'handoffs' / 'T-1.md').write_text(
                 '# Billing handoff\n\n## State\nTask: T-1\n'), ['.engineering-kit/handoffs/T-1.md'])
@@ -1086,10 +1087,12 @@ class Distribution(unittest.TestCase):
         with self.subTest('a handoff title with a trailing space, and the kit removed'):
             handoff = root / '.engineering-kit' / 'handoffs' / 'T-1.md'
             handoff.parent.mkdir(exist_ok=True)
-            handoff.write_text('# Billing handoff \n\nTask: T-1\nUpdated: 2026-10-20T10:00:00+00:00\n')
+            example = KIT / 'examples/walkthrough/project/.engineering-kit/handoffs/T-7.md'
+            source = example.read_text().replace('handoff\n', 'handoff \n', 1).replace('T-7', 'T-1')
+            handoff.write_text(source)
             sh('add', '-A', cwd=root)
             sh('commit', '-q', '-m', 'handoff', cwd=root)
-            handoff.write_text('# Billing handoff \n\nTask: T-1\nUpdated: 2026-10-20T11:00:00+00:00\n')
+            handoff.write_text(source + '\n')
             sh('commit', '-qam', 'handoff again', cwd=root)
             self.assertEqual(kit.compare_integrated(root, good, 'HEAD'), [])
             status, report = ku.change(root, None, None, apply_now=True)
@@ -1381,7 +1384,7 @@ class Distribution(unittest.TestCase):
         candidate = subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=root, capture_output=True, text=True).stdout.strip()
         (root / 'src/settings.json').write_text('{"debug": true}\n')
         (root / 'docs/guide.md').write_text('# Guide\n\nNew text.\n')
-        (root / 'src/T-1.json').write_text('{"kit": "task/1", "id": "T-1", "state": "accepted"}\n')
+        (root / 'src/T-1.json').write_text('{"kit": "task/1", "id": "T-1", "title": "Example", "state": "proposed"}\n')
         (root / 'src/fixtures/T-2.json').write_text('{"kit": "task/1", "id": "T-2", "state": "accepted"}\n')
         (root / 'docs/deploy.sh').write_text('# Deploy handoff\n\nTask: deploy\necho two\n')
         (root / 'src/notes.yaml').write_text('{"kit": "task/1", "id": "notes", "n": 2}\n')
