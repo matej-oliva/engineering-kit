@@ -2,13 +2,18 @@
 
 Each mutant replaces one exact piece of code in a throwaway copy of the kit and runs
 tests until the first failure. A mutant that leaves the whole suite passing names a guard no test
-protects. Exit status 1 when any survives.
+protects. Exit status 1 when any survives. The test that caught each mutant last time, kept in
+tests/mutation_cache.json, runs first, and three mutants run at once.
 
-    python3 tests/mutation_check.py [LABEL ...]
+    python3 tests/mutation_check.py [--workers N] [--update-cache] [LABEL ...]
 """
 from __future__ import annotations
 
+import argparse
+from concurrent.futures import ThreadPoolExecutor
+import json
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -16,6 +21,17 @@ import tempfile
 
 KIT = Path(__file__).resolve().parents[1]
 CYCLE = 'integrations/work-cycle/cycle.py'
+CACHE = 'tests/mutation_cache.json'
+WORKERS = 3
+FAILED = re.compile(r'^(?:FAIL|ERROR): (\w+) \(([\w.]+)\)', re.M)
+# The test file most likely to catch a mutant of each file, tried before the whole suite.
+FIRST = {
+    CYCLE: 'test_work_cycle.py',
+    'integrations/work-cycle/guide.md': 'test_work_cycle.py',
+    'kit_update.py': 'test_distribution.py',
+    'kit.py': 'test_tool.py',
+    'tests/release_commit.py': 'test_release_commit.py',
+}
 
 # (label, file under tools/, exact original text, replacement)
 MUTANTS = [
@@ -348,35 +364,58 @@ def mutant_path(name: str) -> str:
     return name if '/' in name else f'tools/{name}'
 
 
-def survives(snapshot: Path, name: str, old: str, new: str) -> bool:
+def failed_test(stderr: str) -> str | None:
+    """The first failing test as module.Class.test, from unittest's report."""
+    found = FAILED.search(stderr)
+    if not found:
+        return None
+    name, where = found.groups()
+    # Python 3.11 and later print the full name in brackets; older ones print module.Class.
+    return where if where.endswith('.' + name) else f'{where}.{name}'
+
+
+def survives(snapshot: Path, name: str, old: str, new: str, cached: str | None = None):
+    """(True, None) when every test passes against the mutant, else (False, the test that failed).
+
+    The cache only orders the runs: the test that caught this mutant last time runs
+    first, then the focused file, then the whole suite. A mutant counts as caught
+    only when a test fails, so a stale or missing entry falls through to the full verdict.
+    """
     with tempfile.TemporaryDirectory(prefix='kit-mutant-') as directory:
         copy = Path(directory) / 'kit'
         shutil.copytree(snapshot, copy)
         target = copy / mutant_path(name)
         target.write_text(target.read_text(encoding='utf-8').replace(old, new), encoding='utf-8')
-        first = {
-            CYCLE: 'test_work_cycle.py',
-            'integrations/work-cycle/guide.md': 'test_work_cycle.py',
-            'kit_update.py': 'test_distribution.py',
-            'kit.py': 'test_tool.py',
-            'tests/release_commit.py': 'test_release_commit.py',
-        }.get(name)
         command = [sys.executable, '-B', '-m', 'unittest', 'discover', '-f', '-s', 'tests']
+        first = FIRST.get(name)
+        steps = []
+        if cached and '.' in cached:
+            module, _, test = cached.partition('.')
+            steps.append(['-p', module + '.py', '-k', test])
         if first:
-            focused = subprocess.run(command + ['-p', first], cwd=copy, capture_output=True, timeout=600)
-            if focused.returncode == 1:
-                return False
-        result = subprocess.run(command, cwd=copy, capture_output=True, timeout=600)
+            steps.append(['-p', first])
+        for arguments in steps:
+            early = subprocess.run(command + arguments, cwd=copy, capture_output=True, text=True, timeout=600)
+            if early.returncode == 1:
+                return False, failed_test(early.stderr)
+        result = subprocess.run(command, cwd=copy, capture_output=True, text=True, timeout=600)
         if result.returncode not in (0, 1):
             result.check_returncode()
-        return result.returncode == 0
+        return result.returncode == 0, failed_test(result.stderr) if result.returncode else None
 
 
-def main(labels: list[str]) -> int:
+def main(labels: list[str], *, workers: int = WORKERS, update_cache: bool = False) -> int:
     chosen = [m for m in MUTANTS if not labels or m[0] in labels]
     unknown = sorted(set(labels) - {m[0] for m in MUTANTS})
     if unknown:
         raise SystemExit('No such mutant: ' + ', '.join(unknown))
+    cache_path = KIT / CACHE
+    try:
+        cache = json.loads(cache_path.read_text(encoding='utf-8'))
+    except FileNotFoundError:
+        cache = {}
+    if not isinstance(cache, dict):
+        cache = {}
     with tempfile.TemporaryDirectory(prefix='kit-snapshot-') as directory:
         # One copy taken before any run, so edits made meanwhile do not mix into later mutants.
         snapshot = Path(directory) / 'kit'
@@ -387,14 +426,27 @@ def main(labels: list[str]) -> int:
             raise SystemExit('The original text is not in its file exactly once; update these mutants: '
                              + ', '.join(stale))
         survivors = []
-        for label, name, old, new in chosen:
-            alive = survives(snapshot, name, old, new)
-            print(f'{"SURVIVES" if alive else "caught  "}  {label}', flush=True)
-            if alive:
-                survivors.append(label)
+        with ThreadPoolExecutor(max(1, workers)) as pool:
+            results = pool.map(lambda m: survives(snapshot, *m[1:], cached=cache.get(m[0])), chosen)
+            for (label, *_), (alive, test) in zip(chosen, results):
+                print(f'{"SURVIVES" if alive else "caught  "}  {label}', flush=True)
+                if alive:
+                    survivors.append(label)
+                elif test:
+                    cache[label] = test
+    if update_cache:
+        known = {m[0] for m in MUTANTS}
+        cache_path.write_text(json.dumps({k: v for k, v in cache.items() if k in known}, indent=1,
+                                         sort_keys=True) + '\n', encoding='utf-8')
     print(f'{len(chosen) - len(survivors)} of {len(chosen)} mutants caught.')
     return 1 if survivors else 0
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument('labels', nargs='*', metavar='LABEL')
+    parser.add_argument('--workers', type=int, default=WORKERS, help=f'mutants run at once (default {WORKERS})')
+    parser.add_argument('--update-cache', action='store_true',
+                        help=f'write the test that caught each mutant to {CACHE}')
+    options = parser.parse_args()
+    sys.exit(main(options.labels, workers=options.workers, update_cache=options.update_cache))
