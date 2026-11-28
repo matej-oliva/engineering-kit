@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
+from graphlib import CycleError, TopologicalSorter
 import hashlib
 import json
 import os
@@ -260,6 +261,9 @@ def check_task(task, project, where: str = 'task') -> list[Finding]:
         if not text(task.get(field)):
             refuse(FORMAT, f'needs {field}')
     state = task.get('state')
+    dependencies = task.get('blocked_by', [])
+    if not isinstance(dependencies, list) or not all(map(text, dependencies)):
+        refuse(FORMAT, 'blocked_by must list task IDs')
     if state not in STATES + STOPPED:
         refuse(FORMAT, f'state must be one of {", ".join(STATES + STOPPED)}')
         return found
@@ -538,6 +542,22 @@ def load_json(path: Path, where: str) -> tuple[object, list[Finding]]:
         return None, [Finding(FORMAT, where, f'cannot read JSON: {str(error)[:200]}')]
 
 
+def dependency_findings(records: dict, where: str) -> list[Finding]:
+    found = []
+    graph = {}
+    for identifier, task in records.items():
+        blockers = task.get('blocked_by', [])
+        if isinstance(blockers, list) and all(map(text, blockers)):
+            graph[identifier] = blockers
+            for missing in sorted(set(blockers) - records.keys()):
+                found.append(Finding(FORMAT, identifier, f'unknown prerequisite {missing}'))
+    try:
+        tuple(TopologicalSorter(graph).static_order())
+    except CycleError as error:
+        found.append(Finding(FORMAT, where, 'dependency cycle: ' + ' -> '.join(error.args[1])))
+    return found
+
+
 def check_all(root: Path) -> list[Finding]:
     config = root / '.engineering-kit' / 'project.json'
     project, found = load_json(config, '.engineering-kit/project.json')
@@ -548,6 +568,7 @@ def check_all(root: Path) -> list[Finding]:
     if not isinstance(paths, dict) or not all(relative_path(paths.get(k)) for k in ('tasks', 'handoffs')):
         return found
     states = {}
+    records = {}
     reserved = reserved_stems(project)
     for path in sorted((root / paths['tasks']).glob('*.json')):
         where = path.relative_to(root).as_posix()
@@ -563,6 +584,8 @@ def check_all(root: Path) -> list[Finding]:
                 elif path.stem != task['id']:
                     found.append(Finding(FORMAT, where, f'name the file {task["id"]}.json after its task'))
                 states[task['id']] = task.get('state')
+                records[task['id']] = task
+    found += dependency_findings(records, paths['tasks'])
     for path in sorted((root / paths['handoffs']).glob('*.md')):
         where = path.relative_to(root).as_posix()
         if first_component(path.name) in reserved:
@@ -1020,7 +1043,17 @@ def main(argv: list[str] | None = None) -> int:
     project = project if isinstance(project, dict) else {}
     if args.command == 'check-task':
         task, problems = load_json(args.file, str(args.file))
-        found += problems + (check_task(task, project, str(args.file)) if task is not None else [])
+        found += problems or check_task(task, project, str(args.file))
+        tasks = (project.get('paths') or {}).get('tasks')
+        if not found and task.get('blocked_by') and relative_path(tasks):
+            records = {}
+            for path in (root / tasks).glob('*.json'):
+                other, errors = load_json(path, str(path))
+                found += errors
+                if isinstance(other, dict) and other.get('id') == path.stem:
+                    records[path.stem] = other
+            records[task['id']] = task
+            found += dependency_findings(records, tasks)
         return report(found, args.json, 'The task passes the contract.')
     states = {}
     tasks = (project.get('paths') or {}).get('tasks')

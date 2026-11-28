@@ -28,6 +28,8 @@ import argparse
 import contextlib
 from datetime import datetime, timedelta
 import fnmatch
+import getpass
+import hashlib
 import json
 import os
 from pathlib import Path, PurePosixPath
@@ -39,6 +41,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import uuid
 from urllib.parse import quote
 
 if os.name == 'nt':
@@ -85,9 +88,16 @@ def read_json(path: Path, default=None):
 
 def write_json(path: Path, data) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(path.name + '.tmp')
-    temporary.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8', newline='\n')
-    os.replace(temporary, path)
+    fd, filename = tempfile.mkstemp(dir=path.parent)
+    temporary = Path(filename)
+    try:
+        with os.fdopen(fd, 'wb') as output:
+            output.write((json.dumps(data, indent=2) + '\n').encode())
+        if path.exists():
+            shutil.copymode(path, temporary)
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 # ------------------------------------------------------------- the project
@@ -146,10 +156,27 @@ def handoff_path(root: Path, project: dict, task_id: str) -> Path:
 def ready_tasks(root: Path, project: dict) -> list[dict]:
     """Tasks the runner may take: accepted or in progress, and marked for an agent."""
     ready = []
-    for path in task_files(root, project):
-        task = read_json(path, {})
+    paths = task_files(root, project)
+    records = {p.stem: read_json(p) for p in paths}
+    closed = {key for key, record in records.items()
+              if isinstance(record, dict) and record.get('kit') == 'task/1'
+              and record.get('id') == key and record.get('state') == 'closed'}
+    settings = cycle_config(project)
+    approvals = settings.get('approvals', {})
+    trusted = settings.get('trusted_approvers', [])
+    for path in paths:
+        identifier = path.stem
+        task = records[identifier]
         if (isinstance(task, dict) and task.get('kit') == 'task/1' and task.get('state') in READY_STATES
-                and task.get('next_actor') == 'agent' and isinstance(task.get('id'), str)):
+                and task.get('next_actor') == 'agent' and task.get('id') == identifier):
+            blockers = task.get('blocked_by', [])
+            if not isinstance(blockers, list) or not all(isinstance(key, str) and key in closed for key in blockers):
+                continue
+            approval = approvals.get(identifier) if isinstance(approvals, dict) else None
+            if not (isinstance(approval, dict) and isinstance(trusted, list)
+                    and isinstance(approval.get('by'), str) and approval['by'] in trusted
+                    and approval.get('revision') == task_revision(task)):
+                continue
             ready.append({'id': task['id'], 'file': str(path), 'state': task['state']})
     return ready
 
@@ -224,13 +251,66 @@ def claimed(home: Path, repository: str, task_id: str, moment: datetime) -> dict
     return None
 
 
-def claim(home: Path, repository: str, task_id: str, holder: str, until: datetime) -> None:
-    write_json(claim_path(home, repository, task_id),
-               {'repository': repository, 'task': task_id, 'holder': holder, 'until': until.isoformat()})
+def task_revision(task: dict) -> str:
+    return hashlib.sha256(json.dumps(task, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
-def release(home: Path, repository: str, task_id: str) -> None:
-    claim_path(home, repository, task_id).unlink(missing_ok=True)
+def replace_task(root: Path, task_id: str, expected: str, source: Path):
+    project = project_config(root)
+    path = next((p for p in task_files(root, project) if p.stem == task_id), None)
+    if path is None:
+        raise CycleError('unknown task')
+    replacement = read_json(source)
+    if not isinstance(replacement, dict) or replacement.get('id') != task_id:
+        raise CycleError('replacement must name the same task')
+    with locked(common_dir(root) / 'kit-task-writes.lock'):
+        if task_revision(read_json(path)) != expected:
+            raise CycleError('task changed since it was read')
+        checker = root / '.engineering-kit/kit/tools/kit.py'
+        with tempfile.TemporaryDirectory() as directory:
+            snapshot = Path(directory) / path.name
+            write_json(snapshot, replacement)
+            checked = subprocess.run([sys.executable, str(checker), 'check-task', '--root', str(root), str(snapshot)],
+                                     capture_output=True)
+        if checked.returncode:
+            raise CycleError('replacement did not pass check-task')
+        write_json(path, replacement)
+
+
+@contextlib.contextmanager
+def locked(path: Path):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open('a+b') as handle:
+        if not try_lock(handle):
+            raise CycleError('another writer holds the record lock')
+        try:
+            yield
+        finally:
+            unlock(handle)
+
+
+def claim(home: Path, repository: str, task_id: str, holder: str, until: datetime, *,
+          lease=None, profile='manual', moment=None) -> str:
+    path = claim_path(home, repository, task_id)
+    with locked(path.with_suffix('.lock')):
+        active = claimed(home, repository, task_id, moment or now_local())
+        if (lease is None and active) or (lease is not None and (active or {}).get('lease') != lease):
+            raise CycleError('task lease unavailable')
+        lease = lease or uuid.uuid4().hex
+        write_json(path, {'repository': repository, 'task': task_id, 'holder': holder,
+                          'principal': getpass.getuser(), 'profile': profile,
+                          'lease': lease, 'until': until.isoformat()})
+        return lease
+
+
+def release(home: Path, repository: str, task_id: str, lease=None) -> None:
+    path = claim_path(home, repository, task_id)
+    with locked(path.with_suffix('.lock')):
+        current = read_json(path)
+        if isinstance(current, dict) and current.get('holder') == 'runner' and current.get('lease') != lease:
+            raise CycleError('another runner holds the lease')
+        if lease is None or isinstance(current, dict) and current.get('lease') == lease:
+            path.unlink(missing_ok=True)
 
 
 def refresh_queue(home: Path, config: dict, moment: datetime) -> list[dict]:
@@ -276,7 +356,9 @@ PROMPT = """You are working unattended on task {task} in {repository}.
   the task, set "next_actor" to "owner" and stop.
 - While you work, run only the tests your change affects. Delivery runs the full checks
   once.
-- Before you stop, write the handoff {handoff} and update the task record.
+- Before you stop, write the handoff {handoff}. Save task edits in a separate
+  JSON file and apply them with {python} {cycle} update-task {task}
+  --expected {task_revision} --file FILE from the primary checkout.
 - Deliver finished work with: {python} {cycle} deliver --task {task}
   It runs the checks, pushes this branch and opens a review request. Never merge it and
   never push {base}.
@@ -291,11 +373,19 @@ def run_one(home: Path, config: dict, item: dict, moment: datetime, deadline: da
     project = project_config(root)
     settings = cycle_config(project)
     task_id = item['task']
-    run_id = f'{stamp(moment)}-{item["repository"]}-{task_id}'
+    run_id = f'{stamp(moment)}-{item["repository"]}-{task_id}-{uuid.uuid4().hex[:12]}'
     record = {'kit': 'cycle-run/1', 'id': run_id, 'repository': item['repository'], 'task': task_id,
               'started': moment.isoformat(), 'outcome': 'unknown'}
-    claim(home, item['repository'], task_id, 'runner', deadline + timedelta(minutes=10))
+    lease = None
+    def renew():
+        instant = now_local()
+        return claim(home, item['repository'], task_id, 'runner', instant + timedelta(minutes=3),
+                     lease=lease, profile=config['agent'].get('profile') or next(iter(config['agent']['command']), 'runner'),
+                     moment=instant)
     try:
+        lease = renew()
+        if task_id not in {task['id'] for task in ready_tasks(root, project)}:
+            raise CycleError('task is no longer ready and approved')
         base = default_branch(root, settings)
         remote = settings.get('remote', 'origin')
         start = base
@@ -305,7 +395,7 @@ def run_one(home: Path, config: dict, item: dict, moment: datetime, deadline: da
             record['fetch'] = 'ok' if fetched.returncode == 0 else fetched.stderr.strip()[-400:]
             if git(root, 'rev-parse', '--verify', '--quiet', f'refs/remotes/{remote}/{base}', check=False):
                 start = f'{remote}/{base}'
-        branch = f'kit/{task_id}-{stamp(moment)}'
+        branch = f'kit/{task_id}-{stamp(moment)}-{lease[:12]}'
         worktree = home / 'worktrees' / run_id
         git(root, 'worktree', 'add', '--quiet', '-b', branch, str(worktree), start)
         record.update(branch=branch, base=start, worktree=str(worktree))
@@ -320,9 +410,19 @@ def run_one(home: Path, config: dict, item: dict, moment: datetime, deadline: da
                   'base': base, 'worktree': str(worktree), 'task_file': str(task_file), 'handoff': str(handoff),
                   'cycle': str(cycle), 'python': sys.executable, 'deadline': deadline.strftime('%H:%M'),
                   'home': str(home)}  # KIT_CYCLE_HOME: the agent's delivery reads this runner's settings
-        prompt = PROMPT.format(**values)
+        current = read_json(task_file)
+        approved = project_config(root)
+        if task_id not in {item['id'] for item in ready_tasks(root, approved)}:
+            raise CycleError('task approval or prerequisites changed')
+        values['task_revision'] = task_revision(current)
+        if approved['cycle']['approvals'][task_id]['revision'] != values['task_revision']:
+            raise CycleError('task changed during selection')
         run_folder = home / 'runs'
         run_folder.mkdir(parents=True, exist_ok=True)
+        snapshot = run_folder / f'{run_id}.task'
+        write_json(snapshot, current)
+        values['task_file'] = str(snapshot)
+        prompt = PROMPT.format(**values)
         prompt_file = run_folder / f'{run_id}.prompt.md'
         prompt_file.write_text(prompt, encoding='utf-8')
         values.update(prompt=prompt, prompt_file=str(prompt_file))
@@ -336,8 +436,9 @@ def run_one(home: Path, config: dict, item: dict, moment: datetime, deadline: da
         environment = dict(os.environ, **{f'KIT_CYCLE_{key.upper()}': value for key, value in values.items()
                                          if key != 'prompt'})
         limit = min(timedelta(minutes=config['agent'].get('timeout_minutes', 120)), deadline - moment)
+        renew()
         record['exit'], record['timed_out'] = run_agent(command, worktree, environment, limit.total_seconds(),
-                                                       run_folder / f'{run_id}.log')
+                                                       run_folder / f'{run_id}.log', renew)
         wrote = handoff.exists() and handoff.stat().st_mtime_ns != before
         record['handoff'] = str(handoff)
         if not wrote:
@@ -348,13 +449,17 @@ def run_one(home: Path, config: dict, item: dict, moment: datetime, deadline: da
     except (CycleError, OSError) as error:  # OSError: the agent command cannot start
         record.update(outcome='refused', reason=str(error))
     finally:
-        release(home, item['repository'], task_id)
+        if lease:
+            try:
+                release(home, item['repository'], task_id, lease)
+            except CycleError as error:
+                record.update(outcome='refused', reason=str(error))
         record['ended'] = now_local().isoformat()
         write_json(home / 'runs' / f'{run_id}.json', record)
     return record
 
 
-def run_agent(command: list[str], cwd: Path, environment: dict, seconds: float, log: Path) -> tuple[int | None, bool]:
+def run_agent(command: list[str], cwd: Path, environment: dict, seconds: float, log: Path, renew) -> tuple[int | None, bool]:
     with log.open('wb') as output:
         if os.name == 'nt':
             process = subprocess.Popen(command, cwd=cwd, env=environment, stdout=output, stderr=subprocess.STDOUT,
@@ -364,14 +469,26 @@ def run_agent(command: list[str], cwd: Path, environment: dict, seconds: float, 
             process = subprocess.Popen(command, cwd=cwd, env=environment, stdout=output, stderr=subprocess.STDOUT,
                                        stdin=subprocess.DEVNULL, start_new_session=True)
         try:
-            return process.wait(timeout=max(seconds, 1)), False
-        except subprocess.TimeoutExpired:
-            if os.name == 'nt':  # the whole tree, as an agent starts tools of its own
-                subprocess.run(['taskkill', '/T', '/F', '/PID', str(process.pid)], capture_output=True)
-            else:
-                os.killpg(process.pid, signal.SIGKILL)
-            process.wait()
-            return None, True
+            end = time.monotonic() + max(seconds, 1)
+            while True:
+                try:
+                    return process.wait(timeout=min(60, max(0, end - time.monotonic()))), False
+                except subprocess.TimeoutExpired:
+                    if time.monotonic() >= end:
+                        break
+                    renew()
+        finally:
+            if process.poll() is None:
+                stop_agent(process)
+        return None, True
+
+
+def stop_agent(process):
+    if os.name == 'nt':
+        subprocess.run(['taskkill', '/T', '/F', '/PID', str(process.pid)], capture_output=True)
+    else:
+        os.killpg(process.pid, signal.SIGKILL)
+    process.wait()
 
 
 def write_handoff(path: Path, task: dict, record: dict) -> None:
@@ -965,6 +1082,12 @@ def main(argv: list[str] | None = None) -> int:
     commands.add_parser('register').add_argument('--name')
     commands.add_parser('run').add_argument('--once', action='store_true')
     commands.add_parser('queue')
+    command = commands.add_parser('update-task')
+    command.add_argument('task')
+    command.add_argument('--expected', required=True)
+    command.add_argument('--file', type=Path, required=True)
+    command = commands.add_parser('task-revision')
+    command.add_argument('file', type=Path)
     for name in ('claim', 'release'):
         command = commands.add_parser(name)
         command.add_argument('task')
@@ -994,6 +1117,11 @@ def main(argv: list[str] | None = None) -> int:
         home = runner_home(args.home)
         if args.command == 'register':
             lines = register(home, root, args.name)
+        elif args.command == 'task-revision':
+            lines = [task_revision(read_json(args.file))]
+        elif args.command == 'update-task':
+            replace_task(root, args.task, args.expected, args.file)
+            lines = [f'Updated {args.task}.']
         elif args.command == 'run':
             return serve(home, once=args.once)
         elif args.command == 'queue':
