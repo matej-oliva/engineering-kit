@@ -26,6 +26,10 @@ needs a decision.
    recurring mechanical mistake, assign an owner to turn one real example
    into a failing lint or test case and verify a valid example passes.
    Retire the duplicate review reminder once the check covers it.
+   Keep a small fixture with a planted violation for each lint rule the
+   project relies on. Run the configured linter with the project's actual
+   settings and assert the expected rule ID and location. Fail the canary
+   if that diagnostic disappears, even if another rule still reports.
 5. **Measure before you keep or remove** a tool, rule or integration: how
    often it is used, what it caught and what it costs. A claim that has not
    been measured stays labelled as unproved.
